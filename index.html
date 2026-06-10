@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- saved from url=(0045)file:///C:/Users/cymel/Downloads/index_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accruals</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="./Accruals2_files/supabase-js@2"></script>
+<script src="./Accruals2_files/xlsx.full.min.js.download"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -151,8 +151,8 @@
 <div class="topbar">
   <div class="topbar-brand"><span>A</span> Accruals</div>
   <div class="topbar-status">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">Connecting…</span>
+    <div class="status-dot connected" id="statusDot"></div>
+    <span id="statusText">Connected</span>
   </div>
 </div>
 
@@ -160,35 +160,35 @@
   <nav class="sidebar">
     <div class="nav-section">
       <div class="nav-label">Workspace</div>
-      <button class="nav-item active" onclick="nav('upload',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>
+      <button class="nav-item active" onclick="nav(&#39;upload&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"></path></svg>
         Upload
       </button>
-      <button class="nav-item" onclick="nav('rows',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14M1 9h14M5 6v7M11 6v7"/></svg>
+      <button class="nav-item" onclick="nav(&#39;rows&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"></rect><path d="M1 6h14M1 9h14M5 6v7M11 6v7"></path></svg>
         Data rows
       </button>
-      <button class="nav-item" onclick="nav('je',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M12 11h2M13 10v2"/></svg>
+      <button class="nav-item" onclick="nav(&#39;je&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"></path><circle cx="13" cy="11" r="2.5"></circle><path d="M12 11h2M13 10v2"></path></svg>
         Journal entry
       </button>
     </div>
     <div class="nav-section">
       <div class="nav-label">Config</div>
-      <button class="nav-item" onclick="nav('entities',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      <button class="nav-item" onclick="nav(&#39;entities&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"></rect><rect x="9" y="1" width="6" height="6" rx="1"></rect><rect x="1" y="9" width="6" height="6" rx="1"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect></svg>
         Entities
       </button>
-      <button class="nav-item" onclick="nav('tags',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"/><circle cx="11" cy="5" r="1"/></svg>
+      <button class="nav-item" onclick="nav(&#39;tags&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"></path><circle cx="11" cy="5" r="1"></circle></svg>
         Tags
       </button>
-      <button class="nav-item" onclick="nav('history',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+      <button class="nav-item" onclick="nav(&#39;history&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5l2 1.5"></path></svg>
         History
       </button>
-      <button class="nav-item" onclick="nav('log',this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h6M5 11h3"/></svg>
+      <button class="nav-item" onclick="nav(&#39;log&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"></rect><path d="M5 5h6M5 8h6M5 11h3"></path></svg>
         Log
       </button>
     </div>
@@ -203,12 +203,12 @@
         <div class="page-sub">Add CSV or Excel files to the accrual database</div>
       </div>
       <div class="card">
-        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById(&#39;fileInput&#39;).click()">
           <div class="drop-icon">📂</div>
           <div class="drop-label">Drop CSV or Excel files here, or click to browse</div>
           <div class="drop-hint">Supports .csv and .xlsx — multiple files allowed</div>
         </div>
-        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" multiple style="display:none">
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" multiple="" style="display:none">
         <div class="file-list" id="fileChips"></div>
       </div>
       <div class="card" id="previewCard" style="display:none">
@@ -231,20 +231,13 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="filterReport" onchange="loadRows()" style="font-size:12px">
-              <option value="">All reports</option>
-            </select>
-            <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px">
-              <option value="">All tags</option>
-              <option value="__untagged__">Untagged only</option>
-            </select>
-            <select id="filterDim" onchange="renderRowsTable()" style="font-size:12px">
-              <option value="">All dimensions</option>
-            </select>
+            <select id="filterReport" onchange="loadRows()" style="font-size:12px"><option value="">All reports</option></select>
+            <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px"><option value="">All tags</option><option value="__untagged__">Untagged only</option><option value="Accrual">Accrual</option><option value="Reversal">Reversal</option></select>
+            <select id="filterDim" onchange="renderRowsTable()" style="font-size:12px"><option value="">All dimensions</option></select>
           </div>
           <button class="btn btn-sm btn-primary" onclick="saveRowTags()">Save changes</button>
         </div>
-        <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows yet — upload a report first</div></div>
+        <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div></div>
         <div class="row-count" id="rowsCount"></div>
       </div>
     </div>
@@ -293,14 +286,77 @@
       <div class="card">
         <div class="card-title">Add new dimension type</div>
         <div class="new-dim-row">
-          <input type="text" id="newDimName" placeholder="e.g. Business Unit, Region, Project…" style="width:260px" />
+          <input type="text" id="newDimName" placeholder="e.g. Business Unit, Region, Project…" style="width:260px">
           <button class="btn btn-primary" onclick="addDimension()">+ Add dimension</button>
         </div>
       </div>
 
-      <div class="dim-grid" id="dimGrid">
-        <div class="empty"><div class="empty-icon">🏢</div>Loading dimensions…</div>
+      <div class="dim-grid" id="dimGrid"><div class="dim-card">
+      <div class="dim-card-header">
+        <span class="dim-card-title">Subsidiary</span>
+        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;782e86a4-f396-456f-b70c-cf561d340110&#39;)">Remove</button>
       </div>
+      <div class="dim-card-body">
+        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+        <div class="dim-add-row">
+          <input type="text" id="dimval-782e86a4-f396-456f-b70c-cf561d340110" placeholder="Value">
+          <input type="text" id="dimcode-782e86a4-f396-456f-b70c-cf561d340110" placeholder="Code" class="code-input">
+          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;782e86a4-f396-456f-b70c-cf561d340110&#39;)">Add</button>
+        </div>
+      </div>
+    </div><div class="dim-card">
+      <div class="dim-card-header">
+        <span class="dim-card-title">Site</span>
+        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;2c7f5f53-7e8a-4750-ac89-15f00a117295&#39;)">Remove</button>
+      </div>
+      <div class="dim-card-body">
+        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+        <div class="dim-add-row">
+          <input type="text" id="dimval-2c7f5f53-7e8a-4750-ac89-15f00a117295" placeholder="Value">
+          <input type="text" id="dimcode-2c7f5f53-7e8a-4750-ac89-15f00a117295" placeholder="Code" class="code-input">
+          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;2c7f5f53-7e8a-4750-ac89-15f00a117295&#39;)">Add</button>
+        </div>
+      </div>
+    </div><div class="dim-card">
+      <div class="dim-card-header">
+        <span class="dim-card-title">Cost Center</span>
+        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Remove</button>
+      </div>
+      <div class="dim-card-body">
+        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+        <div class="dim-add-row">
+          <input type="text" id="dimval-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Value">
+          <input type="text" id="dimcode-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Code" class="code-input">
+          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Add</button>
+        </div>
+      </div>
+    </div><div class="dim-card">
+      <div class="dim-card-header">
+        <span class="dim-card-title">GL Account Code</span>
+        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Remove</button>
+      </div>
+      <div class="dim-card-body">
+        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+        <div class="dim-add-row">
+          <input type="text" id="dimval-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Value">
+          <input type="text" id="dimcode-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Code" class="code-input">
+          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Add</button>
+        </div>
+      </div>
+    </div><div class="dim-card">
+      <div class="dim-card-header">
+        <span class="dim-card-title">Product Type</span>
+        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Remove</button>
+      </div>
+      <div class="dim-card-body">
+        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+        <div class="dim-add-row">
+          <input type="text" id="dimval-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Value">
+          <input type="text" id="dimcode-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Code" class="code-input">
+          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Add</button>
+        </div>
+      </div>
+    </div></div>
     </div>
 
     <!-- TAGS -->
@@ -311,10 +367,16 @@
       </div>
       <div class="card">
         <div class="card-title">Active tags</div>
-        <div class="tag-bar" id="tagBar"></div>
+        <div class="tag-bar" id="tagBar"><span class="tag-pill" style="background:#E6F1FB;color:#0C447C;border-color:#B5D4F4">
+      Accrual
+      <button onclick="removeTag(&#39;c68390dc-1c58-41df-895a-ff753dc5bf93&#39;)" aria-label="Remove Accrual">×</button>
+    </span><span class="tag-pill" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97">
+      Reversal
+      <button onclick="removeTag(&#39;d4091523-3d74-4f0d-938f-22717b40dd2f&#39;)" aria-label="Remove Reversal">×</button>
+    </span></div>
         <div class="section-divider"></div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input type="text" id="newTagName" placeholder="Tag name" style="width:160px" />
+          <input type="text" id="newTagName" placeholder="Tag name" style="width:160px">
           <button class="btn btn-primary" onclick="addTag()">+ Add tag</button>
         </div>
       </div>
@@ -957,5 +1019,6 @@ function fmt(n) {
 
 init();
 </script>
-</body>
-</html>
+
+
+</body></html>
