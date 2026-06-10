@@ -104,6 +104,12 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 .file-type-btn{padding:6px 14px;border-radius:var(--radius);font-size:13px;cursor:pointer;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-muted);font-family:inherit;transition:all .1s}
 .file-type-btn:hover{background:var(--bg)}.file-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 </style>
+<style>
+.cat-chip{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);color:var(--amber);border:1px solid #FAC775;border-radius:var(--radius);padding:3px 10px;font-size:12px;font-weight:500}
+.cat-chip button{background:none;border:none;cursor:pointer;color:var(--amber);opacity:.6;font-size:13px;padding:0;line-height:1}
+.auto-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;background:var(--accent-light);color:var(--accent);border:1px solid #b2d9c0;white-space:nowrap}
+.warn-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;background:var(--amber-bg);color:var(--amber);border:1px solid #FAC775;white-space:nowrap}
+</style>
 </head>
 <body>
 <div class="topbar">
@@ -117,6 +123,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <button class="nav-item active" onclick="nav('pricing-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/><path d="M2 4l2-2h8l2 2"/><path d="M8 7v4M6 9h4"/></svg>Pricing</button>
     <button class="nav-item" onclick="nav('oncore-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>Oncore</button>
     <button class="nav-item" onclick="nav('ap-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>AP Pending</button>
+    <button class="nav-item" onclick="nav('procexp-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>Procedure Exp</button>
   </div>
   <div class="nav-section">
     <div class="nav-label">Workspace</div>
@@ -128,6 +135,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div class="nav-label">Config</div>
     <button class="nav-item" onclick="nav('pricing-master',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>Price master</button>
     <button class="nav-item" onclick="nav('entities',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Entities</button>
+    <button class="nav-item" onclick="nav('categories',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h5"/><circle cx="13" cy="12" r="2"/></svg>Categories</button>
     <button class="nav-item" onclick="nav('templates',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="1.5"/><path d="M1 5h14M5 5v10"/></svg>JE Templates</button>
     <button class="nav-item" onclick="nav('tags',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"/><circle cx="11" cy="5" r="1"/></svg>Tags</button>
     <button class="nav-item" onclick="nav('history',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>History</button>
@@ -135,32 +143,33 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   </div>
 </nav>
 <main class="main">
+
 <!-- PRICING UPLOAD -->
 <div class="page active" id="page-pricing-upload">
-  <div class="page-header"><div class="page-title">Upload pricing file</div><div class="page-sub">Upload a CSV or Excel pricing file — duplicates flagged for review</div></div>
+  <div class="page-header"><div class="page-title">Upload pricing file</div><div class="page-sub">Upload your Oncore Mapping file — items, CPT codes, Event Types and per-subsidiary prices imported automatically</div></div>
   <div class="card">
     <div class="card-title">Match key — columns that identify a unique item</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <select id="pricingKeyColSel" style="font-size:12px;min-width:140px"><option value="">Add column…</option></select>
       <button class="btn btn-sm btn-primary" onclick="addPricingKeyCol()">+ Add</button>
     </div>
-    <div id="pricingKeyCols" style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;color:var(--text-faint)">No match key defined yet</span></div>
-    <div style="font-size:12px;color:var(--text-faint);margin-top:8px">e.g. Oncore Name + CPT Code</div>
+    <div id="pricingKeyCols" style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;color:var(--text-faint)">No match key defined yet — default: Item Name + CPT</span></div>
   </div>
   <div class="card">
     <div class="drop-zone" id="pricingDropZone" onclick="document.getElementById('pricingFileInput').click()">
       <div class="drop-icon">📋</div>
       <div class="drop-label">Drop pricing file here, or click to browse</div>
-      <div class="drop-hint">Supports .csv and .xlsx</div>
+      <div class="drop-hint">Supports .csv and .xlsx — multi-sheet files handled automatically</div>
     </div>
     <input type="file" id="pricingFileInput" accept=".csv,.xlsx,.xls" style="display:none">
     <div class="file-list" id="pricingFileChips"></div>
   </div>
   <div class="card" id="pricingMappingCard" style="display:none">
     <div class="card-title">Map columns to pricing fields</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px" id="pricingSheetNote"></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px" id="pricingMappingGrid"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="processPricingUpload()">► Process &amp; check duplicates</button>
+      <button class="btn btn-primary" onclick="processPricingUpload()">▶ Process &amp; check duplicates</button>
       <button class="btn" onclick="clearPricingUpload()">Clear</button>
     </div>
   </div>
@@ -185,9 +194,9 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 
 <!-- ONCORE UPLOAD -->
 <div class="page" id="page-oncore-upload">
-  <div class="page-header"><div class="page-title">Upload Oncore file</div><div class="page-sub">Monthly Oncore report — assigned to a period, history kept</div></div>
+  <div class="page-header"><div class="page-title">Upload Oncore file</div><div class="page-sub">Raw Oncore export — CPT Code, Category and Month Occurred auto-filled from Price Master</div></div>
   <div class="card">
-    <div class="card-title">Match key</div>
+    <div class="card-title">Match key — columns that identify a unique row within a period</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <select id="oncoreKeyColSel" style="font-size:12px;min-width:140px"><option value="">Add column…</option></select>
       <button class="btn btn-sm btn-primary" onclick="addOncoreKeyCol()">+ Add</button>
@@ -195,20 +204,23 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div id="oncoreKeyCols" style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;color:var(--text-faint)">No match key defined yet</span></div>
   </div>
   <div class="card">
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
       <label style="font-size:13px;color:var(--text-muted)">Period:</label>
       <select id="oncorePeriod" style="font-size:12px"></select>
     </div>
     <div class="drop-zone" id="oncoreDropZone" onclick="document.getElementById('oncoreFileInput').click()">
       <div class="drop-icon">📊</div>
       <div class="drop-label">Drop Oncore file here, or click to browse</div>
-      <div class="drop-hint">Supports .csv and .xlsx</div>
+      <div class="drop-hint">Supports .csv and .xlsx — headers auto-detected</div>
     </div>
     <input type="file" id="oncoreFileInput" accept=".csv,.xlsx,.xls" style="display:none">
     <div class="file-list" id="oncoreFileChips"></div>
   </div>
   <div class="card" id="oncorePreviewCard" style="display:none">
-    <div class="card-title">Preview</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin:0">Preview</div>
+      <div id="oncoreAutoFillSummary" style="font-size:12px;color:var(--accent)"></div>
+    </div>
     <div class="table-wrap" id="oncorePreviewTable"></div>
     <div class="row-count" id="oncorePreviewCount"></div>
     <div class="btn-row">
@@ -221,7 +233,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 
 <!-- AP PENDING UPLOAD -->
 <div class="page" id="page-ap-upload">
-  <div class="page-header"><div class="page-title">Upload AP Pending file</div><div class="page-sub">Monthly AP Pending report — assigned to a period, history kept</div></div>
+  <div class="page-header"><div class="page-title">Upload AP Pending file</div><div class="page-sub">Headers auto-detected — report title rows skipped automatically</div></div>
   <div class="card">
     <div class="card-title">Match key</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
@@ -238,7 +250,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div class="drop-zone" id="apDropZone" onclick="document.getElementById('apFileInput').click()">
       <div class="drop-icon">📄</div>
       <div class="drop-label">Drop AP Pending file here, or click to browse</div>
-      <div class="drop-hint">Supports .csv and .xlsx</div>
+      <div class="drop-hint">Supports .csv and .xlsx — headers on row 4 detected automatically</div>
     </div>
     <input type="file" id="apFileInput" accept=".csv,.xlsx,.xls" style="display:none">
     <div class="file-list" id="apFileChips"></div>
@@ -255,6 +267,42 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card"><div class="card-title">AP Pending history</div><div id="apHistory"><div class="empty"><div class="empty-icon">📄</div>No AP Pending files yet</div></div></div>
 </div>
 
+<!-- PROCEDURE EXP UPLOAD -->
+<div class="page" id="page-procexp-upload">
+  <div class="page-header"><div class="page-title">Upload Procedure Exp file</div><div class="page-sub">Headers auto-detected — report title rows skipped automatically</div></div>
+  <div class="card">
+    <div class="card-title">Match key</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <select id="procexpKeyColSel" style="font-size:12px;min-width:140px"><option value="">Add column…</option></select>
+      <button class="btn btn-sm btn-primary" onclick="addProcexpKeyCol()">+ Add</button>
+    </div>
+    <div id="procexpKeyCols" style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;color:var(--text-faint)">No match key defined yet</span></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+      <label style="font-size:13px;color:var(--text-muted)">Period:</label>
+      <select id="procexpPeriod" style="font-size:12px"></select>
+    </div>
+    <div class="drop-zone" id="procexpDropZone" onclick="document.getElementById('procexpFileInput').click()">
+      <div class="drop-icon">🧾</div>
+      <div class="drop-label">Drop Procedure Exp file here, or click to browse</div>
+      <div class="drop-hint">Supports .csv and .xlsx — headers on row 7 detected automatically</div>
+    </div>
+    <input type="file" id="procexpFileInput" accept=".csv,.xlsx,.xls" style="display:none">
+    <div class="file-list" id="procexpFileChips"></div>
+  </div>
+  <div class="card" id="procexpPreviewCard" style="display:none">
+    <div class="card-title">Preview</div>
+    <div class="table-wrap" id="procexpPreviewTable"></div>
+    <div class="row-count" id="procexpPreviewCount"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveTypedFile('proc_exp')">💾 Save to database</button>
+      <button class="btn" onclick="clearTypedUpload('procexp')">Clear</button>
+    </div>
+  </div>
+  <div class="card"><div class="card-title">Procedure Exp history</div><div id="procexpHistory"><div class="empty"><div class="empty-icon">🧾</div>No Procedure Exp files yet</div></div></div>
+</div>
+
 <!-- REPORTS -->
 <div class="page" id="page-reports">
   <div class="page-header"><div class="page-title">Reports</div><div class="page-sub">All uploaded files</div></div>
@@ -263,6 +311,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
       <button class="file-type-btn active" onclick="filterReportType('all',this)">All</button>
       <button class="file-type-btn" onclick="filterReportType('oncore',this)">Oncore</button>
       <button class="file-type-btn" onclick="filterReportType('ap_pending',this)">AP Pending</button>
+      <button class="file-type-btn" onclick="filterReportType('proc_exp',this)">Procedure Exp</button>
       <button class="file-type-btn" onclick="filterReportType('general',this)">General</button>
     </div>
     <div id="reportsList"><div class="empty"><div class="empty-icon">📁</div>No reports yet</div></div>
@@ -277,7 +326,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <select id="filterPeriod" onchange="loadRows()" style="font-size:12px"><option value="">All periods</option></select>
         <select id="filterReport" onchange="loadRows()" style="font-size:12px"><option value="">All reports</option></select>
-        <select id="filterFileType" onchange="loadRows()" style="font-size:12px"><option value="">All types</option><option value="oncore">Oncore</option><option value="ap_pending">AP Pending</option><option value="general">General</option></select>
+        <select id="filterFileType" onchange="loadRows()" style="font-size:12px"><option value="">All types</option><option value="oncore">Oncore</option><option value="ap_pending">AP Pending</option><option value="proc_exp">Procedure Exp</option><option value="general">General</option></select>
         <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px"><option value="">All tags</option><option value="__untagged__">Untagged only</option></select>
       </div>
       <div style="display:flex;gap:6px">
@@ -318,6 +367,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
           <option value="tag+sub">Tag + Subsidiary</option>
           <option value="tag+sub+site">Tag + Sub + Site</option>
           <option value="tag+oncore">Tag + Oncore item</option>
+          <option value="tag+category">Tag + Category</option>
           <option value="tag+gl">Tag + GL Account</option>
           <option value="tag+all">Tag + All dimensions</option>
         </select>
@@ -338,12 +388,16 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card">
     <div class="card-title">Add item manually</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Oncore name</label><input type="text" id="pName" placeholder="e.g. Study Activation" style="width:180px"/></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">CPT code</label><input type="text" id="pCpt" placeholder="e.g. 99213" style="width:100px"/></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Description</label><input type="text" id="pDesc" placeholder="Optional" style="width:200px"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Item name</label><input type="text" id="pName" placeholder="e.g. CT abdomen w contrast" style="width:200px"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">CPT code</label><input type="text" id="pCpt" placeholder="e.g. 74177" style="width:100px"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Event Type / Category</label><select id="pCategory" style="font-size:12px;min-width:140px"><option value="">— none —</option></select></div>
       <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Default price</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" style="width:100px"/></div>
       <button class="btn btn-primary" onclick="addPricingItem()">+ Add</button>
     </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <input type="text" id="pricingSearch" placeholder="Search items…" oninput="renderPricingList()" style="width:240px;font-size:12px"/>
+    <select id="pricingCatFilter" onchange="renderPricingList()" style="font-size:12px"><option value="">All categories</option></select>
   </div>
   <div id="pricingList"><div class="empty"><div class="empty-icon">💲</div>No pricing items yet</div></div>
 </div>
@@ -385,9 +439,29 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   </div>
 </div>
 
+<!-- CATEGORIES -->
+<div class="page" id="page-categories">
+  <div class="page-header"><div class="page-title">Categories</div><div class="page-sub">Event Type / Category values used for auto-fill and grouping — e.g. CT SCAN, Labs, MRI, ECG</div></div>
+  <div class="card">
+    <div class="card-title">Active categories</div>
+    <div id="catChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"><span style="font-size:12px;color:var(--text-faint)">No categories yet</span></div>
+    <div class="section-divider"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:12px">
+      <input type="text" id="newCatName" placeholder="Category name" style="width:200px"/>
+      <button class="btn btn-primary" onclick="addCategory()">+ Add</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-faint);margin-top:10px">These appear as a dropdown on every Oncore row and are used to auto-fill Category when uploading Oncore files.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bulk seed from Price Master</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Pull all unique Event Types already in the Price Master as categories.</div>
+    <button class="btn btn-amber" onclick="seedCategoriesFromPricing()">↓ Import from Price Master</button>
+  </div>
+</div>
+
 <!-- JE TEMPLATES -->
 <div class="page" id="page-templates">
-  <div class="page-header"><div class="page-title">JE Templates</div><div class="page-sub">Rules that auto-tag rows</div></div>
+  <div class="page-header"><div class="page-title">JE Templates</div><div class="page-sub">Rules that auto-tag rows based on field values</div></div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="card-title" style="margin:0">Templates</div>
@@ -403,7 +477,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <button class="btn btn-sm" onclick="addRule()" style="margin-top:10px">+ Add rule</button>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveTemplate()">Save</button>
-      <button class="btn btn-amber" onclick="applyTemplateToRows()">► Apply</button>
+      <button class="btn btn-amber" onclick="applyTemplateToRows()">▶ Apply</button>
       <button class="btn" onclick="downloadTemplate()">⬇ CSV</button>
       <button class="btn btn-danger" onclick="deleteTemplate()">Delete</button>
     </div>
@@ -432,7 +506,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 
 <!-- LOG -->
 <div class="page" id="page-log">
-  <div class="page-header"><div class="page-title">Log</div><div class="page-sub">Pricing conflicts, duplicates, system events</div></div>
+  <div class="page-header"><div class="page-title">Log</div><div class="page-sub">Pricing conflicts, duplicates, auto-fill events</div></div>
   <div class="card"><div id="logList"><div class="empty"><div class="empty-icon">📄</div>No log entries yet</div></div></div>
 </div>
 
@@ -445,25 +519,28 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const TAG_COLORS=[{bg:'#E6F1FB',text:'#0C447C',border:'#B5D4F4'},{bg:'#EAF3DE',text:'#27500A',border:'#C0DD97'},{bg:'#FAEEDA',text:'#633806',border:'#FAC775'},{bg:'#EEEDFE',text:'#3C3489',border:'#CECBF6'},{bg:'#FAECE7',text:'#712B13',border:'#F5C4B3'},{bg:'#FBEAF0',text:'#72243E',border:'#F4C0D1'}];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+// State
 let tags=[],dimensions=[],dimValues={},rowDimensions={};
 let subsidiaries=[],sites=[],subDimId=null,siteDimId=null;
 let pricingItems=[],pricingOverrides={};
+let categories=[];
 let allRows=[],allReports=[];
 let currentJE=null,selectedRows=new Set();
 let editingTemplateId=null,templates=[];
 let editingSiteParentId=null,reportTypeFilter='all';
-let matchKeys={pricing:[],oncore:[],ap_pending:[]};
-let pendingPricingData=[],pendingPricingHeaders=[],pricingColMapping={};
+let matchKeys={pricing:[],oncore:[],ap_pending:[],proc_exp:[]};
+let pendingPricingData=[],pendingPricingHeaders=[],pendingPricingSheets=[];
 let pendingConflicts=[],pendingNewItems=[];
-let pendingTypedData={oncore:{},ap_pending:{}};
+let pendingTypedData={};
 
+// ── INIT ─────────────────────────────────────────────────────────────
 async function init(){
   try{
     const{error}=await sb.from('tags').select('id').limit(1);
     if(error)throw error;
     document.getElementById('statusDot').classList.add('connected');
     document.getElementById('statusText').textContent='Connected';
-    await Promise.all([loadTags(),loadDimensions(),loadReports(),loadPricing(),loadMatchKeys()]);
+    await Promise.all([loadTags(),loadDimensions(),loadReports(),loadPricing(),loadMatchKeys(),loadCategories()]);
     await loadRows();await loadHistory();await loadLog();await loadTemplates();
     populatePeriodSelects();
   }catch(e){document.getElementById('statusText').textContent='Connection error';toast('Could not connect to Supabase');console.error(e);}
@@ -479,18 +556,20 @@ function nav(page,el){
   if(page==='reports')renderReportsList();
   if(page==='templates')renderTemplatesList();
   if(page==='pricing-master')renderPricingList();
+  if(page==='categories')renderCategories();
   if(page==='oncore-upload')loadTypedHistory('oncore');
   if(page==='ap-upload')loadTypedHistory('ap_pending');
+  if(page==='procexp-upload')loadTypedHistory('proc_exp');
 }
-
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 
+// ── PERIODS ───────────────────────────────────────────────────────────
 function periodOptions(sel=''){
-  const now=new Date();let opts='<option value="">\u2014 no period \u2014</option>';
-  for(let y=now.getFullYear();y>=now.getFullYear()-3;y--)for(let m=11;m>=0;m--){const val=`${y}-${String(m+1).padStart(2,'0')}`;opts+=`<option value="${val}" ${sel===val?'selected':''}>${MONTHS[m]} ${y}</option>`;}
+  const now=new Date();let opts='<option value="">— no period —</option>';
+  for(let y=now.getFullYear();y>=now.getFullYear()-3;y--)for(let m=11;m>=0;m--){const val=y+'-'+String(m+1).padStart(2,'0');opts+='<option value="'+val+'" '+(sel===val?'selected':'')+'>'+MONTHS[m]+' '+y+'</option>';}
   return opts;
 }
-function periodLabel(val){if(!val)return'\u2014';const[y,m]=val.split('-');return`${MONTHS[parseInt(m)-1]} ${y}`;}
+function periodLabel(val){if(!val)return'—';const[y,m]=val.split('-');return MONTHS[parseInt(m)-1]+' '+y;}
 function populatePeriodSelects(){
   const periods=[...new Set(allReports.map(r=>r.period).filter(Boolean))].sort().reverse();
   ['filterPeriod','jePeriodFilter'].forEach(id=>{
@@ -499,39 +578,150 @@ function populatePeriodSelects(){
     periods.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=periodLabel(p);sel.appendChild(o);});
     sel.value=cur;
   });
-  ['oncorePeriod','apPeriod'].forEach(id=>{const sel=document.getElementById(id);if(sel)sel.innerHTML=periodOptions('');});
+  ['oncorePeriod','apPeriod','procexpPeriod'].forEach(id=>{const sel=document.getElementById(id);if(sel)sel.innerHTML=periodOptions('');});
 }
 
+// ── MATCH KEYS ────────────────────────────────────────────────────────
 async function loadMatchKeys(){
   const{data}=await sb.from('file_match_keys').select('*');
   if(data)data.forEach(r=>{matchKeys[r.file_type]=Array.isArray(r.key_columns)?r.key_columns:JSON.parse(r.key_columns||'[]');});
-  renderMatchKeyCols('pricing');renderMatchKeyCols('oncore');renderMatchKeyCols('ap_pending');
+  ['pricing','oncore','ap_pending','proc_exp'].forEach(ft=>renderMatchKeyCols(ft));
 }
 async function saveMatchKey(ft){
   const{data:ex}=await sb.from('file_match_keys').select('id').eq('file_type',ft).limit(1);
   if(ex&&ex.length)await sb.from('file_match_keys').update({key_columns:matchKeys[ft]}).eq('file_type',ft);
   else await sb.from('file_match_keys').insert({file_type:ft,key_columns:matchKeys[ft]});
 }
+const MK_ELS={pricing:'pricingKeyCols',oncore:'oncoreKeyCols',ap_pending:'apKeyCols',proc_exp:'procexpKeyCols'};
 function renderMatchKeyCols(ft){
-  const elId={pricing:'pricingKeyCols',oncore:'oncoreKeyCols',ap_pending:'apKeyCols'}[ft];
-  const el=document.getElementById(elId);if(!el)return;
+  const el=document.getElementById(MK_ELS[ft]);if(!el)return;
   const cols=matchKeys[ft];
   if(!cols.length){el.innerHTML='<span style="font-size:12px;color:var(--text-faint)">No match key defined yet</span>';return;}
-  el.innerHTML=cols.map((c,i)=>`<span class="key-col-chip">${c}<button onclick="removeMatchKeyCol('${ft}',${i})">\u00d7</button></span>`).join('');
+  el.innerHTML=cols.map((c,i)=>'<span class="key-col-chip">'+c+'<button onclick="removeMatchKeyCol(\''+ft+'\','+i+')">×</button></span>').join('');
 }
 function addKeyColFor(ft,selId){const sel=document.getElementById(selId);const col=sel.value;if(!col)return;if(!matchKeys[ft].includes(col)){matchKeys[ft].push(col);saveMatchKey(ft);}sel.value='';renderMatchKeyCols(ft);}
 function addPricingKeyCol(){addKeyColFor('pricing','pricingKeyColSel');}
 function addOncoreKeyCol(){addKeyColFor('oncore','oncoreKeyColSel');}
 function addApKeyCol(){addKeyColFor('ap_pending','apKeyColSel');}
+function addProcexpKeyCol(){addKeyColFor('proc_exp','procexpKeyColSel');}
 function removeMatchKeyCol(ft,idx){matchKeys[ft].splice(idx,1);saveMatchKey(ft);renderMatchKeyCols(ft);}
 function populateKeyColSelectors(headers){
-  [{id:'pricingKeyColSel'},{id:'oncoreKeyColSel'},{id:'apKeyColSel'}].forEach(({id})=>{
+  [{id:'pricingKeyColSel'},{id:'oncoreKeyColSel'},{id:'apKeyColSel'},{id:'procexpKeyColSel'}].forEach(({id})=>{
     const sel=document.getElementById(id);if(!sel)return;
-    sel.innerHTML='<option value="">Add column\u2026</option>';
+    sel.innerHTML='<option value="">Add column…</option>';
     headers.forEach(h=>{const o=document.createElement('option');o.value=h;o.textContent=h;sel.appendChild(o);});
   });
 }
-// PRICING UPLOAD FLOW
+
+// ── CATEGORIES ────────────────────────────────────────────────────────
+async function loadCategories(){
+  const{data}=await sb.from('dimensions').select('*').ilike('name','%categor%').limit(1);
+  // Categories stored as dimension values under a "Category" dimension
+  // Or as a separate simple table — use a dedicated approach: store in dimensions table with name "Category"
+  const{data:allDims}=await sb.from('dimensions').select('*');
+  let catDim=(allDims||[]).find(d=>d.name.toLowerCase()==='category');
+  if(catDim){const{data:vals}=await sb.from('dimension_values').select('*').eq('dimension_id',catDim.id).order('value');categories=(vals||[]).map(v=>v.value);}
+  else categories=[];
+  renderCategories();populateCategoryDropdowns();
+}
+function renderCategories(){
+  const el=document.getElementById('catChips');if(!el)return;
+  if(!categories.length){el.innerHTML='<span style="font-size:12px;color:var(--text-faint)">No categories yet</span>';return;}
+  el.innerHTML=categories.map(c=>'<span class="cat-chip">'+c+'<button onclick="removeCategory(\''+c.replace(/'/g,"\\'")+'\')">\u00d7</button></span>').join('');
+}
+function populateCategoryDropdowns(){
+  // Price master add form
+  const pCat=document.getElementById('pCategory');
+  if(pCat){pCat.innerHTML='<option value="">— none —</option>';categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;pCat.appendChild(o);});}
+  // Price master filter
+  const pCatF=document.getElementById('pricingCatFilter');
+  if(pCatF){const cur=pCatF.value;pCatF.innerHTML='<option value="">All categories</option>';categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;pCatF.appendChild(o);});pCatF.value=cur;}
+}
+async function getCatDimId(){
+  const{data:allDims}=await sb.from('dimensions').select('*');
+  let catDim=(allDims||[]).find(d=>d.name.toLowerCase()==='category');
+  if(!catDim){const{data:nd}=await sb.from('dimensions').insert({name:'Category',sort_order:50}).select().single();catDim=nd;}
+  return catDim.id;
+}
+async function addCategory(){
+  const input=document.getElementById('newCatName');const name=input.value.trim();if(!name)return;
+  if(categories.includes(name)){toast('Already exists');return;}
+  const dimId=await getCatDimId();
+  await sb.from('dimension_values').insert({dimension_id:dimId,value:name});
+  input.value='';await loadCategories();toast('"'+name+'" added');
+}
+async function removeCategory(name){
+  if(!confirm('Remove "'+name+'"?'))return;
+  const{data:allDims}=await sb.from('dimensions').select('*');
+  const catDim=(allDims||[]).find(d=>d.name.toLowerCase()==='category');
+  if(!catDim)return;
+  await sb.from('dimension_values').delete().eq('dimension_id',catDim.id).eq('value',name);
+  await loadCategories();toast('Removed');
+}
+async function seedCategoriesFromPricing(){
+  const existing=new Set(categories);
+  const toAdd=[...new Set(pricingItems.map(p=>p.description).filter(d=>d&&!existing.has(d)))];
+  // description field used for event_type/category
+  const eventTypes=[...new Set(pricingItems.filter(p=>p.description).map(p=>p.description))];
+  const newOnes=eventTypes.filter(e=>!existing.has(e));
+  if(!newOnes.length){toast('No new categories found');return;}
+  const dimId=await getCatDimId();
+  for(const v of newOnes)await sb.from('dimension_values').insert({dimension_id:dimId,value:v});
+  await loadCategories();toast('Imported '+newOnes.length+' categories');
+}
+
+// ── SMART HEADER DETECTION ────────────────────────────────────────────
+// Detects which row is the real header row by finding the row with the most
+// non-empty, non-numeric, non-formula string cells
+function detectHeaderRow(rawRows,fileType){
+  if(!rawRows||!rawRows.length)return 0;
+  // For known file types, use fixed offsets
+  if(fileType==='ap_pending'){
+    // Header is on row 4 (index 3) — look for 'Status' or 'Document Number'
+    for(let i=0;i<Math.min(10,rawRows.length);i++){
+      const vals=Object.values(rawRows[i]).map(v=>(v||'').toString().toLowerCase());
+      if(vals.some(v=>v.includes('status')||v.includes('document number')||v.includes('vendor')))return i;
+    }
+  }
+  if(fileType==='proc_exp'){
+    // Header is on row 7 (index 6) — look for 'Account' or 'Type'
+    for(let i=0;i<Math.min(15,rawRows.length);i++){
+      const vals=Object.values(rawRows[i]).map(v=>(v||'').toString().toLowerCase());
+      if(vals.some(v=>v==='account'||v==='type'||v==='subsidiary: name'||v==='document number'))return i;
+    }
+  }
+  // Generic: find row with most text-like non-empty values
+  let bestRow=0,bestScore=0;
+  for(let i=0;i<Math.min(15,rawRows.length);i++){
+    const vals=Object.values(rawRows[i]);
+    const score=vals.filter(v=>v!==null&&v!==''&&v!==undefined&&typeof v==='string'&&v.length>1&&!v.startsWith('=')).length;
+    if(score>bestScore){bestScore=score;bestRow=i;}
+  }
+  return bestRow;
+}
+
+// Re-parse raw XLSX rows using detected header row
+function applyHeaderRow(rawRows,headerRowIdx){
+  if(headerRowIdx===0)return rawRows;
+  const headerRow=rawRows[headerRowIdx];
+  const headers=Object.values(headerRow).map((v,i)=>v!==null&&v!==''&&v!==undefined?(v+'').trim():'col_'+i);
+  const dataRows=rawRows.slice(headerRowIdx+1);
+  return dataRows.map(row=>{
+    const vals=Object.values(row);
+    const obj={};
+    headers.forEach((h,i)=>{obj[h]=vals[i]!==null&&vals[i]!==undefined?vals[i]:'';});
+    return obj;
+  }).filter(row=>Object.values(row).some(v=>v!==''));
+}
+
+// Parse XLSX file to raw rows (using numeric keys 0,1,2...)
+function xlsxToRawRows(arrayBuffer,sheetName){
+  const wb=XLSX.read(arrayBuffer,{type:'array',cellDates:true});
+  const ws=sheetName?wb.Sheets[sheetName]:wb.Sheets[wb.SheetNames[0]];
+  return{rows:XLSX.utils.sheet_to_json(ws,{defval:'',header:1}).map(r=>{const o={};r.forEach((v,i)=>o[i]=v);return o;}),wb,ws};
+}
+
+// ── PRICING UPLOAD FLOW ───────────────────────────────────────────────
 const pdz=document.getElementById('pricingDropZone');
 pdz.ondragover=e=>{e.preventDefault();pdz.classList.add('drag-over');};
 pdz.ondragleave=()=>pdz.classList.remove('drag-over');
@@ -542,55 +732,108 @@ function handlePricingFile(file){
   const chip=document.createElement('span');chip.className='file-chip';chip.innerHTML='\uD83D\uDCCB '+file.name;
   document.getElementById('pricingFileChips').innerHTML='';document.getElementById('pricingFileChips').appendChild(chip);
   const r=new FileReader();
-  if(file.name.toLowerCase().endsWith('.csv')){r.onload=e=>showPricingMapping(file.name,parseCSV(e.target.result));r.readAsText(file);}
-  else{r.onload=e=>{const wb=XLSX.read(e.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];showPricingMapping(file.name,XLSX.utils.sheet_to_json(ws,{defval:''}));};r.readAsArrayBuffer(file);}
+  if(file.name.toLowerCase().endsWith('.csv')){
+    r.onload=e=>{const rows=parseCSV(e.target.result);pendingPricingData=rows;pendingPricingHeaders=rows.length?Object.keys(rows[0]):[];pendingPricingSheets=[];showPricingMapping('main',rows);};
+    r.readAsText(file);
+  }else{
+    r.onload=e=>{
+      const ab=e.target.result;
+      const wb=XLSX.read(ab,{type:'array',cellDates:true});
+      // Detect main sheet and subsidiary sheets
+      const mainSheet=wb.SheetNames[0];
+      const subSheets=wb.SheetNames.slice(1).filter(s=>s!==mainSheet);
+      // Parse main sheet — detect header row
+      const mainRaw=XLSX.utils.sheet_to_json(wb.Sheets[mainSheet],{defval:'',header:1}).map(r=>{const o={};r.forEach((v,i)=>o[i]=v);return o;});
+      const hIdx=detectHeaderRow(mainRaw,'pricing_master');
+      const mainRows=applyHeaderRow(mainRaw,hIdx).filter(r=>Object.values(r).some(v=>v!==''));
+      // Parse subsidiary sheets for prices
+      const subData={};
+      subSheets.forEach(sn=>{
+        const raw=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:'',header:1}).map(r=>{const o={};r.forEach((v,i)=>o[i]=v);return o;});
+        const shi=detectHeaderRow(raw,'');
+        const rows=applyHeaderRow(raw,shi).filter(r=>Object.values(r).some(v=>v!==''));
+        subData[sn]=rows;
+      });
+      pendingPricingData=mainRows;
+      pendingPricingHeaders=mainRows.length?Object.keys(mainRows[0]):[];
+      pendingPricingSheets=subData;
+      let note='Main sheet: '+mainSheet;
+      if(subSheets.length)note+='. Subsidiary sheets found: '+subSheets.join(', ')+' — prices will be imported if columns are mapped.';
+      document.getElementById('pricingSheetNote').textContent=note;
+      showPricingMapping(mainSheet,mainRows,subData);
+    };
+    r.readAsArrayBuffer(file);
+  }
 }
 
-function showPricingMapping(name,data){
-  if(!data.length){toast('File empty');return;}
-  pendingPricingData=data;pendingPricingHeaders=Object.keys(data[0]);
+function showPricingMapping(sheetName,data,subData){
+  if(!data.length){toast('File appears empty');return;}
   populateKeyColSelectors(pendingPricingHeaders);
-  const fields=[{key:'oncoreName',label:'Oncore name *'},{key:'cptCode',label:'CPT code'},{key:'description',label:'Description'},{key:'price',label:'Default price *'}];
-  document.getElementById('pricingMappingGrid').innerHTML=fields.map(f=>'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">'+f.label+'</label><select id="pmap-'+f.key+'" style="font-size:12px"><option value="">-- skip --</option>'+pendingPricingHeaders.map(h=>'<option value="'+h+'">'+h+'</option>').join('')+'</select></div>').join('');
+  const fields=[{key:'oncoreName',label:'Item name *'},{key:'cptCode',label:'CPT code'},{key:'eventType',label:'Event Type / Category'},{key:'price',label:'Default price'}];
+  document.getElementById('pricingMappingGrid').innerHTML=fields.map(f=>'<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">'+f.label+'</label><select id="pmap-'+f.key+'" style="font-size:12px"><option value="">— skip —</option>'+pendingPricingHeaders.map(h=>'<option value="'+h+'">'+h+'</option>').join('')+'</select></div>').join('');
+  // Auto-guess
   const g=(kws)=>pendingPricingHeaders.find(h=>kws.some(k=>h.toLowerCase().includes(k)))||'';
-  const s=(id,val)=>{const el=document.getElementById(id);if(el&&val)el.value=val;};
-  s('pmap-oncoreName',g(['oncore','name','item','procedure']));
+  const s=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+  s('pmap-oncoreName',g(['oncore','item','procedure','name','mapping']));
   s('pmap-cptCode',g(['cpt','code']));
-  s('pmap-description',g(['desc','description','notes']));
+  s('pmap-eventType',g(['event','type','category']));
   s('pmap-price',g(['price','rate','amount','cost']));
   document.getElementById('pricingMappingCard').style.display='block';
 }
 
 async function processPricingUpload(){
-  const nc=document.getElementById('pmap-oncoreName').value,pc=document.getElementById('pmap-price').value;
-  if(!nc||!pc){toast('Map Oncore name and price columns first');return;}
-  const cc=document.getElementById('pmap-cptCode').value,dc=document.getElementById('pmap-description').value;
+  const nc=document.getElementById('pmap-oncoreName').value;
+  if(!nc){toast('Map the item name column first');return;}
+  const cc=document.getElementById('pmap-cptCode').value;
+  const ec=document.getElementById('pmap-eventType').value;
+  const pc=document.getElementById('pmap-price').value;
   pendingConflicts=[];pendingNewItems=[];
+
   for(const row of pendingPricingData){
-    const name=(row[nc]||'').toString().trim();if(!name)continue;
-    const cpt=(cc?row[cc]||'':'').toString().trim();
-    const desc=(dc?row[dc]||'':'').toString().trim();
-    const price=parseFloat((row[pc]||'').toString().replace(/[^0-9.\-]/g,''))||0;
+    const name=(row[nc]||'').toString().trim();if(!name||name.toLowerCase().includes('oncore mapping'))continue;
+    const cpt=(cc?row[cc]||'':'').toString().trim().replace(/\.0$/,'');
+    const eventType=(ec?row[ec]||'':'').toString().trim();
+    const price=pc?parseFloat((row[pc]||'').toString().replace(/[^0-9.\-]/g,''))||0:0;
     const keyVal=matchKeys.pricing.length?matchKeys.pricing.map(k=>(row[k]||'').toString().trim().toLowerCase()).join('::'):name.toLowerCase()+'::'+cpt.toLowerCase();
     const existing=pricingItems.find(p=>{
-      const ek=matchKeys.pricing.length?matchKeys.pricing.map(k=>{if(k.toLowerCase().includes('name'))return p.oncore_name.toLowerCase();if(k.toLowerCase().includes('cpt'))return(p.cpt_code||'').toLowerCase();return(p[k]||'').toString().toLowerCase();}).join('::'):p.oncore_name.toLowerCase()+'::'+(p.cpt_code||'').toLowerCase();
+      const ek=matchKeys.pricing.length?matchKeys.pricing.map(k=>{if(k===nc)return p.oncore_name.toLowerCase();if(k===cc)return(p.cpt_code||'').toLowerCase();return'';}).join('::'):p.oncore_name.toLowerCase()+'::'+(p.cpt_code||'').toLowerCase();
       return ek===keyVal;
     });
-    if(existing){if(Math.abs(existing.default_price-price)>0.001)pendingConflicts.push({key:keyVal,existingItem:existing,incomingName:name,incomingCpt:cpt,incomingDesc:desc,incomingPrice:price,resolution:'use_new'});}
-    else pendingNewItems.push({oncore_name:name,cpt_code:cpt||null,description:desc||null,default_price:price});
+
+    // Also gather subsidiary prices from sub sheets
+    const subPrices={};
+    if(pendingPricingSheets){
+      Object.entries(pendingPricingSheets).forEach(([sheetName,rows])=>{
+        const subRow=rows.find(r=>{const rn=(Object.values(r)[0]||'').toString().trim().toLowerCase();return rn===name.toLowerCase()||(cpt&&(Object.values(r)[1]||'').toString().trim()===cpt);});
+        if(subRow){
+          const vals=Object.values(subRow);
+          // col0=name, col1=cpt, col2=sub, col3=price
+          const p=parseFloat((vals[3]||'').toString().replace(/[^0-9.\-]/g,''));
+          if(!isNaN(p)&&p>0)subPrices[sheetName]=p;
+        }
+      });
+    }
+
+    if(existing){
+      if(price>0&&Math.abs(existing.default_price-price)>0.001)
+        pendingConflicts.push({key:keyVal,existingItem:existing,incomingName:name,incomingCpt:cpt,incomingEventType:eventType,incomingPrice:price,subPrices,resolution:'use_new'});
+    }else{
+      pendingNewItems.push({oncore_name:name,cpt_code:cpt||null,description:eventType||null,default_price:price,subPrices});
+    }
   }
+
   renderConflictCards();renderNewItemsPreview();
   document.getElementById('pricingConflictCard').style.display=pendingConflicts.length?'block':'none';
   document.getElementById('pricingNewItemsCard').style.display=pendingNewItems.length?'block':'none';
-  document.getElementById('conflictSummary').textContent=pendingConflicts.length+' conflict'+(pendingConflicts.length!==1?'s':'')+' \u00b7 '+pendingNewItems.length+' new item'+(pendingNewItems.length!==1?'s':'');
+  document.getElementById('conflictSummary').textContent=pendingConflicts.length+' conflict'+(pendingConflicts.length!==1?'s':'')+' · '+pendingNewItems.length+' new item'+(pendingNewItems.length!==1?'s':'');
   if(!pendingConflicts.length&&!pendingNewItems.length)toast('No changes detected');
 }
 
 function renderConflictCards(){
   const el=document.getElementById('conflictList');if(!pendingConflicts.length){el.innerHTML='';return;}
   el.innerHTML=pendingConflicts.map((c,i)=>{
-    const kob=c.resolution==='keep_old'?'btn-primary':'',nob=c.resolution==='use_new'?'btn-primary':'',bob=c.resolution==='keep_both'?'active':'';
-    return '<div class="conflict-card"><div class="conflict-header"><div><div style="font-weight:600">'+c.incomingName+(c.incomingCpt?' <span class="id-chip">'+c.incomingCpt+'</span>':'')+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Key: '+c.key+'</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-sm '+kob+'" onclick="setConflictRes('+i+',\'keep_old\')">Keep existing</button><button class="btn btn-sm '+nob+'" onclick="setConflictRes('+i+',\'use_new\')">Use new price</button><button class="btn btn-sm btn-purple '+bob+'" onclick="setConflictRes('+i+',\'keep_both\')">Keep both</button></div></div><div class="conflict-body"><div class="conflict-side"><div class="conflict-side-label">Existing</div><div class="conflict-price old">'+fmt(c.existingItem.default_price)+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">'+(c.existingItem.description||'')+'</div></div><div class="conflict-side"><div class="conflict-side-label">Incoming</div><div class="conflict-price new">'+fmt(c.incomingPrice)+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">'+(c.incomingDesc||'')+'</div></div></div></div>';
+    const ko=c.resolution==='keep_old'?'btn-primary':'',no=c.resolution==='use_new'?'btn-primary':'',bo=c.resolution==='keep_both'?'active':'';
+    return '<div class="conflict-card"><div class="conflict-header"><div><div style="font-weight:600">'+c.incomingName+(c.incomingCpt?' <span class="id-chip">'+c.incomingCpt+'</span>':'')+(c.incomingEventType?' <span class="auto-badge">'+c.incomingEventType+'</span>':'')+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px">Key: '+c.key+'</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-sm '+ko+'" onclick="setConflictRes('+i+',\'keep_old\')">Keep existing</button><button class="btn btn-sm '+no+'" onclick="setConflictRes('+i+',\'use_new\')">Use new</button><button class="btn btn-sm btn-purple '+bo+'" onclick="setConflictRes('+i+',\'keep_both\')">Keep both</button></div></div><div class="conflict-body"><div class="conflict-side"><div class="conflict-side-label">Existing</div><div class="conflict-price old">'+fmt(c.existingItem.default_price)+'</div></div><div class="conflict-side"><div class="conflict-side-label">Incoming</div><div class="conflict-price new">'+fmt(c.incomingPrice)+'</div></div></div></div>';
   }).join('');
 }
 function setConflictRes(i,res){pendingConflicts[i].resolution=res;renderConflictCards();}
@@ -598,26 +841,59 @@ function resolveAll(res){pendingConflicts.forEach((_,i)=>pendingConflicts[i].res
 
 function renderNewItemsPreview(){
   const el=document.getElementById('pricingNewItemsTable');if(!pendingNewItems.length){el.innerHTML='';return;}
-  let h='<table><thead><tr><th>Oncore name</th><th>CPT</th><th>Description</th><th>Price</th></tr></thead><tbody>';
-  pendingNewItems.forEach(item=>{h+='<tr><td>'+item.oncore_name+'</td><td>'+(item.cpt_code||'--')+'</td><td>'+(item.description||'--')+'</td><td style="text-align:right">'+fmt(item.default_price)+'</td></tr>';});
+  let h='<table><thead><tr><th>Item name</th><th>CPT</th><th>Category</th><th>Default price</th><th>Sub prices</th></tr></thead><tbody>';
+  pendingNewItems.forEach(item=>{
+    const subStr=Object.entries(item.subPrices||{}).map(([s,p])=>s+': '+fmt(p)).join(', ')||'—';
+    h+='<tr><td>'+item.oncore_name+'</td><td>'+(item.cpt_code||'—')+'</td><td>'+(item.description||'—')+'</td><td style="text-align:right">'+fmt(item.default_price)+'</td><td style="font-size:11px;color:var(--text-muted)">'+subStr+'</td></tr>';
+  });
   el.innerHTML=h+'</tbody></table>';
   document.getElementById('pricingNewCount').textContent=pendingNewItems.length+' new item'+(pendingNewItems.length!==1?'s':'');
 }
 
 async function commitPricingUpload(){
   let updated=0,added=0,keptBoth=0;
+  // Auto-seed categories from event types encountered
+  const newCats=[...new Set([...pendingNewItems.map(i=>i.description),...pendingConflicts.map(c=>c.incomingEventType)].filter(Boolean).filter(c=>!categories.includes(c)))];
+  if(newCats.length){const dimId=await getCatDimId();for(const v of newCats)await sb.from('dimension_values').insert({dimension_id:dimId,value:v});}
+
   for(const c of pendingConflicts){
-    if(c.resolution==='use_new'){await sb.from('pricing').update({default_price:c.incomingPrice,description:c.incomingDesc||c.existingItem.description}).eq('id',c.existingItem.id);await sb.from('log_entries').insert({message:'Pricing: "'+c.incomingName+'" price updated '+fmt(c.existingItem.default_price)+' to '+fmt(c.incomingPrice)});updated++;}
-    else if(c.resolution==='keep_both'){await sb.from('pricing').insert({oncore_name:c.incomingName+' (v2)',cpt_code:c.incomingCpt||null,description:c.incomingDesc||null,default_price:c.incomingPrice});await sb.from('log_entries').insert({message:'Pricing: kept both versions of "'+c.incomingName+'"'});keptBoth++;}
-    else{await sb.from('log_entries').insert({message:'Pricing: kept existing price for "'+c.incomingName+'" (incoming '+fmt(c.incomingPrice)+' discarded)'});}
+    if(c.resolution==='use_new'){
+      await sb.from('pricing').update({default_price:c.incomingPrice,description:c.incomingEventType||c.existingItem.description,cpt_code:c.incomingCpt||c.existingItem.cpt_code}).eq('id',c.existingItem.id);
+      await saveSubPrices(c.existingItem.id,c.subPrices);
+      await sb.from('log_entries').insert({message:'Pricing: "'+c.incomingName+'" price updated '+fmt(c.existingItem.default_price)+' to '+fmt(c.incomingPrice)});updated++;
+    }else if(c.resolution==='keep_both'){
+      const{data:ni}=await sb.from('pricing').insert({oncore_name:c.incomingName+' (v2)',cpt_code:c.incomingCpt||null,description:c.incomingEventType||null,default_price:c.incomingPrice}).select().single();
+      if(ni)await saveSubPrices(ni.id,c.subPrices);
+      await sb.from('log_entries').insert({message:'Pricing: kept both versions of "'+c.incomingName+'"'});keptBoth++;
+    }else{
+      await sb.from('log_entries').insert({message:'Pricing: kept existing for "'+c.incomingName+'" (incoming '+fmt(c.incomingPrice)+' discarded)'});
+    }
   }
-  for(const item of pendingNewItems){await sb.from('pricing').insert(item);added++;}
-  await loadPricing();clearPricingUpload();
-  toast('Done -- '+updated+' updated, '+added+' added, '+keptBoth+' kept both');
+  for(const item of pendingNewItems){
+    const{data:ni}=await sb.from('pricing').insert({oncore_name:item.oncore_name,cpt_code:item.cpt_code||null,description:item.description||null,default_price:item.default_price}).select().single();
+    if(ni)await saveSubPrices(ni.id,item.subPrices);
+    added++;
+  }
+  await loadPricing();await loadCategories();clearPricingUpload();
+  toast('Done — '+updated+' updated · '+added+' added · '+keptBoth+' kept both'+(newCats.length?' · '+newCats.length+' categories added':''));
+}
+
+async function saveSubPrices(pricingId,subPrices){
+  if(!subPrices||!Object.keys(subPrices).length)return;
+  // subPrices keys are sheet names like "Oncore Mapping Mountain Med"
+  // Match to subsidiaries by partial name
+  for(const[sheetName,price]of Object.entries(subPrices)){
+    const sub=subsidiaries.find(s=>sheetName.toLowerCase().includes(s.value.toLowerCase().split(' ')[0].toLowerCase()));
+    if(sub){
+      const ex=pricingOverrides[pricingId]?.[sub.id];
+      if(ex)await sb.from('pricing_overrides').update({price}).eq('id',ex.id);
+      else await sb.from('pricing_overrides').insert({pricing_id:pricingId,subsidiary_id:sub.id,price});
+    }
+  }
 }
 
 function clearPricingUpload(){
-  pendingPricingData=[];pendingPricingHeaders=[];pricingColMapping={};pendingConflicts=[];pendingNewItems=[];
+  pendingPricingData=[];pendingPricingHeaders=[];pendingPricingSheets=[];pendingConflicts=[];pendingNewItems=[];
   document.getElementById('pricingFileChips').innerHTML='';
   document.getElementById('pricingMappingCard').style.display='none';
   document.getElementById('pricingConflictCard').style.display='none';
@@ -625,9 +901,15 @@ function clearPricingUpload(){
   document.getElementById('pricingFileInput').value='';
 }
 
-// ONCORE / AP UPLOAD
+// ── TYPED UPLOAD (Oncore / AP Pending / Procedure Exp) ────────────────
+const TYPED_CONFIG={
+  oncore:{prefix:'oncore',fileType:'oncore',headerRow:0,periodSel:'oncorePeriod',histEl:'oncoreHistory'},
+  ap_pending:{prefix:'ap',fileType:'ap_pending',headerRow:'auto',periodSel:'apPeriod',histEl:'apHistory'},
+  proc_exp:{prefix:'procexp',fileType:'proc_exp',headerRow:'auto',periodSel:'procexpPeriod',histEl:'procexpHistory'}
+};
+
 function setupTypedDZ(type,dzId,inputId){
-  const dz=document.getElementById(dzId);
+  const dz=document.getElementById(dzId);if(!dz)return;
   dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag-over');};
   dz.ondragleave=()=>dz.classList.remove('drag-over');
   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleTypedFile(type,e.dataTransfer.files[0]);};
@@ -635,61 +917,120 @@ function setupTypedDZ(type,dzId,inputId){
 }
 setupTypedDZ('oncore','oncoreDropZone','oncoreFileInput');
 setupTypedDZ('ap_pending','apDropZone','apFileInput');
+setupTypedDZ('proc_exp','procexpDropZone','procexpFileInput');
 
 function handleTypedFile(type,file){
-  const prefix=type==='oncore'?'oncore':'ap';
+  const cfg=TYPED_CONFIG[type];
   const chip=document.createElement('span');chip.className='file-chip';chip.innerHTML='\uD83D\uDCC4 '+file.name;
-  document.getElementById(prefix+'FileChips').innerHTML='';document.getElementById(prefix+'FileChips').appendChild(chip);
+  document.getElementById(cfg.prefix+'FileChips').innerHTML='';document.getElementById(cfg.prefix+'FileChips').appendChild(chip);
   const r=new FileReader();
-  if(file.name.toLowerCase().endsWith('.csv')){r.onload=e=>showTypedPreview(type,file.name,parseCSV(e.target.result));r.readAsText(file);}
-  else{r.onload=e=>{const wb=XLSX.read(e.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];showTypedPreview(type,file.name,XLSX.utils.sheet_to_json(ws,{defval:''}));};r.readAsArrayBuffer(file);}
+  if(file.name.toLowerCase().endsWith('.csv')){
+    r.onload=e=>{
+      let rows=parseCSV(e.target.result);
+      if(cfg.headerRow==='auto'){const hIdx=detectHeaderRow(rows.map((r,i)=>({...r,__i:i})),type);rows=applyHeaderRow(rows.map((r,i)=>{const o={};Object.values(r).forEach((v,j)=>o[j]=v);return o;}),hIdx);}
+      showTypedPreview(type,file.name,rows);
+    };
+    r.readAsText(file);
+  }else{
+    r.onload=e=>{
+      const ab=e.target.result;
+      const wb=XLSX.read(ab,{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rawRows=XLSX.utils.sheet_to_json(ws,{defval:'',header:1}).map(r=>{const o={};r.forEach((v,i)=>o[i]=v);return o;});
+      const hIdx=cfg.headerRow==='auto'?detectHeaderRow(rawRows,type):0;
+      const rows=applyHeaderRow(rawRows,hIdx).filter(r=>Object.values(r).some(v=>v!==''));
+      showTypedPreview(type,file.name,rows);
+    };
+    r.readAsArrayBuffer(file);
+  }
+}
+
+// Auto-enrich Oncore rows with CPT, Category, Month Occurred
+function enrichOncoreRows(rows){
+  let cptFilled=0,catFilled=0,monthFilled=0;
+  const enriched=rows.map(row=>{
+    const r={...row};
+    // Month Occurred from Occurred_Date
+    const dateVal=r['Occurred_Date']||r['occurred_date']||r['Date']||'';
+    if(dateVal&&!r['Month  Occurred']&&!r['Month Occurred']){
+      const d=new Date(dateVal);if(!isNaN(d)){r['Month Occurred']=MONTHS[d.getMonth()]+' '+d.getFullYear();monthFilled++;}}
+    // CPT Code + Category from price master match on Item_Name
+    const itemName=(r['Item_Name']||r['item_name']||r['Procedure_Name']||'').toString().trim().toLowerCase();
+    if(itemName){
+      const match=pricingItems.find(p=>p.oncore_name.toLowerCase()===itemName||p.oncore_name.toLowerCase().includes(itemName)||itemName.includes(p.oncore_name.toLowerCase()));
+      if(match){
+        if(!r['CPT Code']&&!r['cpt_code']){r['CPT Code']=match.cpt_code||'';if(match.cpt_code)cptFilled++;}
+        if(!r['Category']&&match.description){r['Category']=match.description;catFilled++;}
+      }
+    }
+    return r;
+  });
+  return{enriched,cptFilled,catFilled,monthFilled};
 }
 
 function showTypedPreview(type,name,data){
-  if(!data.length){toast('File empty');return;}
-  const prefix=type==='oncore'?'oncore':'ap';
-  pendingTypedData[type]={name,data};
-  const headers=Object.keys(data[0]);
-  populateKeyColSelectors(headers);
-  let h='<table><thead><tr>'+headers.slice(0,8).map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
-  data.slice(0,20).forEach(r=>{h+='<tr>'+headers.slice(0,8).map(c=>'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r[c]??'')+'</td>').join('')+'</tr>';});
-  document.getElementById(prefix+'PreviewTable').innerHTML=h+'</tbody></table>';
-  document.getElementById(prefix+'PreviewCount').textContent=data.length+' rows';
-  document.getElementById(prefix+'PreviewCard').style.display='block';
+  if(!data.length){toast('File appears empty');return;}
+  const cfg=TYPED_CONFIG[type];
+  let finalData=data;
+  let autoSummary='';
+  if(type==='oncore'){
+    const{enriched,cptFilled,catFilled,monthFilled}=enrichOncoreRows(data);
+    finalData=enriched;
+    const parts=[];
+    if(monthFilled)parts.push(monthFilled+' Month Occurred filled');
+    if(cptFilled)parts.push(cptFilled+' CPT codes filled');
+    if(catFilled)parts.push(catFilled+' Categories filled');
+    autoSummary=parts.length?'Auto-filled: '+parts.join(' · '):'No auto-fill matches found — check Price Master';
+    const sumEl=document.getElementById('oncoreAutoFillSummary');if(sumEl)sumEl.textContent=autoSummary;
+  }
+  pendingTypedData[type]={name,data:finalData};
+  populateKeyColSelectors(Object.keys(finalData[0]||{}));
+  const headers=Object.keys(finalData[0]||{}).slice(0,8);
+  let h='<table><thead><tr>'+headers.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+  finalData.slice(0,20).forEach(r=>{h+='<tr>'+headers.map(c=>'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(r[c]??'')+'</td>').join('')+'</tr>';});
+  document.getElementById(cfg.prefix+'PreviewTable').innerHTML=h+'</tbody></table>';
+  document.getElementById(cfg.prefix+'PreviewCount').textContent=finalData.length+' rows'+(autoSummary?' · '+autoSummary:'');
+  document.getElementById(cfg.prefix+'PreviewCard').style.display='block';
 }
 
 async function saveTypedFile(type){
   const pending=pendingTypedData[type];if(!pending||!pending.data||!pending.data.length){toast('No data to save');return;}
-  const period=document.getElementById(type==='oncore'?'oncorePeriod':'apPeriod').value;
+  const cfg=TYPED_CONFIG[type];
+  const period=document.getElementById(cfg.periodSel).value;
   const{data:report}=await sb.from('reports').insert({name:pending.name,source:pending.name,file_type:type,period:period||null}).select().single();
   if(!report){toast('Error saving report');return;}
   const headers=Object.keys(pending.data[0]);const amountCol=detectAmountCol(headers);
   let saved=0;
-  for(const row of pending.data){
-    await sb.from('report_rows').insert({report_id:report.id,row_data:row,amount_col:amountCol,amount:parseFloat((row[amountCol]||'').toString().replace(/[^0-9.\-]/g,''))||0,tag:'',baseline:0});
-    saved++;
+  const CHUNK=50;
+  for(let i=0;i<pending.data.length;i+=CHUNK){
+    const chunk=pending.data.slice(i,i+CHUNK);
+    const inserts=chunk.map(row=>({report_id:report.id,row_data:row,amount_col:amountCol,amount:parseFloat((row[amountCol]||'').toString().replace(/[^0-9.\-]/g,''))||0,tag:'',baseline:0}));
+    await sb.from('report_rows').insert(inserts);saved+=chunk.length;
   }
   toast('Saved '+saved+' rows');
-  clearTypedUpload(type==='oncore'?'oncore':'ap');
+  clearTypedUpload(cfg.prefix);
   await loadReports();await loadRows();await loadTypedHistory(type);
 }
 
 function clearTypedUpload(prefix){
-  const type=prefix==='oncore'?'oncore':'ap_pending';
+  const typeMap={oncore:'oncore',ap:'ap_pending',procexp:'proc_exp'};
+  const type=typeMap[prefix]||prefix;
   pendingTypedData[type]={};
   document.getElementById(prefix+'FileChips').innerHTML='';
   document.getElementById(prefix+'PreviewCard').style.display='none';
-  document.getElementById(prefix==='oncore'?'oncoreFileInput':'apFileInput').value='';
+  const inputId=prefix==='oncore'?'oncoreFileInput':prefix==='ap'?'apFileInput':'procexpFileInput';
+  document.getElementById(inputId).value='';
 }
 
 async function loadTypedHistory(type){
+  const cfg=TYPED_CONFIG[type];
   const{data}=await sb.from('reports').select('*').eq('file_type',type).order('uploaded_at',{ascending:false});
-  const el=document.getElementById(type==='oncore'?'oncoreHistory':'apHistory');
-  if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">'+(type==='oncore'?'\uD83D\uDCCA':'\uD83D\uDCC4')+'</div>No '+(type==='oncore'?'Oncore':'AP Pending')+' files yet</div>';return;}
+  const el=document.getElementById(cfg.histEl);
+  if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">📄</div>No '+type.replace('_',' ')+' files yet</div>';return;}
   el.innerHTML=data.map(r=>'<div class="report-row"><div><div style="font-weight:500">'+r.name+'</div><div style="font-size:12px;color:var(--text-muted)">'+new Date(r.uploaded_at).toLocaleDateString()+'</div></div><div style="display:flex;align-items:center;gap:8px">'+(r.period?'<span class="badge badge-period">'+periodLabel(r.period)+'</span>':'<span style="font-size:12px;color:var(--text-faint)">No period</span>')+'<button class="btn btn-sm btn-danger" onclick="deleteReport(\''+r.id+'\')">Delete</button></div></div>').join('');
 }
 
-// PRICING MASTER
+// ── PRICING MASTER ────────────────────────────────────────────────────
 async function loadPricing(){
   const{data:items}=await sb.from('pricing').select('*').order('oncore_name');
   pricingItems=items||[];
@@ -700,25 +1041,32 @@ async function loadPricing(){
 }
 
 function renderPricingList(){
-  const el=document.getElementById('pricingList');
-  if(!pricingItems.length){el.innerHTML='<div class="empty"><div class="empty-icon">\uD83D\uDCB2</div>No pricing items yet</div>';return;}
-  el.innerHTML=pricingItems.map(item=>{
+  const el=document.getElementById('pricingList');if(!el)return;
+  const search=(document.getElementById('pricingSearch')?.value||'').toLowerCase();
+  const catF=document.getElementById('pricingCatFilter')?.value||'';
+  let items=pricingItems;
+  if(search)items=items.filter(p=>p.oncore_name.toLowerCase().includes(search)||(p.cpt_code||'').includes(search));
+  if(catF)items=items.filter(p=>p.description===catF);
+  if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">💲</div>'+(pricingItems.length?'No items match filter':'No pricing items yet')+'</div>';return;}
+  el.innerHTML=items.map(item=>{
     const overrideMap=pricingOverrides[item.id]||{};
     const overrideRows=subsidiaries.map(sub=>{
       const ov=overrideMap[sub.id];const price=ov?ov.price:null;
-      return '<div class="override-row"><div><span style="font-weight:500">'+sub.value+'</span><span class="id-chip" style="margin-left:6px">'+(sub.code||'--')+'</span>'+(price===null?'<span style="font-size:11px;color:var(--text-faint);margin-left:8px">using default</span>':'')+'</div><div style="display:flex;align-items:center;gap:8px"><input type="number" value="'+(price!==null?price:'')+'" placeholder="'+item.default_price+'" step="0.01" style="width:100px;text-align:right" onchange="saveOverride(\''+item.id+'\',\''+sub.id+'\',this.value)" />'+(price!==null?'<button class="btn btn-sm btn-danger" onclick="removeOverride(\''+item.id+'\',\''+sub.id+'\')">x</button>':'')+'</div></div>';
+      return '<div class="override-row"><div><span style="font-weight:500">'+sub.value+'</span><span class="id-chip" style="margin-left:6px">'+(sub.code||'—')+'</span>'+(price===null?'<span style="font-size:11px;color:var(--text-faint);margin-left:8px">using default</span>':'')+'</div><div style="display:flex;align-items:center;gap:8px"><input type="number" value="'+(price!==null?price:'')+'" placeholder="'+item.default_price+'" step="0.01" style="width:100px;text-align:right" onchange="saveOverride(\''+item.id+'\',\''+sub.id+'\',this.value)" />'+(price!==null?'<button class="btn btn-sm btn-danger" onclick="removeOverride(\''+item.id+'\',\''+sub.id+'\')">×</button>':'')+'</div></div>';
     }).join('');
-    return '<div class="pricing-item"><div class="pricing-item-header" onclick="togglePI(\'pi-'+item.id+'\')"><div><div class="pricing-item-name">'+item.oncore_name+'</div><div class="pricing-item-meta">'+(item.cpt_code?'CPT: '+item.cpt_code+' \u00b7 ':'')+( item.description||'')+'</div></div><div style="display:flex;align-items:center;gap:12px"><span class="pricing-item-price">Default: '+fmtPrice(item.default_price)+'</span><div onclick="event.stopPropagation()"><button class="btn btn-sm btn-danger" onclick="deletePricingItem(\''+item.id+'\')">Delete</button></div></div></div><div class="pricing-item-body" id="pi-'+item.id+'"><div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px">SUBSIDIARY OVERRIDES</div>'+(subsidiaries.length?overrideRows:'<div style="font-size:13px;color:var(--text-faint)">Add subsidiaries in Entities first</div>')+'</div></div>';
+    const catBadge=item.description?'<span class="auto-badge" style="margin-left:6px">'+item.description+'</span>':'';
+    return '<div class="pricing-item"><div class="pricing-item-header" onclick="togglePI(\'pi-'+item.id+'\')"><div><div class="pricing-item-name">'+item.oncore_name+catBadge+'</div><div class="pricing-item-meta">'+(item.cpt_code?'CPT: '+item.cpt_code:'No CPT')+'</div></div><div style="display:flex;align-items:center;gap:12px"><span class="pricing-item-price">'+fmtPrice(item.default_price)+'</span><div onclick="event.stopPropagation()"><button class="btn btn-sm btn-danger" onclick="deletePricingItem(\''+item.id+'\')">Delete</button></div></div></div><div class="pricing-item-body" id="pi-'+item.id+'"><div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px">SUBSIDIARY OVERRIDES — leave blank to use default</div>'+(subsidiaries.length?overrideRows:'<div style="font-size:13px;color:var(--text-faint)">Add subsidiaries in Entities first</div>')+'</div></div>';
   }).join('');
 }
-
 function togglePI(id){const b=document.getElementById(id);if(b)b.classList.toggle('open');}
-
 async function addPricingItem(){
   const name=document.getElementById('pName').value.trim();if(!name){toast('Enter a name');return;}
-  const cpt=document.getElementById('pCpt').value.trim(),desc=document.getElementById('pDesc').value.trim(),price=parseFloat(document.getElementById('pPrice').value)||0;
-  await sb.from('pricing').insert({oncore_name:name,cpt_code:cpt||null,description:desc||null,default_price:price});
-  ['pName','pCpt','pDesc','pPrice'].forEach(id=>{document.getElementById(id).value='';});
+  const cpt=document.getElementById('pCpt').value.trim();
+  const cat=document.getElementById('pCategory').value;
+  const price=parseFloat(document.getElementById('pPrice').value)||0;
+  await sb.from('pricing').insert({oncore_name:name,cpt_code:cpt||null,description:cat||null,default_price:price});
+  ['pName','pCpt','pPrice'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('pCategory').value='';
   await loadPricing();toast('"'+name+'" added');
 }
 async function deletePricingItem(id){if(!confirm('Delete?'))return;await sb.from('pricing').delete().eq('id',id);await loadPricing();toast('Deleted');}
@@ -731,27 +1079,28 @@ async function saveOverride(pricingId,subId,val){
 }
 async function removeOverride(pricingId,subId){const ex=pricingOverrides[pricingId]?.[subId];if(ex)await sb.from('pricing_overrides').delete().eq('id',ex.id);await loadPricing();}
 function resolvePrice(oncoreId,subId){const item=pricingItems.find(p=>p.id===oncoreId);if(!item)return null;const ov=pricingOverrides[oncoreId]?.[subId];return ov?ov.price:item.default_price;}
-function renderBulkOncoreSel(){const sel=document.getElementById('bulkOncoreSel');sel.innerHTML='<option value="">Set Oncore item...</option>';pricingItems.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.oncore_name+(p.cpt_code?' ('+p.cpt_code+')':'');sel.appendChild(o);});}
+function renderBulkOncoreSel(){const sel=document.getElementById('bulkOncoreSel');if(!sel)return;sel.innerHTML='<option value="">Set Oncore item…</option>';pricingItems.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.oncore_name+(p.cpt_code?' ('+p.cpt_code+')':'');sel.appendChild(o);});}
 
-// TAGS
+// ── TAGS ──────────────────────────────────────────────────────────────
 async function loadTags(){
   const{data}=await sb.from('tags').select('*').order('created_at');
   if(data){tags=data.map(t=>({...t,color:typeof t.color==='string'?JSON.parse(t.color):t.color}));renderTagBar();renderTagSelects();renderBulkTagSel();}
 }
-function renderTagBar(){const bar=document.getElementById('tagBar');if(!tags.length){bar.innerHTML='<span style="color:var(--text-faint);font-size:13px">No tags yet</span>';return;}bar.innerHTML=tags.map(t=>'<span class="tag-pill" style="background:'+t.color.bg+';color:'+t.color.text+';border-color:'+t.color.border+'">'+t.name+'<button onclick="removeTag(\''+t.id+'\')">x</button></span>').join('');}
+function renderTagBar(){const bar=document.getElementById('tagBar');if(!tags.length){bar.innerHTML='<span style="color:var(--text-faint);font-size:13px">No tags yet</span>';return;}bar.innerHTML=tags.map(t=>'<span class="tag-pill" style="background:'+t.color.bg+';color:'+t.color.text+';border-color:'+t.color.border+'">'+t.name+'<button onclick="removeTag(\''+t.id+'\')">×</button></span>').join('');}
 function renderTagSelects(){const ft=document.getElementById('filterTag');const cur=ft.value;ft.innerHTML='<option value="">All tags</option><option value="__untagged__">Untagged only</option>';tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;ft.appendChild(o);});ft.value=cur;}
-function renderBulkTagSel(){const sel=document.getElementById('bulkTagSel');sel.innerHTML='<option value="">Set tag...</option>';tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});}
+function renderBulkTagSel(){const sel=document.getElementById('bulkTagSel');sel.innerHTML='<option value="">Set tag…</option>';tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});}
 async function addTag(){const input=document.getElementById('newTagName');const name=input.value.trim();if(!name)return;if(tags.find(t=>t.name.toLowerCase()===name.toLowerCase())){toast('Tag exists');return;}const color=TAG_COLORS[tags.length%TAG_COLORS.length];await sb.from('tags').insert({name,color:JSON.stringify(color)});input.value='';await loadTags();toast('"'+name+'" added');}
 async function removeTag(id){const tag=tags.find(t=>t.id===id);if(!confirm('Remove "'+tag?.name+'"?'))return;await sb.from('report_rows').update({tag:''}).eq('tag',tag.name);await sb.from('tags').delete().eq('id',id);await loadTags();await loadRows();toast('Tag removed');}
 
-// DIMENSIONS
+// ── DIMENSIONS ────────────────────────────────────────────────────────
 async function loadDimensions(){
   const{data:dims}=await sb.from('dimensions').select('*').order('sort_order');
   const allDims=dims||[];
   const subDim=allDims.find(d=>d.name.toLowerCase().includes('subsidiar'));
   const siteDim=allDims.find(d=>d.name.toLowerCase().includes('site'));
   subDimId=subDim?.id||null;siteDimId=siteDim?.id||null;
-  dimensions=allDims.filter(d=>d.id!==subDimId&&d.id!==siteDimId);
+  // Exclude category dim from "other dimensions" display (it's managed in Categories page)
+  dimensions=allDims.filter(d=>d.id!==subDimId&&d.id!==siteDimId&&d.name.toLowerCase()!=='category');
   const{data:vals}=await sb.from('dimension_values').select('*').order('value');
   dimValues={};allDims.forEach(d=>dimValues[d.id]=[]);
   (vals||[]).forEach(v=>{if(dimValues[v.dimension_id])dimValues[v.dimension_id].push(v);});
@@ -760,12 +1109,12 @@ async function loadDimensions(){
   renderSubSiteTable();renderDimGrid();renderPricingList();renderBulkOncoreSel();
 }
 function renderSubSiteTable(){
-  const el=document.getElementById('subSiteTable');if(!subsidiaries.length){el.innerHTML='<div class="empty"><div class="empty-icon">\uD83C\uDFE2</div>No subsidiaries yet</div>';return;}
+  const el=document.getElementById('subSiteTable');if(!subsidiaries.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet</div>';return;}
   let h='<table class="sub-site-table"><thead><tr><th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th><th></th></tr></thead><tbody>';
   subsidiaries.forEach(sub=>{
     const subSites=sites.filter(s=>s.parent_id===sub.id);
-    if(!subSites.length){h+='<tr class="sub-row"><td>'+sub.value+'</td><td><span class="id-chip">'+(sub.code||'--')+'</span></td><td colspan="2"><button class="btn btn-sm" onclick="showAddSiteForm(\''+sub.id+'\',\''+sub.value+'\')">+ Site</button></td><td><button class="btn btn-sm btn-danger" onclick="removeSub(\''+sub.id+'\')">x</button></td></tr>';}
-    else subSites.forEach((site,i)=>{h+='<tr class="'+(i===0?'sub-row':'site-row')+'">';if(i===0)h+='<td rowspan="'+subSites.length+'">'+sub.value+'</td><td rowspan="'+subSites.length+'"><span class="id-chip">'+(sub.code||'--')+'</span></td>';h+='<td>'+(i===0?'':'\u21b3 ')+site.value+'</td><td><span class="id-chip">'+(site.code||'--')+'</span></td><td>';if(i===0)h+='<button class="btn btn-sm" onclick="showAddSiteForm(\''+sub.id+'\',\''+sub.value+'\')" style="margin-right:4px">+ Site</button><button class="btn btn-sm btn-danger" onclick="removeSub(\''+sub.id+'\')">x Sub</button>';else h+='<button class="btn btn-sm btn-danger" onclick="removeSite(\''+site.id+'\')">x Site</button>';h+='</td></tr>';});
+    if(!subSites.length){h+='<tr class="sub-row"><td>'+sub.value+'</td><td><span class="id-chip">'+(sub.code||'—')+'</span></td><td colspan="2"><button class="btn btn-sm" onclick="showAddSiteForm(\''+sub.id+'\',\''+sub.value+'\')">+ Site</button></td><td><button class="btn btn-sm btn-danger" onclick="removeSub(\''+sub.id+'\')">×</button></td></tr>';}
+    else subSites.forEach((site,i)=>{h+='<tr class="'+(i===0?'sub-row':'site-row')+'">';if(i===0)h+='<td rowspan="'+subSites.length+'">'+sub.value+'</td><td rowspan="'+subSites.length+'"><span class="id-chip">'+(sub.code||'—')+'</span></td>';h+='<td>'+(i>0?'↳ ':'')+site.value+'</td><td><span class="id-chip">'+(site.code||'—')+'</span></td><td>';if(i===0)h+='<button class="btn btn-sm" onclick="showAddSiteForm(\''+sub.id+'\',\''+sub.value+'\')" style="margin-right:4px">+ Site</button><button class="btn btn-sm btn-danger" onclick="removeSub(\''+sub.id+'\')">× Sub</button>';else h+='<button class="btn btn-sm btn-danger" onclick="removeSite(\''+site.id+'\')">× Site</button>';h+='</td></tr>';});
   });
   el.innerHTML=h+'</tbody></table>';
 }
@@ -775,13 +1124,13 @@ async function saveSub(){const name=document.getElementById('subName').value.tri
 async function saveSite(){const name=document.getElementById('siteName').value.trim(),code=document.getElementById('siteCode').value.trim();if(!name){toast('Enter a name');return;}if(!editingSiteParentId){toast('No subsidiary selected');return;}if(!siteDimId){const{data:dim}=await sb.from('dimensions').insert({name:'Site',sort_order:2}).select().single();siteDimId=dim.id;}await sb.from('dimension_values').insert({dimension_id:siteDimId,value:name,code:code||null,parent_id:editingSiteParentId});document.getElementById('addSiteForm').style.display='none';await loadDimensions();toast('"'+name+'" added');}
 async function removeSub(subId){const sub=subsidiaries.find(s=>s.id===subId);if(!confirm('Remove "'+sub?.value+'"?'))return;const subSites=sites.filter(s=>s.parent_id===subId);for(const site of subSites)await sb.from('dimension_values').delete().eq('id',site.id);await sb.from('dimension_values').delete().eq('id',subId);await loadDimensions();toast('Removed');}
 async function removeSite(siteId){await sb.from('dimension_values').delete().eq('id',siteId);await loadDimensions();toast('Site removed');}
-function renderDimGrid(){const grid=document.getElementById('dimGrid');if(!dimensions.length){grid.innerHTML='<div style="color:var(--text-faint);font-size:13px;padding:8px 0">No other dimensions yet</div>';return;}grid.innerHTML=dimensions.map(dim=>{const vals=dimValues[dim.id]||[];const valRows=vals.map(v=>'<div class="dim-value-row"><span>'+v.value+(v.code?' <span style="font-family:monospace;font-size:11px;color:var(--text-faint)">'+v.code+'</span>':'')+'</span><button class="btn btn-sm btn-danger" onclick="removeDimValue(\''+v.id+'\')">x</button></div>').join('')||'<div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>';return'<div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">'+dim.name+'</span><button class="btn btn-sm btn-danger" onclick="removeDimension(\''+dim.id+'\')">Remove</button></div><div class="dim-card-body">'+valRows+'<div class="dim-add-row"><input type="text" id="dimval-'+dim.id+'" placeholder="Value" /><input type="text" id="dimcode-'+dim.id+'" placeholder="Code" class="code-input" /><button class="btn btn-sm btn-primary" onclick="addDimValue(\''+dim.id+'\')">Add</button></div></div></div>';}).join('');}
+function renderDimGrid(){const grid=document.getElementById('dimGrid');if(!dimensions.length){grid.innerHTML='<div style="color:var(--text-faint);font-size:13px;padding:8px 0">No other dimensions yet</div>';return;}grid.innerHTML=dimensions.map(dim=>{const vals=dimValues[dim.id]||[];const valRows=vals.map(v=>'<div class="dim-value-row"><span>'+v.value+(v.code?' <span style="font-family:monospace;font-size:11px;color:var(--text-faint)">'+v.code+'</span>':'')+'</span><button class="btn btn-sm btn-danger" onclick="removeDimValue(\''+v.id+'\')">×</button></div>').join('')||'<div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>';return'<div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">'+dim.name+'</span><button class="btn btn-sm btn-danger" onclick="removeDimension(\''+dim.id+'\')">Remove</button></div><div class="dim-card-body">'+valRows+'<div class="dim-add-row"><input type="text" id="dimval-'+dim.id+'" placeholder="Value" /><input type="text" id="dimcode-'+dim.id+'" placeholder="Code" class="code-input" /><button class="btn btn-sm btn-primary" onclick="addDimValue(\''+dim.id+'\')">Add</button></div></div></div>';}).join('');}
 async function addDimension(){const input=document.getElementById('newDimName');const name=input.value.trim();if(!name)return;await sb.from('dimensions').insert({name,sort_order:100+dimensions.length});input.value='';await loadDimensions();toast('"'+name+'" added');}
 async function removeDimension(id){const dim=dimensions.find(d=>d.id===id);if(!confirm('Remove "'+dim?.name+'"?'))return;await sb.from('dimensions').delete().eq('id',id);await loadDimensions();await loadRows();toast('Removed');}
 async function addDimValue(dimId){const valInput=document.getElementById('dimval-'+dimId),codeInput=document.getElementById('dimcode-'+dimId);const value=valInput.value.trim();if(!value)return;await sb.from('dimension_values').insert({dimension_id:dimId,value,code:codeInput.value.trim()||null});valInput.value='';codeInput.value='';await loadDimensions();toast('"'+value+'" added');}
 async function removeDimValue(valueId){await sb.from('dimension_values').delete().eq('id',valueId);await loadDimensions();toast('Removed');}
 
-// REPORTS
+// ── REPORTS ───────────────────────────────────────────────────────────
 async function loadReports(){
   const{data}=await sb.from('reports').select('*').order('uploaded_at',{ascending:false});
   allReports=data||[];renderReportsList();populatePeriodSelects();
@@ -795,35 +1144,34 @@ function renderReportsList(){
   const el=document.getElementById('reportsList');
   let reports=allReports;
   if(reportTypeFilter!=='all')reports=reports.filter(r=>(r.file_type||'general')===reportTypeFilter);
-  if(!reports.length){el.innerHTML='<div class="empty"><div class="empty-icon">\uD83D\uDCC1</div>No reports</div>';return;}
+  if(!reports.length){el.innerHTML='<div class="empty"><div class="empty-icon">📁</div>No reports</div>';return;}
   el.innerHTML=reports.map(r=>'<div class="report-row"><div><div style="font-weight:500;display:flex;align-items:center;gap:6px">'+r.name+'<span class="badge-type">'+(r.file_type||'general')+'</span></div><div style="font-size:12px;color:var(--text-muted)">'+new Date(r.uploaded_at).toLocaleDateString()+'</div></div><div style="display:flex;align-items:center;gap:8px">'+(r.period?'<span class="badge badge-period">'+periodLabel(r.period)+'</span>':'')+'<select onchange="assignPeriod(\''+r.id+'\',this.value)" style="font-size:12px">'+periodOptions(r.period||'')+'</select><button class="btn btn-sm btn-danger" onclick="deleteReport(\''+r.id+'\')">Delete</button></div></div>').join('');
 }
 async function assignPeriod(reportId,period){await sb.from('reports').update({period}).eq('id',reportId);await loadReports();toast('Period: '+periodLabel(period));}
 async function deleteReport(reportId){if(!confirm('Delete this report and all its rows?'))return;await sb.from('reports').delete().eq('id',reportId);await loadReports();await loadRows();toast('Deleted');}
 
-// ROWS
+// ── ROWS ──────────────────────────────────────────────────────────────
 async function loadRows(){
   const reportId=document.getElementById('filterReport').value;
   const period=document.getElementById('filterPeriod').value;
   const fileType=document.getElementById('filterFileType').value;
   let query=sb.from('report_rows').select('*').order('created_at');
   if(reportId)query=query.eq('report_id',reportId);
-  if(period){const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);if(pReports.length)query=query.in('report_id',pReports);else{allRows=[];renderRowsTable();return;}}
-  if(fileType){const ftReports=allReports.filter(r=>(r.file_type||'general')===fileType).map(r=>r.id);if(ftReports.length)query=query.in('report_id',ftReports);else{allRows=[];renderRowsTable();return;}}
+  if(period){const pR=allReports.filter(r=>r.period===period).map(r=>r.id);if(pR.length)query=query.in('report_id',pR);else{allRows=[];renderRowsTable();return;}}
+  if(fileType){const ftR=allReports.filter(r=>(r.file_type||'general')===fileType).map(r=>r.id);if(ftR.length)query=query.in('report_id',ftR);else{allRows=[];renderRowsTable();return;}}
   const{data}=await query;allRows=data||[];
   if(allRows.length){const ids=allRows.map(r=>r.id);const{data:rds}=await sb.from('row_dimensions').select('*').in('row_id',ids);rowDimensions={};(rds||[]).forEach(rd=>{if(!rowDimensions[rd.row_id])rowDimensions[rd.row_id]={};rowDimensions[rd.row_id][rd.dimension_id]=rd.value_id;});}
   renderRowsTable();
 }
-
 function renderRowsTable(){
   const filterTag=document.getElementById('filterTag').value;
   let rows=allRows;
   if(filterTag==='__untagged__')rows=rows.filter(r=>!r.tag);
   else if(filterTag)rows=rows.filter(r=>r.tag===filterTag);
   const container=document.getElementById('rowsTable');
-  if(!rows.length){container.innerHTML='<div class="empty"><div class="empty-icon">\uD83D\uDCCB</div>No rows</div>';document.getElementById('rowsCount').textContent='';return;}
+  if(!rows.length){container.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No rows</div>';document.getElementById('rowsCount').textContent='';return;}
   const headers=[...new Set(rows.flatMap(r=>Object.keys(r.row_data||{})))].slice(0,4);
-  let h='<table><thead><tr><th><input type="checkbox" id="checkAll" onchange="toggleAll(this)" /></th>';
+  let h='<table><thead><tr><th><input type="checkbox" id="checkAll" onchange="toggleAll(this)"/></th>';
   headers.forEach(hdr=>h+='<th>'+hdr+'</th>');
   h+='<th>Tag</th><th>Baseline</th><th>Oncore item</th><th>Qty col</th><th>Orig amt</th><th>Calc amt</th><th>Use</th><th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th>';
   dimensions.forEach(d=>h+='<th>'+d.name+'</th>');
@@ -840,36 +1188,35 @@ function renderRowsTable(){
     const price=row.oncore_id&&curSubId?resolvePrice(row.oncore_id,curSubId):oncoreItem?oncoreItem.default_price:null;
     const calcAmt=price!==null&&row.qty?price*row.qty:null;
     h+='<tr class="'+(isSelected?'selected':'')+'">';
-    h+='<td><input type="checkbox" class="row-check" data-id="'+row.id+'" '+(isSelected?'checked':'')+' onchange="toggleRowSelect(\''+row.id+'\',this.checked)" /></td>';
+    h+='<td><input type="checkbox" class="row-check" data-id="'+row.id+'" '+(isSelected?'checked':'')+' onchange="toggleRowSelect(\''+row.id+'\',this.checked)"/></td>';
     headers.forEach(hdr=>h+='<td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)">'+(row.row_data?.[hdr]??'')+'</td>');
-    h+='<td><select data-id="'+row.id+'" data-rowidx="'+rowIdx+'" class="row-tag-sel" tabindex="0" onkeydown="handleTabNav(event,this,\'tag\','+rowIdx+')"><option value="">--</option>';
+    h+='<td><select data-id="'+row.id+'" data-rowidx="'+rowIdx+'" class="row-tag-sel" tabindex="0" onkeydown="handleTabNav(event,this,\'tag\','+rowIdx+')"><option value="">—</option>';
     tags.forEach(t=>h+='<option value="'+t.name+'" '+(row.tag===t.name?'selected':'')+'>'+t.name+'</option>');
     h+='</select></td>';
-    h+='<td><input type="number" data-id="'+row.id+'" data-rowidx="'+rowIdx+'" class="row-baseline-inp" value="'+(row.baseline||0)+'" step="0.01" tabindex="0" onkeydown="handleTabNav(event,this,\'baseline\','+rowIdx+')" style="width:80px" /></td>';
-    h+='<td><select data-id="'+row.id+'" class="row-oncore-sel" onchange="onOncoreChange(this)" style="min-width:110px"><option value="">--</option>';
+    h+='<td><input type="number" data-id="'+row.id+'" data-rowidx="'+rowIdx+'" class="row-baseline-inp" value="'+(row.baseline||0)+'" step="0.01" tabindex="0" onkeydown="handleTabNav(event,this,\'baseline\','+rowIdx+')" style="width:80px"/></td>';
+    h+='<td><select data-id="'+row.id+'" class="row-oncore-sel" onchange="onOncoreChange(this)" style="min-width:110px"><option value="">—</option>';
     pricingItems.forEach(p=>h+='<option value="'+p.id+'" '+(row.oncore_id===p.id?'selected':'')+'>'+p.oncore_name+(p.cpt_code?' ('+p.cpt_code+')':'')+'</option>');
     h+='</select></td>';
-    h+='<td><select data-id="'+row.id+'" class="row-qty-col-sel" onchange="onQtyColChange(this)" style="min-width:90px"><option value="">-- qty col --</option>';
+    h+='<td><select data-id="'+row.id+'" class="row-qty-col-sel" onchange="onQtyColChange(this)" style="min-width:90px"><option value="">— qty col —</option>';
     rowCols.forEach(c=>h+='<option value="'+c+'" '+(row.qty_col===c?'selected':'')+'>'+c+'</option>');
     h+='</select></td>';
     h+='<td style="text-align:right;white-space:nowrap">'+fmt(row.amount)+'</td>';
-    h+='<td style="text-align:right;white-space:nowrap"><span class="calc-amt" id="calcamt-'+row.id+'">'+(calcAmt!==null?fmt(calcAmt):'--')+'</span></td>';
+    h+='<td style="text-align:right;white-space:nowrap"><span class="calc-amt" id="calcamt-'+row.id+'">'+(calcAmt!==null?fmt(calcAmt):'—')+'</span></td>';
     const useCalc=row.use_calc_amount&&calcAmt!==null;
     h+='<td><button class="use-toggle '+(useCalc?'active':'')+'" id="usetoggle-'+row.id+'" onclick="toggleUseCalc(\''+row.id+'\','+(useCalc?'false':'true')+')">'+(useCalc?'Calc':'Orig')+'</button></td>';
-    if(subDimId){h+='<td><select data-rowid="'+row.id+'" data-dimid="'+subDimId+'" class="row-sub-sel row-dim-sel" onchange="onSubChange(this)" style="min-width:100px"><option value="">--</option>';subsidiaries.forEach(v=>h+='<option value="'+v.id+'" '+(curSubId===v.id?'selected':'')+'>'+v.value+'</option>');h+='</select></td><td><span class="id-chip" id="subid-'+row.id+'">'+(curSub?.code||'--')+'</span></td>';}
-    else h+='<td>--</td><td>--</td>';
-    if(siteDimId){h+='<td><select data-rowid="'+row.id+'" data-dimid="'+siteDimId+'" class="row-site-sel row-dim-sel" onchange="onSiteChange(this)" style="min-width:100px"><option value="">--</option>';filteredSites.forEach(v=>h+='<option value="'+v.id+'" '+(curSiteId===v.id?'selected':'')+'>'+v.value+'</option>');h+='</select></td><td><span class="id-chip" id="siteid-'+row.id+'">'+(curSite?.code||'--')+'</span></td>';}
-    else h+='<td>--</td><td>--</td>';
-    dimensions.forEach(dim=>{const vals=dimValues[dim.id]||[];const curVal=rowDimensions[row.id]?.[dim.id]||'';h+='<td><select data-rowid="'+row.id+'" data-dimid="'+dim.id+'" class="row-dim-sel" style="min-width:90px"><option value="">--</option>';vals.forEach(v=>h+='<option value="'+v.id+'" '+(curVal===v.id?'selected':'')+'>'+v.value+(v.code?' ('+v.code+')':'')+'</option>');h+='</select></td>';});
+    if(subDimId){h+='<td><select data-rowid="'+row.id+'" data-dimid="'+subDimId+'" class="row-sub-sel row-dim-sel" onchange="onSubChange(this)" style="min-width:100px"><option value="">—</option>';subsidiaries.forEach(v=>h+='<option value="'+v.id+'" '+(curSubId===v.id?'selected':'')+'>'+v.value+'</option>');h+='</select></td><td><span class="id-chip" id="subid-'+row.id+'">'+(curSub?.code||'—')+'</span></td>';}
+    else h+='<td>—</td><td>—</td>';
+    if(siteDimId){h+='<td><select data-rowid="'+row.id+'" data-dimid="'+siteDimId+'" class="row-site-sel row-dim-sel" onchange="onSiteChange(this)" style="min-width:100px"><option value="">—</option>';filteredSites.forEach(v=>h+='<option value="'+v.id+'" '+(curSiteId===v.id?'selected':'')+'>'+v.value+'</option>');h+='</select></td><td><span class="id-chip" id="siteid-'+row.id+'">'+(curSite?.code||'—')+'</span></td>';}
+    else h+='<td>—</td><td>—</td>';
+    dimensions.forEach(dim=>{const vals=dimValues[dim.id]||[];const curVal=rowDimensions[row.id]?.[dim.id]||'';h+='<td><select data-rowid="'+row.id+'" data-dimid="'+dim.id+'" class="row-dim-sel" style="min-width:90px"><option value="">—</option>';vals.forEach(v=>h+='<option value="'+v.id+'" '+(curVal===v.id?'selected':'')+'>'+v.value+'</option>');h+='</select></td>';});
     h+='</tr>';
   });
   container.innerHTML=h+'</tbody></table>';
   document.getElementById('rowsCount').textContent=rows.length+' row'+(rows.length!==1?'s':'');
   updateBulkBar();
 }
-
 function onOncoreChange(sel){recalcRowDisplay(sel.dataset.id);}
-function onQtyColChange(sel){const row=allRows.find(r=>r.id===sel.dataset.id);if(row&&sel.value){row.qty=parseFloat((row.row_data?.[sel.value]||'').toString().replace(/[^0-9.\-]/g,''))||0;}recalcRowDisplay(sel.dataset.id);}
+function onQtyColChange(sel){const row=allRows.find(r=>r.id===sel.dataset.id);if(row&&sel.value)row.qty=parseFloat((row.row_data?.[sel.value]||'').toString().replace(/[^0-9.\-]/g,''))||0;recalcRowDisplay(sel.dataset.id);}
 function recalcRowDisplay(rowId){
   const row=allRows.find(r=>r.id===rowId);if(!row)return;
   const oSel=document.querySelector('.row-oncore-sel[data-id="'+rowId+'"]');
@@ -879,17 +1226,17 @@ function recalcRowDisplay(rowId){
   const price=oncoreId?(subId?resolvePrice(oncoreId,subId):(pricingItems.find(p=>p.id===oncoreId)?.default_price||null)):null;
   const qty=qtyCol?parseFloat((row.row_data?.[qtyCol]||'').toString().replace(/[^0-9.\-]/g,''))||0:row.qty||0;
   const calcAmt=price!==null&&qty?price*qty:null;
-  const chip=document.getElementById('calcamt-'+rowId);if(chip)chip.textContent=calcAmt!==null?fmt(calcAmt):'--';
+  const chip=document.getElementById('calcamt-'+rowId);if(chip)chip.textContent=calcAmt!==null?fmt(calcAmt):'—';
 }
 function onSubChange(sel){
   const rowId=sel.dataset.rowid;const subValId=sel.value;const curSub=subsidiaries.find(s=>s.id===subValId);
-  const subChip=document.getElementById('subid-'+rowId);if(subChip)subChip.textContent=curSub?.code||'--';
+  const subChip=document.getElementById('subid-'+rowId);if(subChip)subChip.textContent=curSub?.code||'—';
   const siteSel=document.querySelector('.row-site-sel[data-rowid="'+rowId+'"]');
-  if(siteSel&&siteDimId){const fs=subValId?sites.filter(s=>s.parent_id===subValId):sites;siteSel.innerHTML='<option value="">--</option>';fs.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value;siteSel.appendChild(o);});const sc=document.getElementById('siteid-'+rowId);if(sc)sc.textContent='--';}
+  if(siteSel){const fs=subValId?sites.filter(s=>s.parent_id===subValId):sites;siteSel.innerHTML='<option value="">—</option>';fs.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value;siteSel.appendChild(o);});const sc=document.getElementById('siteid-'+rowId);if(sc)sc.textContent='—';}
   if(!rowDimensions[rowId])rowDimensions[rowId]={};if(subDimId)rowDimensions[rowId][subDimId]=subValId;
   recalcRowDisplay(rowId);
 }
-function onSiteChange(sel){const rowId=sel.dataset.rowid;const siteValId=sel.value;const curSite=sites.find(s=>s.id===siteValId);const sc=document.getElementById('siteid-'+rowId);if(sc)sc.textContent=curSite?.code||'--';}
+function onSiteChange(sel){const rowId=sel.dataset.rowid;const siteValId=sel.value;const curSite=sites.find(s=>s.id===siteValId);const sc=document.getElementById('siteid-'+rowId);if(sc)sc.textContent=curSite?.code||'—';}
 async function toggleUseCalc(rowId,useCalc){await sb.from('report_rows').update({use_calc_amount:useCalc}).eq('id',rowId);const row=allRows.find(r=>r.id===rowId);if(row)row.use_calc_amount=useCalc;const btn=document.getElementById('usetoggle-'+rowId);if(btn){btn.textContent=useCalc?'Calc':'Orig';btn.classList.toggle('active',useCalc);}}
 function handleTabNav(e,el,type,rowIdx){if(e.key!=='Tab')return;e.preventDefault();const dir=e.shiftKey?-1:1;let pos=type==='tag'?0:1;let nextPos=pos+dir,nextRowIdx=rowIdx;if(nextPos<0){nextPos=1;nextRowIdx=rowIdx-1;}else if(nextPos>1){nextPos=0;nextRowIdx=rowIdx+1;}const rows=document.querySelectorAll('tbody tr');if(nextRowIdx<0||nextRowIdx>=rows.length)return;const targetRow=rows[nextRowIdx];const targetEl=nextPos===0?targetRow.querySelector('.row-tag-sel'):targetRow.querySelector('.row-baseline-inp');if(targetEl){targetEl.focus();if(targetEl.select)targetEl.select();}}
 function toggleRowSelect(id,checked){if(checked)selectedRows.add(id);else selectedRows.delete(id);updateBulkBar();}
@@ -921,11 +1268,11 @@ async function saveRowTags(){
   await loadRows();toast('Changes saved');
 }
 
-// JE
+// ── JE ────────────────────────────────────────────────────────────────
 async function calculateJE(){
   const period=document.getElementById('jePeriodFilter').value;const groupBy=document.getElementById('jeGroupBy').value;
   let query=sb.from('report_rows').select('*').neq('tag','');
-  if(period){const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);if(pReports.length)query=query.in('report_id',pReports);}
+  if(period){const pR=allReports.filter(r=>r.period===period).map(r=>r.id);if(pR.length)query=query.in('report_id',pR);}
   const{data:rows}=await query;if(!rows||!rows.length){toast('No tagged rows');return;}
   const ids=rows.map(r=>r.id);const{data:rds}=await sb.from('row_dimensions').select('*').in('row_id',ids);
   const rdMap={};(rds||[]).forEach(rd=>{if(!rdMap[rd.row_id])rdMap[rd.row_id]={};rdMap[rd.row_id][rd.dimension_id]=rd.value_id;});
@@ -936,13 +1283,18 @@ async function calculateJE(){
     return r.amount-(r.baseline||0);
   };
   const getKey=row=>{
-    let key=row.tag;const subValId=subDimId?rdMap[row.id]?.[subDimId]:null;const siteValId=siteDimId?rdMap[row.id]?.[siteDimId]:null;
-    const subObj=subsidiaries.find(s=>s.id===subValId);const siteObj=sites.find(s=>s.id===siteValId);const oncoreObj=pricingItems.find(p=>p.id===row.oncore_id);
-    if(groupBy==='tag+sub'||groupBy==='tag+sub+site'||groupBy==='tag+all')key+=' | '+(subObj?subObj.value:'--')+(subObj?.code?' ('+subObj.code+')':'');
-    if(groupBy==='tag+sub+site'||groupBy==='tag+all')key+=' | '+(siteObj?siteObj.value:'--')+(siteObj?.code?' ('+siteObj.code+')':'');
-    if(groupBy==='tag+oncore')key+=' | '+(oncoreObj?oncoreObj.oncore_name:'--');
-    if(groupBy==='tag+gl'&&glDim){const vid=rdMap[row.id]?.[glDim.id];const v=vid?(dimValues[glDim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?(v.code||v.value):'--');}
-    if(groupBy==='tag+all'){dimensions.forEach(dim=>{const vid=rdMap[row.id]?.[dim.id];const v=vid?(dimValues[dim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?v.value:'--');});}
+    let key=row.tag;
+    const subValId=subDimId?rdMap[row.id]?.[subDimId]:null;
+    const siteValId=siteDimId?rdMap[row.id]?.[siteDimId]:null;
+    const subObj=subsidiaries.find(s=>s.id===subValId);
+    const siteObj=sites.find(s=>s.id===siteValId);
+    const oncoreObj=pricingItems.find(p=>p.id===row.oncore_id);
+    if(groupBy==='tag+sub'||groupBy==='tag+sub+site'||groupBy==='tag+all')key+=' | '+(subObj?subObj.value:'—')+(subObj?.code?' ('+subObj.code+')':'');
+    if(groupBy==='tag+sub+site'||groupBy==='tag+all')key+=' | '+(siteObj?siteObj.value:'—');
+    if(groupBy==='tag+oncore')key+=' | '+(oncoreObj?oncoreObj.oncore_name:'—');
+    if(groupBy==='tag+category'){const cat=row.row_data?.['Category']||row.row_data?.['category']||'—';key+=' | '+cat;}
+    if(groupBy==='tag+gl'&&glDim){const vid=rdMap[row.id]?.[glDim.id];const v=vid?(dimValues[glDim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?(v.code||v.value):'—');}
+    if(groupBy==='tag+all'){dimensions.forEach(dim=>{const vid=rdMap[row.id]?.[dim.id];const v=vid?(dimValues[dim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?v.value:'—');});}
     return key;
   };
   const byKey={};
@@ -950,35 +1302,46 @@ async function calculateJE(){
   let accrual=0,reversal=0;
   const entries=Object.values(byKey).map(g=>{const isRev=g.tag.toLowerCase().includes('reversal');const type=isRev?'Credit':'Debit';if(isRev)reversal+=Math.abs(g.total);else accrual+=Math.abs(g.total);const subObj=subsidiaries.find(s=>s.id===g.subValId);const siteObj=sites.find(s=>s.id===g.siteValId);return{tag:g.tag,key:g.key,type,amount:g.total,count:g.count,subName:subObj?.value||'',subCode:subObj?.code||'',siteName:siteObj?.value||'',siteCode:siteObj?.code||''};});
   currentJE={entries,total_accrual:accrual,total_reversal:reversal,net:accrual-reversal,period};
-  document.getElementById('jeTotalAccrual').textContent=fmt(accrual);document.getElementById('jeTotalReversal').textContent=fmt(reversal);
-  const net=accrual-reversal;document.getElementById('jeNet').textContent=(net<0?'-':'')+fmt(Math.abs(net));document.getElementById('jeRowCount').textContent=rows.length;
+  document.getElementById('jeTotalAccrual').textContent=fmt(accrual);
+  document.getElementById('jeTotalReversal').textContent=fmt(reversal);
+  const net=accrual-reversal;document.getElementById('jeNet').textContent=(net<0?'-':'')+fmt(Math.abs(net));
+  document.getElementById('jeRowCount').textContent=rows.length;
   const html=entries.map(e=>{const parts=e.key.split(' | ').slice(1);const dimBadges=parts.map(p=>'<span class="badge badge-dim">'+p+'</span>').join('');return'<div class="je-line"><div class="je-left"><span class="badge '+(e.type==='Debit'?'badge-debit':'badge-credit')+'">'+e.type+'</span><span style="font-weight:500">'+e.tag+'</span>'+dimBadges+'<span style="font-size:11px;color:var(--text-faint)">'+e.count+' row'+(e.count!==1?'s':'')+'</span></div><span class="je-amount '+(e.type==='Debit'?'debit':'credit')+'">'+(e.amount<0?'-':'')+fmt(Math.abs(e.amount))+'</span></div>';}).join('');
   document.getElementById('jeLines').innerHTML=html||'<div class="empty">No entries</div>';
 }
 async function saveJE(){if(!currentJE){toast('Calculate first');return;}await sb.from('journal_entries').insert({entries:currentJE.entries,total_accrual:currentJE.total_accrual,total_reversal:currentJE.total_reversal,net:currentJE.net});toast('Saved');await loadHistory();}
-function downloadJE(){if(!currentJE){toast('Calculate first');return;}const rows=[['Period','Tag','Type','Subsidiary','Sub ID','Site','Site ID','Amount','Row count']];currentJE.entries.forEach(e=>rows.push([currentJE.period?periodLabel(currentJE.period):'All',e.tag,e.type,e.subName,e.subCode,e.siteName,e.siteCode,e.amount.toFixed(2),e.count]));rows.push([]);rows.push(['Total Accrual (Dr)','','','','','','',currentJE.total_accrual.toFixed(2),'']);rows.push(['Total Reversal (Cr)','','','','','','',currentJE.total_reversal.toFixed(2),'']);rows.push(['Net','','','','','','',currentJE.net.toFixed(2),'']);downloadCSV(rows,'journal_entry_'+(currentJE.period||'all')+'_'+new Date().toISOString().slice(0,10)+'.csv');}
+function downloadJE(){if(!currentJE){toast('Calculate first');return;}const rows=[['Period','Tag','Type','Subsidiary','Sub ID','Site','Site ID','Amount','Row count']];currentJE.entries.forEach(e=>rows.push([currentJE.period?periodLabel(currentJE.period):'All',e.tag,e.type,e.subName,e.subCode,e.siteName,e.siteCode,e.amount.toFixed(2),e.count]));rows.push([],['Total Accrual (Dr)','','','','','','',currentJE.total_accrual.toFixed(2),''],['Total Reversal (Cr)','','','','','','',currentJE.total_reversal.toFixed(2),''],['Net','','','','','','',currentJE.net.toFixed(2),'']);downloadCSV(rows,'journal_entry_'+(currentJE.period||'all')+'_'+new Date().toISOString().slice(0,10)+'.csv');}
 
-// TEMPLATES
+// ── TEMPLATES ─────────────────────────────────────────────────────────
 async function loadTemplates(){const{data}=await sb.from('je_templates').select('*').order('created_at');templates=data||[];renderTemplatesList();}
-function renderTemplatesList(){const el=document.getElementById('templatesList');if(!templates.length){el.innerHTML='<div class="empty"><div class="empty-icon">\uD83D\uDCCB</div>No templates</div>';return;}el.innerHTML=templates.map(t=>'<div class="report-row"><span style="font-weight:500">'+t.name+'</span><div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="editTemplate(\''+t.id+'\')">Edit</button><button class="btn btn-sm btn-amber" onclick="applyTemplateById(\''+t.id+'\')">&#9658; Apply</button></div></div>').join('');}
+function renderTemplatesList(){const el=document.getElementById('templatesList');if(!templates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No templates</div>';return;}el.innerHTML=templates.map(t=>'<div class="report-row"><span style="font-weight:500">'+t.name+'</span><div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="editTemplate(\''+t.id+'\')">Edit</button><button class="btn btn-sm btn-amber" onclick="applyTemplateById(\''+t.id+'\')">&#9658; Apply</button></div></div>').join('');}
 function newTemplate(){editingTemplateId=null;document.getElementById('templateName').value='';document.getElementById('rulesList').innerHTML='';document.getElementById('templateEditorTitle').textContent='New template';document.getElementById('templateEditor').style.display='block';addRule();}
 function editTemplate(id){const t=templates.find(x=>x.id===id);if(!t)return;editingTemplateId=id;document.getElementById('templateName').value=t.name;document.getElementById('templateEditorTitle').textContent='Edit: '+t.name;document.getElementById('templateEditor').style.display='block';const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');document.getElementById('rulesList').innerHTML='';rules.forEach(r=>addRule(r));}
-function addRule(existing=null){const div=document.createElement('div');div.className='rule-row';const fieldNames=[...new Set(allRows.flatMap(r=>Object.keys(r.row_data||{})))];const fieldsOpts=fieldNames.map(f=>'<option value="'+f+'" '+(existing?.field===f?'selected':'')+'>'+f+'</option>').join('');const tagOpts=tags.map(t=>'<option value="'+t.name+'" '+(existing?.tag===t.name?'selected':'')+'>'+t.name+'</option>').join('');div.innerHTML='<span style="font-size:12px;color:var(--text-muted)">If</span><select class="rule-field" style="min-width:120px"><option value="">Field...</option>'+fieldsOpts+'</select><span style="font-size:12px;color:var(--text-muted)">=</span><input type="text" class="rule-value" placeholder="Value" value="'+(existing?.value||'')+'" /><span style="font-size:12px;color:var(--text-muted)">tag</span><select class="rule-tag"><option value="">Tag...</option>'+tagOpts+'</select><button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">x</button>';document.getElementById('rulesList').appendChild(div);}
+function addRule(existing=null){const div=document.createElement('div');div.className='rule-row';const fieldNames=[...new Set(allRows.flatMap(r=>Object.keys(r.row_data||{})))];const fieldsOpts=fieldNames.map(f=>'<option value="'+f+'" '+(existing?.field===f?'selected':'')+'>'+f+'</option>').join('');const tagOpts=tags.map(t=>'<option value="'+t.name+'" '+(existing?.tag===t.name?'selected':'')+'>'+t.name+'</option>').join('');div.innerHTML='<span style="font-size:12px;color:var(--text-muted)">If</span><select class="rule-field" style="min-width:120px"><option value="">Field…</option>'+fieldsOpts+'</select><span style="font-size:12px;color:var(--text-muted)">=</span><input type="text" class="rule-value" placeholder="Value" value="'+(existing?.value||'')+'" /><span style="font-size:12px;color:var(--text-muted)">→ tag</span><select class="rule-tag"><option value="">Tag…</option>'+tagOpts+'</select><button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>';document.getElementById('rulesList').appendChild(div);}
 async function saveTemplate(){const name=document.getElementById('templateName').value.trim();if(!name){toast('Enter a name');return;}const rules=[...document.querySelectorAll('#rulesList .rule-row')].map(row=>({field:row.querySelector('.rule-field').value,value:row.querySelector('.rule-value').value.trim(),tag:row.querySelector('.rule-tag').value})).filter(r=>r.field&&r.tag);if(editingTemplateId)await sb.from('je_templates').update({name,rules}).eq('id',editingTemplateId);else await sb.from('je_templates').insert({name,rules});await loadTemplates();document.getElementById('templateEditor').style.display='none';toast('Saved');}
 async function deleteTemplate(){if(!editingTemplateId||!confirm('Delete?'))return;await sb.from('je_templates').delete().eq('id',editingTemplateId);editingTemplateId=null;document.getElementById('templateEditor').style.display='none';await loadTemplates();toast('Deleted');}
 async function applyTemplateToRows(){await applyTemplateById(editingTemplateId);}
-async function applyTemplateById(id){const t=templates.find(x=>x.id===id);if(!t){toast('Not found');return;}const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');if(!rules.length){toast('No rules');return;}let applied=0;for(const row of allRows)for(const rule of rules){const rowVal=(row.row_data?.[rule.field]||'').toString().trim().toLowerCase();if(rowVal===rule.value.toLowerCase()&&rule.tag){await sb.from('report_rows').update({tag:rule.tag}).eq('id',row.id);applied++;break;}}await loadRows();toast('Applied -- '+applied+' rows tagged');}
+async function applyTemplateById(id){const t=templates.find(x=>x.id===id);if(!t){toast('Not found');return;}const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');if(!rules.length){toast('No rules');return;}let applied=0;for(const row of allRows)for(const rule of rules){const rowVal=(row.row_data?.[rule.field]||'').toString().trim().toLowerCase();if(rowVal===rule.value.toLowerCase()&&rule.tag){await sb.from('report_rows').update({tag:rule.tag}).eq('id',row.id);applied++;break;}}await loadRows();toast('Applied — '+applied+' rows tagged');}
 function downloadTemplate(){const name=document.getElementById('templateName').value.trim()||'template';const rules=[...document.querySelectorAll('#rulesList .rule-row')].map(row=>({field:row.querySelector('.rule-field').value,value:row.querySelector('.rule-value').value.trim(),tag:row.querySelector('.rule-tag').value}));downloadCSV([['Field','Match value','Apply tag'],...rules.map(r=>[r.field,r.value,r.tag])],'template_'+name.replace(/\s+/g,'_')+'.csv');}
 
-// HISTORY & LOG
-async function loadHistory(){const{data}=await sb.from('journal_entries').select('*').order('created_at',{ascending:false});const el=document.getElementById('historyList');if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">\uD83D\uDD50</div>No saved journal entries yet</div>';return;}el.innerHTML=data.map(je=>{const entries=Array.isArray(je.entries)?je.entries:JSON.parse(je.entries||'[]');const lines=entries.map(e=>'<span class="badge '+(e.type==='Debit'?'badge-debit':'badge-credit')+'" style="margin-right:4px">'+e.tag+' '+fmt(Math.abs(e.amount))+'</span>').join('');return'<div class="history-row"><div><div>'+lines+'</div><div class="history-meta">'+new Date(je.created_at).toLocaleString()+' \u00b7 Net '+fmt(je.net)+'</div></div></div>';}).join('');}
-async function loadLog(){const{data}=await sb.from('log_entries').select('*').order('created_at',{ascending:false}).limit(200);const el=document.getElementById('logList');if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">\uD83D\uDCC4</div>No log entries yet</div>';return;}el.innerHTML=data.map(l=>'<div class="log-entry"><span class="log-time">'+new Date(l.created_at).toLocaleString()+'</span><span>'+l.message+'</span></div>').join('');}
+// ── HISTORY & LOG ─────────────────────────────────────────────────────
+async function loadHistory(){const{data}=await sb.from('journal_entries').select('*').order('created_at',{ascending:false});const el=document.getElementById('historyList');if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">🕐</div>No saved entries yet</div>';return;}el.innerHTML=data.map(je=>{const entries=Array.isArray(je.entries)?je.entries:JSON.parse(je.entries||'[]');const lines=entries.map(e=>'<span class="badge '+(e.type==='Debit'?'badge-debit':'badge-credit')+'" style="margin-right:4px">'+e.tag+' '+fmt(Math.abs(e.amount))+'</span>').join('');return'<div class="history-row"><div><div>'+lines+'</div><div class="history-meta">'+new Date(je.created_at).toLocaleString()+' · Net '+fmt(je.net)+'</div></div></div>';}).join('');}
+async function loadLog(){const{data}=await sb.from('log_entries').select('*').order('created_at',{ascending:false}).limit(200);const el=document.getElementById('logList');if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">📄</div>No log entries yet</div>';return;}el.innerHTML=data.map(l=>'<div class="log-entry"><span class="log-time">'+new Date(l.created_at).toLocaleString()+'</span><span>'+l.message+'</span></div>').join('');}
 
-// HELPERS
-function fmt(n){return'$'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
-function fmtPrice(n){return'$'+Number(n).toFixed(2);}
-function detectAmountCol(headers){const c=['amount','value','total','balance','net','debit','credit','sum'];for(const x of c){const m=headers.find(h=>h.toLowerCase().includes(x));if(m)return m;}return headers[headers.length-1];}
-function parseCSV(text){const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());return lines.slice(1).map(line=>{const vals=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');return obj;});}
+// ── HELPERS ───────────────────────────────────────────────────────────
+function fmt(n){return'$'+Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fmtPrice(n){return'$'+Number(n||0).toFixed(2);}
+function detectAmountCol(headers){const c=['amount','value','total','balance','net','debit','credit','sum'];for(const x of c){const m=headers.find(h=>h.toLowerCase().includes(x));if(m)return m;}return headers[headers.length-1]||'';}
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
+  const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line=>{
+    const vals=[];let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){inQ=!inQ;}else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=c;}
+    vals.push(cur.trim());
+    const obj={};headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/^"|"$/g,''));return obj;
+  });
+}
 function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();toast('Downloaded');}
 
 init();
