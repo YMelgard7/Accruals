@@ -1,153 +1,136 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/cymel/Downloads/index_1.html -->
+<!-- saved from url=(0045)file:///C:/Users/cymel/Downloads/index_3.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accruals</title>
-<script src="./Accruals2_files/supabase-js@2"></script>
-<script src="./Accruals2_files/xlsx.full.min.js.download"></script>
+<script src="./Accruals4_files/supabase-js@2"></script>
+<script src="./Accruals4_files/xlsx.full.min.js.download"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #f7f7f5;
-    --surface: #ffffff;
-    --border: #e4e2dc;
-    --border-strong: #c8c5bc;
-    --text: #1a1916;
-    --text-muted: #6b6860;
-    --text-faint: #a09e99;
-    --accent: #1a5c38;
-    --accent-light: #e8f2ec;
-    --debit: #185FA5;
-    --debit-bg: #E6F1FB;
-    --credit: #1a5c38;
-    --credit-bg: #e8f2ec;
-    --danger: #a32d2d;
-    --danger-bg: #fcebeb;
-    --radius: 8px;
-    --radius-lg: 12px;
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); min-height: 100vh; }
-
-  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-  .topbar-brand { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
-  .topbar-brand span { width: 22px; height: 22px; background: var(--accent); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 700; }
-  .topbar-status { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; }
-  .status-dot.connected { background: #3B6D11; }
-
-  .layout { display: flex; min-height: calc(100vh - 52px); }
-
-  .sidebar { width: 220px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 0; }
-  .nav-section { padding: 0 12px; margin-bottom: 4px; }
-  .nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); padding: 8px 8px 4px; }
-  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text-muted); transition: background 0.1s, color 0.1s; border: none; background: none; width: 100%; text-align: left; font-family: inherit; }
-  .nav-item:hover { background: var(--bg); color: var(--text); }
-  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
-  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-  .main { flex: 1; overflow: hidden; }
-  .page { display: none; padding: 24px; max-width: 1100px; }
-  .page.active { display: block; }
-  .page-header { margin-bottom: 20px; }
-  .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
-  .page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
-
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
-  .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 14px; }
-
-  .stat-row { display: flex; gap: 12px; margin-bottom: 16px; }
-  .stat { flex: 1; background: var(--bg); border-radius: var(--radius); padding: 14px 16px; }
-  .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
-  .stat-val { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
-  .stat-val.debit { color: var(--debit); }
-  .stat-val.credit { color: var(--credit); }
-
-  .drop-zone { border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 32px; text-align: center; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
-  .drop-zone:hover, .drop-zone.drag-over { background: var(--accent-light); border-color: var(--accent); }
-  .drop-icon { font-size: 28px; margin-bottom: 8px; }
-  .drop-label { font-size: 14px; color: var(--text-muted); }
-  .drop-hint { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
-  .file-list { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .file-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 10px; font-size: 12px; color: var(--text-muted); }
-  .file-chip button { background: none; border: none; cursor: pointer; color: var(--text-faint); font-size: 14px; line-height: 1; padding: 0; }
-  .file-chip button:hover { color: var(--danger); }
-
-  .tag-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .tag-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid transparent; }
-  .tag-pill button { background: none; border: none; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; opacity: 0.6; }
-  .tag-pill button:hover { opacity: 1; }
-
-  .btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 7px 14px; font-size: 13px; cursor: pointer; background: var(--surface); color: var(--text); transition: background 0.1s; font-family: inherit; }
-  .btn:hover { background: var(--bg); }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: #154f30; border-color: #154f30; }
-  .btn-danger { background: var(--danger-bg); color: var(--danger); border-color: #f7c1c1; }
-  .btn-danger:hover { background: #f7c1c1; }
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
-  .btn-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); white-space: nowrap; }
-  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--bg); }
-
-  select, input[type="number"], input[type="text"] { border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 4px 8px; font-size: 12px; background: var(--surface); color: var(--text); font-family: inherit; }
-  select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
-  input[type="number"] { width: 90px; text-align: right; }
-
-  .je-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .je-line:last-child { border-bottom: none; }
-  .je-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-debit { background: var(--debit-bg); color: var(--debit); }
-  .badge-credit { background: var(--credit-bg); color: var(--credit); }
-  .badge-dim { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); font-weight: 400; }
-  .je-amount { font-weight: 600; font-size: 14px; }
-  .je-amount.debit { color: var(--debit); }
-  .je-amount.credit { color: var(--credit); }
-
-  .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .history-row:last-child { border-bottom: none; }
-  .history-meta { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
-
-  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: var(--surface); padding: 10px 16px; border-radius: var(--radius); font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 999; }
-  #toast.show { opacity: 1; }
-
-  .empty { text-align: center; padding: 40px 20px; color: var(--text-faint); font-size: 13px; }
-  .empty-icon { font-size: 32px; margin-bottom: 10px; }
-
-  .log-entry { font-size: 12px; font-family: monospace; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--text-muted); }
-  .log-entry:last-child { border-bottom: none; }
-  .log-time { color: var(--text-faint); margin-right: 8px; }
-
-  .tabs { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
-  .tab { padding: 8px 16px; font-size: 13px; cursor: pointer; border: none; background: none; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
-
-  .section-divider { height: 1px; background: var(--border); margin: 20px 0; }
-  .row-count { font-size: 12px; color: var(--text-faint); margin-top: 8px; }
-  .table-wrap { overflow-x: auto; }
-
-  /* Entities styles */
-  .dim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-  .dim-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-  .dim-card-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); }
-  .dim-card-title { font-size: 13px; font-weight: 600; }
-  .dim-card-body { padding: 12px 16px; }
-  .dim-value-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .dim-value-row:last-child { border-bottom: none; }
-  .dim-value-code { font-size: 11px; color: var(--text-faint); font-family: monospace; margin-left: 6px; }
-  .dim-add-row { display: flex; gap: 6px; margin-top: 10px; }
-  .dim-add-row input { flex: 1; }
-  .dim-add-row input.code-input { width: 80px; flex: 0 0 80px; }
-  .new-dim-row { display: flex; gap: 8px; align-items: center; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;--surface:#fff;--border:#e4e2dc;--border-strong:#c8c5bc;
+  --text:#1a1916;--text-muted:#6b6860;--text-faint:#a09e99;
+  --accent:#1a5c38;--accent-light:#e8f2ec;
+  --debit:#185FA5;--debit-bg:#E6F1FB;
+  --credit:#1a5c38;--credit-bg:#e8f2ec;
+  --danger:#a32d2d;--danger-bg:#fcebeb;
+  --amber:#854F0B;--amber-bg:#FAEEDA;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-brand{font-size:15px;font-weight:600;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.topbar-brand span{width:22px;height:22px;background:var(--accent);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+.topbar-status{font-size:12px;color:var(--text-faint);display:flex;align-items:center;gap:6px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#ccc}
+.status-dot.connected{background:#3B6D11}
+.layout{display:flex;min-height:calc(100vh - 52px)}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:16px 0}
+.nav-section{padding:0 12px;margin-bottom:4px}
+.nav-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);padding:8px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text-muted);border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:500}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.main{flex:1;overflow:hidden}
+.page{display:none;padding:24px;max-width:1200px}
+.page.active{display:block}
+.page-header{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.page-sub{font-size:13px;color:var(--text-muted);margin-top:3px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+.card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:14px}
+.stat-row{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.stat{flex:1;min-width:120px;background:var(--bg);border-radius:var(--radius);padding:14px 16px}
+.stat-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;font-weight:500}
+.stat-val{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.stat-val.debit{color:var(--debit)}
+.stat-val.credit{color:var(--credit)}
+.drop-zone{border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s}
+.drop-zone:hover,.drop-zone.drag-over{background:var(--accent-light);border-color:var(--accent)}
+.drop-icon{font-size:28px;margin-bottom:8px}
+.drop-label{font-size:14px;color:var(--text-muted)}
+.drop-hint{font-size:12px;color:var(--text-faint);margin-top:4px}
+.file-list{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.file-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;font-size:12px;color:var(--text-muted)}
+.file-chip button{background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:14px;line-height:1;padding:0}
+.file-chip button:hover{color:var(--danger)}
+.tag-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid transparent}
+.tag-pill button{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0;opacity:.6}
+.tag-pill button:hover{opacity:1}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-strong);border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;background:var(--surface);color:var(--text);transition:background .1s;font-family:inherit}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#154f30}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:#f7c1c1}
+.btn-danger:hover{background:#f7c1c1}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border-color:#FAC775}
+.btn-amber:hover{background:#FAC775}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg)}
+tbody tr.selected td{background:#e8f2ec}
+select,input[type="number"],input[type="text"]{border:1px solid var(--border-strong);border-radius:var(--radius);padding:4px 8px;font-size:12px;background:var(--surface);color:var(--text);font-family:inherit}
+select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+input[type="number"]{width:90px;text-align:right}
+input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+.je-line{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.je-line:last-child{border-bottom:none}
+.je-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-debit{background:var(--debit-bg);color:var(--debit)}
+.badge-credit{background:var(--credit-bg);color:var(--credit)}
+.badge-dim{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);font-weight:400}
+.badge-period{background:var(--amber-bg);color:var(--amber);border:1px solid #FAC775}
+.je-amount{font-weight:600;font-size:14px}
+.je-amount.debit{color:var(--debit)}
+.je-amount.credit{color:var(--credit)}
+.history-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.history-row:last-child{border-bottom:none}
+.history-meta{color:var(--text-muted);font-size:12px;margin-top:2px}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--surface);padding:10px 16px;border-radius:var(--radius);font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:999}
+#toast.show{opacity:1}
+.empty{text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px}
+.empty-icon{font-size:32px;margin-bottom:10px}
+.log-entry{font-size:12px;font-family:monospace;padding:4px 0;border-bottom:1px solid var(--border);color:var(--text-muted)}
+.log-entry:last-child{border-bottom:none}
+.log-time{color:var(--text-faint);margin-right:8px}
+.section-divider{height:1px;background:var(--border);margin:20px 0}
+.row-count{font-size:12px;color:var(--text-faint);margin-top:8px}
+.table-wrap{overflow-x:auto}
+.bulk-bar{background:var(--accent-light);border:1px solid #b2d9c0;border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.report-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.report-row:last-child{border-bottom:none}
+.rule-row{display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.rule-row:last-child{border-bottom:none}
+/* Sub/Site table */
+.sub-site-table{width:100%;border-collapse:collapse;font-size:13px}
+.sub-site-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);background:var(--bg)}
+.sub-site-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.sub-site-table tr:last-child td{border-bottom:none}
+.sub-site-table tr:hover td{background:var(--bg)}
+.sub-row td{background:var(--bg);font-weight:500}
+.site-row td{padding-left:28px;font-size:12px;color:var(--text-muted)}
+.id-chip{font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--text-faint)}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.dim-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.dim-card-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg)}
+.dim-card-title{font-size:13px;font-weight:600}
+.dim-card-body{padding:12px 16px}
+.dim-value-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.dim-value-row:last-child{border-bottom:none}
+.dim-add-row{display:flex;gap:6px;margin-top:10px}
+.dim-add-row input{flex:1}
+.dim-add-row input.code-input{width:80px;flex:0 0 80px}
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <div class="topbar-brand"><span>A</span> Accruals</div>
   <div class="topbar-status">
@@ -155,41 +138,39 @@
     <span id="statusText">Connected</span>
   </div>
 </div>
-
 <div class="layout">
   <nav class="sidebar">
     <div class="nav-section">
       <div class="nav-label">Workspace</div>
       <button class="nav-item active" onclick="nav(&#39;upload&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"></path></svg>
-        Upload
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"></path></svg>Upload
+      </button>
+      <button class="nav-item" onclick="nav(&#39;reports&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="10" height="14" rx="1.5"></rect><path d="M5 5h6M5 8h6M5 11h3"></path><path d="M10 1v4h4"></path></svg>Reports
       </button>
       <button class="nav-item" onclick="nav(&#39;rows&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"></rect><path d="M1 6h14M1 9h14M5 6v7M11 6v7"></path></svg>
-        Data rows
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"></rect><path d="M1 6h14M1 9h14M5 6v7M11 6v7"></path></svg>Data rows
       </button>
       <button class="nav-item" onclick="nav(&#39;je&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"></path><circle cx="13" cy="11" r="2.5"></circle><path d="M12 11h2M13 10v2"></path></svg>
-        Journal entry
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"></path><circle cx="13" cy="11" r="2.5"></circle><path d="M12 11h2M13 10v2"></path></svg>Journal entry
       </button>
     </div>
     <div class="nav-section">
       <div class="nav-label">Config</div>
       <button class="nav-item" onclick="nav(&#39;entities&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"></rect><rect x="9" y="1" width="6" height="6" rx="1"></rect><rect x="1" y="9" width="6" height="6" rx="1"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect></svg>
-        Entities
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"></rect><rect x="9" y="1" width="6" height="6" rx="1"></rect><rect x="1" y="9" width="6" height="6" rx="1"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect></svg>Entities
+      </button>
+      <button class="nav-item" onclick="nav(&#39;templates&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="1.5"></rect><path d="M1 5h14M5 5v10"></path></svg>JE Templates
       </button>
       <button class="nav-item" onclick="nav(&#39;tags&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"></path><circle cx="11" cy="5" r="1"></circle></svg>
-        Tags
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"></path><circle cx="11" cy="5" r="1"></circle></svg>Tags
       </button>
       <button class="nav-item" onclick="nav(&#39;history&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5l2 1.5"></path></svg>
-        History
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5l2 1.5"></path></svg>History
       </button>
       <button class="nav-item" onclick="nav(&#39;log&#39;,this)">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"></rect><path d="M5 5h6M5 8h6M5 11h3"></path></svg>
-        Log
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"></rect><path d="M5 5h6M5 8h6M5 11h3"></path></svg>Log
       </button>
     </div>
   </nav>
@@ -198,10 +179,7 @@
 
     <!-- UPLOAD -->
     <div class="page active" id="page-upload">
-      <div class="page-header">
-        <div class="page-title">Upload reports</div>
-        <div class="page-sub">Add CSV or Excel files to the accrual database</div>
-      </div>
+      <div class="page-header"><div class="page-title">Upload reports</div><div class="page-sub">Add CSV or Excel files — assign them to a period after uploading</div></div>
       <div class="card">
         <div class="drop-zone" id="dropZone" onclick="document.getElementById(&#39;fileInput&#39;).click()">
           <div class="drop-icon">📂</div>
@@ -222,20 +200,37 @@
       </div>
     </div>
 
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="page-header"><div class="page-title">Reports</div><div class="page-sub">Assign each uploaded file to a period</div></div>
+      <div class="card"><div id="reportsList"><div class="empty"><div class="empty-icon">📁</div>No reports uploaded yet</div></div></div>
+    </div>
+
     <!-- DATA ROWS -->
     <div class="page" id="page-rows">
-      <div class="page-header">
-        <div class="page-title">Data rows</div>
-        <div class="page-sub">Tag rows and assign entity dimensions for the journal entry</div>
-      </div>
+      <div class="page-header"><div class="page-title">Data rows</div><div class="page-sub">Tag rows, assign dimensions, and set baselines</div></div>
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="filterPeriod" onchange="loadRows()" style="font-size:12px"><option value="">All periods</option></select>
             <select id="filterReport" onchange="loadRows()" style="font-size:12px"><option value="">All reports</option></select>
             <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px"><option value="">All tags</option><option value="__untagged__">Untagged only</option><option value="Accrual">Accrual</option><option value="Reversal">Reversal</option></select>
             <select id="filterDim" onchange="renderRowsTable()" style="font-size:12px"><option value="">All dimensions</option></select>
           </div>
-          <button class="btn btn-sm btn-primary" onclick="saveRowTags()">Save changes</button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm" onclick="selectAllVisible()">☑ Select all</button>
+            <button class="btn btn-sm btn-primary" onclick="saveRowTags()">Save changes</button>
+          </div>
+        </div>
+        <div class="bulk-bar" id="bulkBar" style="display:none">
+          <span style="font-size:13px;font-weight:500" id="bulkCount">0 selected</span>
+          <select id="bulkTagSel" style="font-size:12px"><option value="">Set tag…</option><option value="Accrual">Accrual</option><option value="Reversal">Reversal</option></select>
+          <button class="btn btn-sm btn-primary" onclick="applyBulkTag()">Apply tag</button>
+          <span style="color:var(--text-faint);font-size:12px">|</span>
+          <select id="bulkDimSel" style="font-size:12px"><option value="">Set dimension…</option><option value="782e86a4-f396-456f-b70c-cf561d340110">Subsidiary</option><option value="2c7f5f53-7e8a-4750-ac89-15f00a117295">Site</option><option value="697d9adb-798a-434b-b978-6c4682b8248a">Cost Center</option><option value="166d4331-4a9b-41f1-a386-5769d49af380">GL Account Code</option><option value="0ea32407-ca4f-4748-bf97-d8e28cfb16c8">Product Type</option></select>
+          <select id="bulkDimValSel" style="font-size:12px"><option value="">Value…</option></select>
+          <button class="btn btn-sm btn-primary" onclick="applyBulkDim()">Apply</button>
+          <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
         </div>
         <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div></div>
         <div class="row-count" id="rowsCount"></div>
@@ -244,10 +239,7 @@
 
     <!-- JOURNAL ENTRY -->
     <div class="page" id="page-je">
-      <div class="page-header">
-        <div class="page-title">Journal entry</div>
-        <div class="page-sub">Calculate and export the accrual journal entry</div>
-      </div>
+      <div class="page-header"><div class="page-title">Journal entry</div><div class="page-sub">Calculate and export the accrual journal entry</div></div>
       <div class="stat-row">
         <div class="stat"><div class="stat-label">Total accrual (Dr)</div><div class="stat-val debit" id="jeTotalAccrual">—</div></div>
         <div class="stat"><div class="stat-label">Total reversal (Cr)</div><div class="stat-val credit" id="jeTotalReversal">—</div></div>
@@ -255,13 +247,14 @@
         <div class="stat"><div class="stat-label">Tagged rows</div><div class="stat-val" id="jeRowCount">—</div></div>
       </div>
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
           <div class="card-title" style="margin:0">Journal lines</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <label style="font-size:12px;color:var(--text-muted)">Group by</label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="jePeriodFilter" style="font-size:12px"><option value="">All periods</option></select>
             <select id="jeGroupBy" style="font-size:12px">
               <option value="tag">Tag only</option>
-              <option value="tag+subsidiary">Tag + Subsidiary</option>
+              <option value="tag+sub">Tag + Subsidiary</option>
+              <option value="tag+sub+site">Tag + Subsidiary + Site</option>
               <option value="tag+gl">Tag + GL Account</option>
               <option value="tag+all">Tag + All dimensions</option>
             </select>
@@ -278,52 +271,51 @@
 
     <!-- ENTITIES -->
     <div class="page" id="page-entities">
-      <div class="page-header">
-        <div class="page-title">Entities</div>
-        <div class="page-sub">Define subsidiaries, cost centers, GL accounts, and other dimensions</div>
-      </div>
+      <div class="page-header"><div class="page-title">Entities</div><div class="page-sub">Manage subsidiaries, sites, and other dimensions</div></div>
 
+      <!-- Sub/Site manager -->
       <div class="card">
-        <div class="card-title">Add new dimension type</div>
-        <div class="new-dim-row">
-          <input type="text" id="newDimName" placeholder="e.g. Business Unit, Region, Project…" style="width:260px">
-          <button class="btn btn-primary" onclick="addDimension()">+ Add dimension</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">Subsidiaries &amp; Sites</div>
+          <button class="btn btn-sm btn-primary" onclick="showAddSubModal()">+ Add subsidiary</button>
+        </div>
+        <div id="subSiteTable"><div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet — add one above</div></div>
+      </div>
+
+      <!-- Add subsidiary inline form -->
+      <div class="card" id="addSubForm" style="display:none">
+        <div class="card-title" id="subFormTitle">Add subsidiary</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <input type="text" id="subName" placeholder="Subsidiary name" style="width:200px">
+          <input type="text" id="subCode" placeholder="Subsidiary ID / code" style="width:160px">
+          <button class="btn btn-primary btn-sm" onclick="saveSub()">Save</button>
+          <button class="btn btn-sm" onclick="document.getElementById(&#39;addSubForm&#39;).style.display=&#39;none&#39;">Cancel</button>
         </div>
       </div>
 
-      <div class="dim-grid" id="dimGrid"><div class="dim-card">
-      <div class="dim-card-header">
-        <span class="dim-card-title">Subsidiary</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;782e86a4-f396-456f-b70c-cf561d340110&#39;)">Remove</button>
-      </div>
-      <div class="dim-card-body">
-        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
-        <div class="dim-add-row">
-          <input type="text" id="dimval-782e86a4-f396-456f-b70c-cf561d340110" placeholder="Value">
-          <input type="text" id="dimcode-782e86a4-f396-456f-b70c-cf561d340110" placeholder="Code" class="code-input">
-          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;782e86a4-f396-456f-b70c-cf561d340110&#39;)">Add</button>
+      <!-- Add site inline form -->
+      <div class="card" id="addSiteForm" style="display:none">
+        <div class="card-title" id="siteFormTitle">Add site</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="siteName" placeholder="Site name" style="width:200px">
+          <input type="text" id="siteCode" placeholder="Site ID / code" style="width:160px">
+          <button class="btn btn-primary btn-sm" onclick="saveSite()">Save</button>
+          <button class="btn btn-sm" onclick="document.getElementById(&#39;addSiteForm&#39;).style.display=&#39;none&#39;">Cancel</button>
         </div>
       </div>
-    </div><div class="dim-card">
-      <div class="dim-card-header">
-        <span class="dim-card-title">Site</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;2c7f5f53-7e8a-4750-ac89-15f00a117295&#39;)">Remove</button>
-      </div>
-      <div class="dim-card-body">
-        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
-        <div class="dim-add-row">
-          <input type="text" id="dimval-2c7f5f53-7e8a-4750-ac89-15f00a117295" placeholder="Value">
-          <input type="text" id="dimcode-2c7f5f53-7e8a-4750-ac89-15f00a117295" placeholder="Code" class="code-input">
-          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;2c7f5f53-7e8a-4750-ac89-15f00a117295&#39;)">Add</button>
+
+      <!-- Other dimensions -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin:0">Other dimensions</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="newDimName" placeholder="Dimension name…" style="width:200px">
+            <button class="btn btn-sm btn-primary" onclick="addDimension()">+ Add</button>
+          </div>
         </div>
-      </div>
-    </div><div class="dim-card">
-      <div class="dim-card-header">
-        <span class="dim-card-title">Cost Center</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Remove</button>
-      </div>
-      <div class="dim-card-body">
-        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+        <div class="dim-grid" id="dimGrid"><div class="dim-card">
+      <div class="dim-card-header"><span class="dim-card-title">Cost Center</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Remove</button></div>
+      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
         <div class="dim-add-row">
           <input type="text" id="dimval-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Value">
           <input type="text" id="dimcode-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Code" class="code-input">
@@ -331,12 +323,8 @@
         </div>
       </div>
     </div><div class="dim-card">
-      <div class="dim-card-header">
-        <span class="dim-card-title">GL Account Code</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Remove</button>
-      </div>
-      <div class="dim-card-body">
-        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+      <div class="dim-card-header"><span class="dim-card-title">GL Account Code</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Remove</button></div>
+      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
         <div class="dim-add-row">
           <input type="text" id="dimval-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Value">
           <input type="text" id="dimcode-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Code" class="code-input">
@@ -344,12 +332,8 @@
         </div>
       </div>
     </div><div class="dim-card">
-      <div class="dim-card-header">
-        <span class="dim-card-title">Product Type</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Remove</button>
-      </div>
-      <div class="dim-card-body">
-        <div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
+      <div class="dim-card-header"><span class="dim-card-title">Product Type</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Remove</button></div>
+      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
         <div class="dim-add-row">
           <input type="text" id="dimval-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Value">
           <input type="text" id="dimcode-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Code" class="code-input">
@@ -357,23 +341,42 @@
         </div>
       </div>
     </div></div>
+      </div>
+    </div>
+
+    <!-- JE TEMPLATES -->
+    <div class="page" id="page-templates">
+      <div class="page-header"><div class="page-title">JE Templates</div><div class="page-sub">Define rules that auto-tag rows based on field values</div></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin:0">Templates</div>
+          <button class="btn btn-primary btn-sm" onclick="newTemplate()">+ New template</button>
+        </div>
+        <div id="templatesList"><div class="empty"><div class="empty-icon">📋</div>No templates yet</div></div>
+      </div>
+      <div class="card" id="templateEditor" style="display:none">
+        <div class="card-title" id="templateEditorTitle">New template</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+          <input type="text" id="templateName" placeholder="Template name" style="width:220px">
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">RULES — if field value matches, apply tag</div>
+        <div id="rulesList"></div>
+        <button class="btn btn-sm" onclick="addRule()" style="margin-top:10px">+ Add rule</button>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveTemplate()">Save template</button>
+          <button class="btn btn-amber" onclick="applyTemplateToRows()">▶ Apply to rows</button>
+          <button class="btn" onclick="downloadTemplate()">⬇ Download CSV</button>
+          <button class="btn btn-danger" onclick="deleteTemplate()">Delete</button>
+        </div>
+      </div>
     </div>
 
     <!-- TAGS -->
     <div class="page" id="page-tags">
-      <div class="page-header">
-        <div class="page-title">Tags</div>
-        <div class="page-sub">Define the tags used to classify rows in the journal entry</div>
-      </div>
+      <div class="page-header"><div class="page-title">Tags</div><div class="page-sub">Define the tags used to classify rows</div></div>
       <div class="card">
         <div class="card-title">Active tags</div>
-        <div class="tag-bar" id="tagBar"><span class="tag-pill" style="background:#E6F1FB;color:#0C447C;border-color:#B5D4F4">
-      Accrual
-      <button onclick="removeTag(&#39;c68390dc-1c58-41df-895a-ff753dc5bf93&#39;)" aria-label="Remove Accrual">×</button>
-    </span><span class="tag-pill" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97">
-      Reversal
-      <button onclick="removeTag(&#39;d4091523-3d74-4f0d-938f-22717b40dd2f&#39;)" aria-label="Remove Reversal">×</button>
-    </span></div>
+        <div class="tag-bar" id="tagBar"><span class="tag-pill" style="background:#E6F1FB;color:#0C447C;border-color:#B5D4F4">Accrual<button onclick="removeTag(&#39;c68390dc-1c58-41df-895a-ff753dc5bf93&#39;)">×</button></span><span class="tag-pill" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97">Reversal<button onclick="removeTag(&#39;d4091523-3d74-4f0d-938f-22717b40dd2f&#39;)">×</button></span></div>
         <div class="section-divider"></div>
         <div style="display:flex;gap:8px;align-items:center">
           <input type="text" id="newTagName" placeholder="Tag name" style="width:160px">
@@ -384,37 +387,26 @@
 
     <!-- HISTORY -->
     <div class="page" id="page-history">
-      <div class="page-header">
-        <div class="page-title">History</div>
-        <div class="page-sub">Previously saved journal entries</div>
-      </div>
-      <div class="card">
-        <div id="historyList"><div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div></div>
-      </div>
+      <div class="page-header"><div class="page-title">History</div><div class="page-sub">Previously saved journal entries</div></div>
+      <div class="card"><div id="historyList"><div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div></div></div>
     </div>
 
     <!-- LOG -->
     <div class="page" id="page-log">
-      <div class="page-header">
-        <div class="page-title">Log</div>
-        <div class="page-sub">Duplicate row removals and system events</div>
-      </div>
-      <div class="card">
-        <div id="logList"><div class="empty"><div class="empty-icon">📄</div>No log entries yet</div></div>
-      </div>
+      <div class="page-header"><div class="page-title">Log</div><div class="page-sub">Duplicate removals and system events</div></div>
+      <div class="card"><div id="logList"><div class="empty"><div class="empty-icon">📄</div>No log entries yet</div></div></div>
     </div>
 
   </main>
 </div>
-
 <div id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://pddehutovxexlngigbmg.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkZGVodXRvdnhleGxuZ2lnYm1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDQxMzYsImV4cCI6MjA5NjYyMDEzNn0.sT0SaDQGCgdr4md84vlTj66KBQF4Nrchjd9pprK0QWU';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://pddehutovxexlngigbmg.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkZGVodXRvdnhleGxuZ2lnYm1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDQxMzYsImV4cCI6MjA5NjYyMDEzNn0.sT0SaDQGCgdr4md84vlTj66KBQF4Nrchjd9pprK0QWU';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const TAG_COLORS = [
+const TAG_COLORS=[
   {bg:'#E6F1FB',text:'#0C447C',border:'#B5D4F4'},
   {bg:'#EAF3DE',text:'#27500A',border:'#C0DD97'},
   {bg:'#FAEEDA',text:'#633806',border:'#FAC775'},
@@ -422,143 +414,251 @@ const TAG_COLORS = [
   {bg:'#FAECE7',text:'#712B13',border:'#F5C4B3'},
   {bg:'#FBEAF0',text:'#72243E',border:'#F4C0D1'},
 ];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-let tags = [];
-let dimensions = [];       // [{id, name, sort_order}]
-let dimValues = {};        // {dim_id: [{id, value, code}]}
-let rowDimensions = {};    // {row_id: {dim_id: value_id}}
-let pendingRows = [];
-let allRows = [];
-let currentJE = null;
+let tags=[],dimensions=[],dimValues={},rowDimensions={};
+let subsidiaries=[],sites=[];  // sub: {id,value,code}  site: {id,value,code,parent_id}
+let subDimId=null,siteDimId=null;
+let pendingRows=[],allRows=[],allReports=[];
+let currentJE=null,selectedRows=new Set();
+let editingTemplateId=null,templates=[];
+let editingSubId=null,editingSiteParentId=null;
 
 // ── Init ──────────────────────────────────────────
-async function init() {
-  try {
-    const { error } = await sb.from('tags').select('id').limit(1);
-    if (error) throw error;
+async function init(){
+  try{
+    const{error}=await sb.from('tags').select('id').limit(1);
+    if(error)throw error;
     document.getElementById('statusDot').classList.add('connected');
-    document.getElementById('statusText').textContent = 'Connected';
-    await Promise.all([loadTags(), loadDimensions()]);
-    await loadReportFilter();
-    await loadRows();
-    await loadHistory();
-    await loadLog();
-  } catch(e) {
-    document.getElementById('statusText').textContent = 'Connection error';
-    toast('Could not connect to Supabase — check your keys');
-    console.error(e);
+    document.getElementById('statusText').textContent='Connected';
+    await Promise.all([loadTags(),loadDimensions(),loadReports()]);
+    await loadRows();await loadHistory();await loadLog();await loadTemplates();
+  }catch(e){
+    document.getElementById('statusText').textContent='Connection error';
+    toast('Could not connect to Supabase');console.error(e);
   }
 }
 
-// ── Navigation ────────────────────────────────────
-function nav(page, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
   el.classList.add('active');
-  if (page === 'history') loadHistory();
-  if (page === 'log') loadLog();
-  if (page === 'entities') renderDimGrid();
+  if(page==='history')loadHistory();
+  if(page==='log')loadLog();
+  if(page==='entities'){renderSubSiteTable();renderDimGrid();}
+  if(page==='reports')renderReportsList();
+  if(page==='templates')renderTemplatesList();
 }
 
-// ── Toast ─────────────────────────────────────────
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── Periods ───────────────────────────────────────
+function periodOptions(sel=''){
+  const now=new Date();let opts='<option value="">— no period —</option>';
+  for(let y=now.getFullYear();y>=now.getFullYear()-3;y--){
+    for(let m=11;m>=0;m--){
+      const val=`${y}-${String(m+1).padStart(2,'0')}`;
+      opts+=`<option value="${val}" ${sel===val?'selected':''}>${MONTHS[m]} ${y}</option>`;
+    }
+  }
+  return opts;
+}
+function periodLabel(val){if(!val)return'—';const[y,m]=val.split('-');return`${MONTHS[parseInt(m)-1]} ${y}`;}
+function populatePeriodFilters(){
+  const periods=[...new Set(allReports.map(r=>r.period).filter(Boolean))].sort().reverse();
+  ['filterPeriod','jePeriodFilter'].forEach(id=>{
+    const sel=document.getElementById(id);const cur=sel.value;
+    sel.innerHTML='<option value="">All periods</option>';
+    periods.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=periodLabel(p);sel.appendChild(o);});
+    sel.value=cur;
+  });
 }
 
 // ── Tags ──────────────────────────────────────────
-async function loadTags() {
-  const { data } = await sb.from('tags').select('*').order('created_at');
-  if (data) {
-    tags = data.map(t => ({...t, color: typeof t.color === 'string' ? JSON.parse(t.color) : t.color}));
-    renderTagBar();
-    renderTagSelects();
-  }
+async function loadTags(){
+  const{data}=await sb.from('tags').select('*').order('created_at');
+  if(data){tags=data.map(t=>({...t,color:typeof t.color==='string'?JSON.parse(t.color):t.color}));renderTagBar();renderTagSelects();renderBulkTagSel();}
+}
+function renderTagBar(){
+  const bar=document.getElementById('tagBar');
+  if(!tags.length){bar.innerHTML='<span style="color:var(--text-faint);font-size:13px">No tags yet</span>';return;}
+  bar.innerHTML=tags.map(t=>`<span class="tag-pill" style="background:${t.color.bg};color:${t.color.text};border-color:${t.color.border}">${t.name}<button onclick="removeTag('${t.id}')">×</button></span>`).join('');
+}
+function renderTagSelects(){
+  const ft=document.getElementById('filterTag');const cur=ft.value;
+  ft.innerHTML='<option value="">All tags</option><option value="__untagged__">Untagged only</option>';
+  tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;ft.appendChild(o);});
+  ft.value=cur;
+}
+function renderBulkTagSel(){
+  const sel=document.getElementById('bulkTagSel');
+  sel.innerHTML='<option value="">Set tag…</option>';
+  tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});
+}
+async function addTag(){
+  const input=document.getElementById('newTagName');const name=input.value.trim();if(!name)return;
+  if(tags.find(t=>t.name.toLowerCase()===name.toLowerCase())){toast('Tag already exists');return;}
+  const color=TAG_COLORS[tags.length%TAG_COLORS.length];
+  await sb.from('tags').insert({name,color:JSON.stringify(color)});
+  input.value='';await loadTags();toast(`Tag "${name}" added`);
+}
+async function removeTag(id){
+  const tag=tags.find(t=>t.id===id);if(!confirm(`Remove tag "${tag?.name}"?`))return;
+  await sb.from('report_rows').update({tag:''}).eq('tag',tag.name);
+  await sb.from('tags').delete().eq('id',id);
+  await loadTags();await loadRows();toast('Tag removed');
 }
 
-function renderTagBar() {
-  const bar = document.getElementById('tagBar');
-  if (!tags.length) { bar.innerHTML = '<span style="color:var(--text-faint);font-size:13px">No tags yet</span>'; return; }
-  bar.innerHTML = tags.map(t =>
-    `<span class="tag-pill" style="background:${t.color.bg};color:${t.color.text};border-color:${t.color.border}">
-      ${t.name}
-      <button onclick="removeTag('${t.id}')" aria-label="Remove ${t.name}">×</button>
-    </span>`
-  ).join('');
-}
+// ── Dimensions (non-sub/site) ─────────────────────
+async function loadDimensions(){
+  const{data:dims}=await sb.from('dimensions').select('*').order('sort_order');
+  const allDims=dims||[];
 
-function renderTagSelects() {
-  const ft = document.getElementById('filterTag');
-  const cur = ft.value;
-  ft.innerHTML = '<option value="">All tags</option><option value="__untagged__">Untagged only</option>';
-  tags.forEach(t => { const o = document.createElement('option'); o.value = t.name; o.textContent = t.name; ft.appendChild(o); });
-  ft.value = cur;
-}
+  // Find or note sub/site dim IDs
+  const subDim=allDims.find(d=>d.name.toLowerCase().includes('subsidiar'));
+  const siteDim=allDims.find(d=>d.name.toLowerCase().includes('site'));
+  subDimId=subDim?.id||null;
+  siteDimId=siteDim?.id||null;
 
-async function addTag() {
-  const input = document.getElementById('newTagName');
-  const name = input.value.trim();
-  if (!name) return;
-  if (tags.find(t => t.name.toLowerCase() === name.toLowerCase())) { toast('Tag already exists'); return; }
-  const color = TAG_COLORS[tags.length % TAG_COLORS.length];
-  const { error } = await sb.from('tags').insert({ name, color: JSON.stringify(color) });
-  if (error) { toast('Error saving tag'); return; }
-  input.value = '';
-  await loadTags();
-  toast(`Tag "${name}" added`);
-}
+  // Other dims = everything except sub and site
+  dimensions=allDims.filter(d=>d.id!==subDimId&&d.id!==siteDimId);
 
-async function removeTag(id) {
-  const tag = tags.find(t => t.id === id);
-  if (!confirm(`Remove tag "${tag?.name}"?`)) return;
-  await sb.from('report_rows').update({ tag: '' }).eq('tag', tag.name);
-  await sb.from('tags').delete().eq('id', id);
-  await loadTags();
-  await loadRows();
-  toast('Tag removed');
-}
+  // Load all values
+  const{data:vals}=await sb.from('dimension_values').select('*').order('value');
+  dimValues={};
+  allDims.forEach(d=>dimValues[d.id]=[]);
+  (vals||[]).forEach(v=>{if(dimValues[v.dimension_id])dimValues[v.dimension_id].push(v);});
 
-// ── Dimensions ────────────────────────────────────
-async function loadDimensions() {
-  const { data: dims } = await sb.from('dimensions').select('*').order('sort_order');
-  dimensions = dims || [];
+  // Split sub/site
+  subsidiaries=subDimId?(dimValues[subDimId]||[]).filter(v=>!v.parent_id):[];
+  sites=siteDimId?(dimValues[siteDimId]||[]):[];
 
-  if (dimensions.length) {
-    const { data: vals } = await sb.from('dimension_values').select('*').order('value');
-    dimValues = {};
-    dimensions.forEach(d => dimValues[d.id] = []);
-    (vals || []).forEach(v => { if (dimValues[v.dimension_id]) dimValues[v.dimension_id].push(v); });
-  }
-
+  renderSubSiteTable();
   renderDimGrid();
   renderDimFilter();
+  renderBulkDimSel();
 }
 
-function renderDimGrid() {
-  const grid = document.getElementById('dimGrid');
-  if (!dimensions.length) {
-    grid.innerHTML = '<div class="empty"><div class="empty-icon">🏢</div>No dimensions yet — add one above</div>';
-    return;
-  }
-  grid.innerHTML = dimensions.map(dim => {
-    const vals = dimValues[dim.id] || [];
-    const valRows = vals.map(v =>
-      `<div class="dim-value-row">
-        <span>${v.value}${v.code ? `<span class="dim-value-code">${v.code}</span>` : ''}</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimValue('${v.id}','${dim.id}')">×</button>
-      </div>`
-    ).join('') || '<div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>';
+// ── Sub/Site UI ───────────────────────────────────
+function renderSubSiteTable(){
+  const el=document.getElementById('subSiteTable');
+  if(!subsidiaries.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet — add one above</div>';return;}
+  let html=`<table class="sub-site-table"><thead><tr>
+    <th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th><th></th>
+  </tr></thead><tbody>`;
+  subsidiaries.forEach(sub=>{
+    const subSites=sites.filter(s=>s.parent_id===sub.id);
+    if(!subSites.length){
+      html+=`<tr class="sub-row">
+        <td>${sub.value}</td>
+        <td><span class="id-chip">${sub.code||'—'}</span></td>
+        <td colspan="2" style="color:var(--text-faint);font-size:12px">No sites — <button class="btn btn-sm" onclick="showAddSiteForm('${sub.id}','${sub.value}')">+ Add site</button></td>
+        <td><button class="btn btn-sm btn-danger" onclick="removeSub('${sub.id}')">×</button></td>
+      </tr>`;
+    } else {
+      subSites.forEach((site,i)=>{
+        html+=`<tr class="${i===0?'sub-row':'site-row'}">`;
+        if(i===0){
+          html+=`<td rowspan="${subSites.length}">${sub.value}</td>
+                 <td rowspan="${subSites.length}"><span class="id-chip">${sub.code||'—'}</span></td>`;
+        }
+        html+=`<td>${i===0?'':'↳ '}${site.value}</td>
+               <td><span class="id-chip">${site.code||'—'}</span></td>
+               <td style="white-space:nowrap">`;
+        if(i===0)html+=`<button class="btn btn-sm" onclick="showAddSiteForm('${sub.id}','${sub.value}')" style="margin-right:4px">+ Site</button><button class="btn btn-sm btn-danger" onclick="removeSub('${sub.id}')">× Sub</button>`;
+        else html+=`<button class="btn btn-sm btn-danger" onclick="removeSite('${site.id}')">× Site</button>`;
+        html+=`</td></tr>`;
+      });
+    }
+  });
+  html+=`</tbody></table>`;
+  el.innerHTML=html;
+}
 
-    return `<div class="dim-card">
-      <div class="dim-card-header">
-        <span class="dim-card-title">${dim.name}</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimension('${dim.id}')">Remove</button>
-      </div>
-      <div class="dim-card-body">
-        ${valRows}
+function showAddSubModal(){
+  editingSubId=null;
+  document.getElementById('subName').value='';
+  document.getElementById('subCode').value='';
+  document.getElementById('subFormTitle').textContent='Add subsidiary';
+  document.getElementById('addSubForm').style.display='block';
+  document.getElementById('addSiteForm').style.display='none';
+  document.getElementById('subName').focus();
+}
+
+function showAddSiteForm(subId,subName){
+  editingSiteParentId=subId;
+  document.getElementById('siteName').value='';
+  document.getElementById('siteCode').value='';
+  document.getElementById('siteFormTitle').textContent=`Add site to ${subName}`;
+  document.getElementById('addSiteForm').style.display='block';
+  document.getElementById('addSubForm').style.display='none';
+  document.getElementById('siteName').focus();
+}
+
+async function saveSub(){
+  const name=document.getElementById('subName').value.trim();
+  const code=document.getElementById('subCode').value.trim();
+  if(!name){toast('Enter a subsidiary name');return;}
+  // Ensure Subsidiary dimension exists
+  if(!subDimId){
+    const{data:dim}=await sb.from('dimensions').insert({name:'Subsidiary',sort_order:1}).select().single();
+    subDimId=dim.id;
+  }
+  await sb.from('dimension_values').insert({dimension_id:subDimId,value:name,code:code||null});
+  document.getElementById('addSubForm').style.display='none';
+  await loadDimensions();toast(`Subsidiary "${name}" added`);
+}
+
+async function saveSite(){
+  const name=document.getElementById('siteName').value.trim();
+  const code=document.getElementById('siteCode').value.trim();
+  if(!name){toast('Enter a site name');return;}
+  if(!editingSiteParentId){toast('No subsidiary selected');return;}
+  // Ensure Site dimension exists
+  if(!siteDimId){
+    const{data:dim}=await sb.from('dimensions').insert({name:'Site',sort_order:2}).select().single();
+    siteDimId=dim.id;
+  }
+  await sb.from('dimension_values').insert({dimension_id:siteDimId,value:name,code:code||null,parent_id:editingSiteParentId});
+  document.getElementById('addSiteForm').style.display='none';
+  await loadDimensions();toast(`Site "${name}" added`);
+}
+
+async function removeSub(subId){
+  const sub=subsidiaries.find(s=>s.id===subId);
+  if(!confirm(`Remove "${sub?.value}" and all its sites?`))return;
+  // Remove sites first
+  const subSites=sites.filter(s=>s.parent_id===subId);
+  for(const site of subSites)await sb.from('dimension_values').delete().eq('id',site.id);
+  await sb.from('dimension_values').delete().eq('id',subId);
+  await loadDimensions();toast('Subsidiary removed');
+}
+
+async function removeSite(siteId){
+  await sb.from('dimension_values').delete().eq('id',siteId);
+  await loadDimensions();toast('Site removed');
+}
+
+// ── Other dimensions ──────────────────────────────
+function renderDimGrid(){
+  const grid=document.getElementById('dimGrid');
+  if(!dimensions.length){grid.innerHTML='<div style="color:var(--text-faint);font-size:13px;padding:8px 0">No other dimensions yet — add one above</div>';return;}
+  grid.innerHTML=dimensions.map(dim=>{
+    const vals=dimValues[dim.id]||[];
+    const valRows=vals.map(v=>
+      `<div class="dim-value-row">
+        <span>${v.value}${v.code?` <span style="font-family:monospace;font-size:11px;color:var(--text-faint)">${v.code}</span>`:''}</span>
+        <button class="btn btn-sm btn-danger" onclick="removeDimValue('${v.id}')">×</button>
+      </div>`
+    ).join('')||'<div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>';
+    return`<div class="dim-card">
+      <div class="dim-card-header"><span class="dim-card-title">${dim.name}</span><button class="btn btn-sm btn-danger" onclick="removeDimension('${dim.id}')">Remove</button></div>
+      <div class="dim-card-body">${valRows}
         <div class="dim-add-row">
           <input type="text" id="dimval-${dim.id}" placeholder="Value" />
           <input type="text" id="dimcode-${dim.id}" placeholder="Code" class="code-input" />
@@ -568,453 +668,570 @@ function renderDimGrid() {
     </div>`;
   }).join('');
 }
-
-function renderDimFilter() {
-  const sel = document.getElementById('filterDim');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">All dimensions</option>';
-  dimensions.forEach(d => {
-    const vals = dimValues[d.id] || [];
-    if (vals.length) {
-      const og = document.createElement('optgroup');
-      og.label = d.name;
-      vals.forEach(v => {
-        const o = document.createElement('option');
-        o.value = `${d.id}::${v.id}`;
-        o.textContent = v.value + (v.code ? ` (${v.code})` : '');
-        og.appendChild(o);
-      });
+function renderDimFilter(){
+  const sel=document.getElementById('filterDim');const cur=sel.value;
+  sel.innerHTML='<option value="">All dimensions</option>';
+  // Sub
+  if(subDimId&&subsidiaries.length){
+    const og=document.createElement('optgroup');og.label='Subsidiary';
+    subsidiaries.forEach(v=>{const o=document.createElement('option');o.value=`${subDimId}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});
+    sel.appendChild(og);
+  }
+  // Site
+  if(siteDimId&&sites.length){
+    const og=document.createElement('optgroup');og.label='Site';
+    sites.forEach(v=>{const o=document.createElement('option');o.value=`${siteDimId}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});
+    sel.appendChild(og);
+  }
+  // Other dims
+  dimensions.forEach(d=>{
+    const vals=dimValues[d.id]||[];
+    if(vals.length){
+      const og=document.createElement('optgroup');og.label=d.name;
+      vals.forEach(v=>{const o=document.createElement('option');o.value=`${d.id}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});
       sel.appendChild(og);
     }
   });
-  sel.value = cur;
+  sel.value=cur;
+}
+function renderBulkDimSel(){
+  const sel=document.getElementById('bulkDimSel');
+  sel.innerHTML='<option value="">Set dimension…</option>';
+  if(subDimId){const o=document.createElement('option');o.value=subDimId;o.textContent='Subsidiary';sel.appendChild(o);}
+  if(siteDimId){const o=document.createElement('option');o.value=siteDimId;o.textContent='Site';sel.appendChild(o);}
+  dimensions.forEach(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.name;sel.appendChild(o);});
+}
+document.getElementById('bulkDimSel').addEventListener('change',function(){
+  const dimId=this.value;
+  const valSel=document.getElementById('bulkDimValSel');
+  valSel.innerHTML='<option value="">Value…</option>';
+  if(dimId){
+    let vals=[];
+    if(dimId===subDimId)vals=subsidiaries;
+    else if(dimId===siteDimId)vals=sites;
+    else vals=dimValues[dimId]||[];
+    vals.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value+(v.code?` (${v.code})`:'');valSel.appendChild(o);});
+  }
+});
+async function addDimension(){
+  const input=document.getElementById('newDimName');const name=input.value.trim();if(!name)return;
+  await sb.from('dimensions').insert({name,sort_order:100+dimensions.length});
+  input.value='';await loadDimensions();toast(`"${name}" added`);
+}
+async function removeDimension(id){
+  const dim=dimensions.find(d=>d.id===id);if(!confirm(`Remove "${dim?.name}"?`))return;
+  await sb.from('dimensions').delete().eq('id',id);
+  await loadDimensions();await loadRows();toast('Dimension removed');
+}
+async function addDimValue(dimId){
+  const valInput=document.getElementById(`dimval-${dimId}`);
+  const codeInput=document.getElementById(`dimcode-${dimId}`);
+  const value=valInput.value.trim();if(!value)return;
+  const code=codeInput.value.trim()||null;
+  await sb.from('dimension_values').insert({dimension_id:dimId,value,code});
+  valInput.value='';codeInput.value='';
+  await loadDimensions();toast(`"${value}" added`);
+}
+async function removeDimValue(valueId){
+  await sb.from('dimension_values').delete().eq('id',valueId);
+  await loadDimensions();toast('Value removed');
 }
 
-async function addDimension() {
-  const input = document.getElementById('newDimName');
-  const name = input.value.trim();
-  if (!name) return;
-  if (dimensions.find(d => d.name.toLowerCase() === name.toLowerCase())) { toast('Dimension already exists'); return; }
-  const { error } = await sb.from('dimensions').insert({ name, sort_order: dimensions.length + 1 });
-  if (error) { toast('Error adding dimension'); return; }
-  input.value = '';
-  await loadDimensions();
-  toast(`"${name}" dimension added`);
+// ── Reports ───────────────────────────────────────
+async function loadReports(){
+  const{data}=await sb.from('reports').select('*').order('uploaded_at',{ascending:false});
+  allReports=data||[];
+  renderReportsList();populatePeriodFilters();
+  const sel=document.getElementById('filterReport');const cur=sel.value;
+  sel.innerHTML='<option value="">All reports</option>';
+  allReports.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name+(r.period?` (${periodLabel(r.period)})`:'');sel.appendChild(o);});
+  sel.value=cur;
+}
+function renderReportsList(){
+  const el=document.getElementById('reportsList');
+  if(!allReports.length){el.innerHTML='<div class="empty"><div class="empty-icon">📁</div>No reports uploaded yet</div>';return;}
+  el.innerHTML=allReports.map(r=>
+    `<div class="report-row">
+      <div><div style="font-weight:500">${r.name}</div><div style="font-size:12px;color:var(--text-muted)">${new Date(r.uploaded_at).toLocaleDateString()}</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${r.period?`<span class="badge badge-period">${periodLabel(r.period)}</span>`:''}
+        <select onchange="assignPeriod('${r.id}',this.value)" style="font-size:12px">${periodOptions(r.period||'')}</select>
+        <button class="btn btn-sm btn-danger" onclick="deleteReport('${r.id}')">Delete</button>
+      </div>
+    </div>`
+  ).join('');
+}
+async function assignPeriod(reportId,period){
+  await sb.from('reports').update({period}).eq('id',reportId);
+  await loadReports();toast(`Period assigned: ${periodLabel(period)}`);
+}
+async function deleteReport(reportId){
+  if(!confirm('Delete this report and all its rows?'))return;
+  await sb.from('reports').delete().eq('id',reportId);
+  await loadReports();await loadRows();toast('Report deleted');
 }
 
-async function removeDimension(id) {
-  const dim = dimensions.find(d => d.id === id);
-  if (!confirm(`Remove "${dim?.name}" and all its values?`)) return;
-  await sb.from('dimensions').delete().eq('id', id);
-  await loadDimensions();
-  await loadRows();
-  toast('Dimension removed');
-}
-
-async function addDimValue(dimId) {
-  const valInput = document.getElementById(`dimval-${dimId}`);
-  const codeInput = document.getElementById(`dimcode-${dimId}`);
-  const value = valInput.value.trim();
-  if (!value) return;
-  const code = codeInput.value.trim() || null;
-  const { error } = await sb.from('dimension_values').insert({ dimension_id: dimId, value, code });
-  if (error) { toast('Error adding value'); return; }
-  valInput.value = ''; codeInput.value = '';
-  await loadDimensions();
-  toast(`"${value}" added`);
-}
-
-async function removeDimValue(valueId, dimId) {
-  await sb.from('dimension_values').delete().eq('id', valueId);
-  await loadDimensions();
-  toast('Value removed');
-}
-
-// ── File upload & preview ─────────────────────────
-const dz = document.getElementById('dropZone');
-dz.ondragover = e => { e.preventDefault(); dz.classList.add('drag-over'); };
-dz.ondragleave = () => dz.classList.remove('drag-over');
-dz.ondrop = e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(Array.from(e.dataTransfer.files)); };
-document.getElementById('fileInput').onchange = e => handleFiles(Array.from(e.target.files));
-
-function handleFiles(files) {
-  files.forEach(file => {
-    const chip = document.createElement('span');
-    chip.className = 'file-chip';
-    chip.dataset.name = file.name;
-    chip.innerHTML = `📄 ${file.name} <button onclick="removePendingFile('${file.name}')" aria-label="Remove">×</button>`;
+// ── File upload ───────────────────────────────────
+const dz=document.getElementById('dropZone');
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag-over');};
+dz.ondragleave=()=>dz.classList.remove('drag-over');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleFiles(Array.from(e.dataTransfer.files));};
+document.getElementById('fileInput').onchange=e=>handleFiles(Array.from(e.target.files));
+function handleFiles(files){
+  files.forEach(file=>{
+    const chip=document.createElement('span');chip.className='file-chip';chip.dataset.name=file.name;
+    chip.innerHTML=`📄 ${file.name} <button onclick="removePendingFile('${file.name}')">×</button>`;
     document.getElementById('fileChips').appendChild(chip);
-    const reader = new FileReader();
-    if (file.name.toLowerCase().endsWith('.csv')) {
-      reader.onload = e => processData(file.name, parseCSV(e.target.result));
-      reader.readAsText(file);
-    } else {
-      reader.onload = e => {
-        const wb = XLSX.read(e.target.result, {type:'array'});
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        processData(file.name, XLSX.utils.sheet_to_json(ws, {defval:''}));
-      };
-      reader.readAsArrayBuffer(file);
-    }
+    const reader=new FileReader();
+    if(file.name.toLowerCase().endsWith('.csv')){reader.onload=e=>processData(file.name,parseCSV(e.target.result));reader.readAsText(file);}
+    else{reader.onload=e=>{const wb=XLSX.read(e.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];processData(file.name,XLSX.utils.sheet_to_json(ws,{defval:''}));};reader.readAsArrayBuffer(file);}
   });
 }
-
-function removePendingFile(name) {
-  pendingRows = pendingRows.filter(r => r.sourceName !== name);
-  document.querySelectorAll('.file-chip').forEach(c => { if (c.dataset.name === name) c.remove(); });
+function removePendingFile(name){
+  pendingRows=pendingRows.filter(r=>r.sourceName!==name);
+  document.querySelectorAll('.file-chip').forEach(c=>{if(c.dataset.name===name)c.remove();});
   renderPreview();
 }
-
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (!lines.length) return [];
-  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
-  return lines.slice(1).map(line => {
-    const vals = line.split(',').map(v => v.replace(/^"|"$/g,'').trim());
-    const obj = {};
-    headers.forEach((h,i) => obj[h] = vals[i] || '');
-    return obj;
-  });
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
+  const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line=>{const vals=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');return obj;});
 }
-
-function detectAmountCol(headers) {
-  const candidates = ['amount','value','total','balance','net','debit','credit','sum'];
-  for (const c of candidates) {
-    const match = headers.find(h => h.toLowerCase().includes(c));
-    if (match) return match;
-  }
-  return headers[headers.length - 1];
+function detectAmountCol(headers){
+  const c=['amount','value','total','balance','net','debit','credit','sum'];
+  for(const x of c){const m=headers.find(h=>h.toLowerCase().includes(x));if(m)return m;}
+  return headers[headers.length-1];
 }
-
-function processData(name, data) {
-  if (!data.length) { toast(`${name} appears empty`); return; }
-  const headers = Object.keys(data[0]);
-  const amountCol = detectAmountCol(headers);
-  const rows = data.map((r) => ({
-    sourceName: name,
-    row_data: r,
-    amount_col: amountCol,
-    amount: parseFloat((r[amountCol]||'').toString().replace(/[^0-9.\-]/g,'')) || 0,
-    tag: '', baseline: 0,
-  }));
-  pendingRows = [...pendingRows, ...rows];
+function processData(name,data){
+  if(!data.length){toast(`${name} appears empty`);return;}
+  const headers=Object.keys(data[0]);const amountCol=detectAmountCol(headers);
+  pendingRows=[...pendingRows,...data.map(r=>({sourceName:name,row_data:r,amount_col:amountCol,amount:parseFloat((r[amountCol]||'').toString().replace(/[^0-9.\-]/g,''))||0,tag:'',baseline:0}))];
   renderPreview();
 }
-
-function renderPreview() {
-  const card = document.getElementById('previewCard');
-  if (!pendingRows.length) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
-  const headers = [...new Set(pendingRows.flatMap(r => Object.keys(r.row_data)))].slice(0, 7);
-  let html = `<table><thead><tr><th>Source</th>`;
-  headers.forEach(h => html += `<th>${h}</th>`);
-  html += `<th>Amount</th></tr></thead><tbody>`;
-  pendingRows.slice(0, 50).forEach(r => {
-    html += `<tr><td style="color:var(--text-muted);white-space:nowrap">${r.sourceName}</td>`;
-    headers.forEach(h => html += `<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.row_data[h]??''}</td>`);
-    html += `<td style="text-align:right">${fmt(r.amount)}</td></tr>`;
+function renderPreview(){
+  const card=document.getElementById('previewCard');if(!pendingRows.length){card.style.display='none';return;}
+  card.style.display='block';
+  const headers=[...new Set(pendingRows.flatMap(r=>Object.keys(r.row_data)))].slice(0,7);
+  let html=`<table><thead><tr><th>Source</th>`;headers.forEach(h=>html+=`<th>${h}</th>`);html+=`<th>Amount</th></tr></thead><tbody>`;
+  pendingRows.slice(0,50).forEach(r=>{
+    html+=`<tr><td style="color:var(--text-muted);white-space:nowrap">${r.sourceName}</td>`;
+    headers.forEach(h=>html+=`<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.row_data[h]??''}</td>`);
+    html+=`<td style="text-align:right">${fmt(r.amount)}</td></tr>`;
   });
-  html += `</tbody></table>`;
-  document.getElementById('previewTable').innerHTML = html;
-  document.getElementById('previewCount').textContent =
-    `${pendingRows.length} row${pendingRows.length !== 1 ? 's' : ''} ready${pendingRows.length > 50 ? ' (showing first 50)' : ''}`;
+  html+=`</tbody></table>`;
+  document.getElementById('previewTable').innerHTML=html;
+  document.getElementById('previewCount').textContent=`${pendingRows.length} row${pendingRows.length!==1?'s':''} ready${pendingRows.length>50?' (showing first 50)':''}`;
 }
-
-function clearPreview() {
-  pendingRows = [];
-  document.getElementById('fileChips').innerHTML = '';
-  document.getElementById('previewCard').style.display = 'none';
-  document.getElementById('fileInput').value = '';
+function clearPreview(){
+  pendingRows=[];document.getElementById('fileChips').innerHTML='';
+  document.getElementById('previewCard').style.display='none';document.getElementById('fileInput').value='';
 }
-
-async function saveToSupabase() {
-  if (!pendingRows.length) { toast('Nothing to save'); return; }
-  const sources = [...new Set(pendingRows.map(r => r.sourceName))];
-  let saved = 0, dupes = 0;
-
-  for (const src of sources) {
-    const { data: report } = await sb.from('reports').insert({ name: src, source: src }).select().single();
-    const rows = pendingRows.filter(r => r.sourceName === src);
-    for (const row of rows) {
-      const key = JSON.stringify(row.row_data);
-      const { data: existing } = await sb.from('report_rows').select('id').eq('row_data', key).limit(1);
-      if (existing && existing.length) {
-        dupes++;
-        await sb.from('log_entries').insert({ message: `Duplicate row silently removed from "${src}"`, detail: key });
-        continue;
-      }
-      await sb.from('report_rows').insert({
-        report_id: report.id, row_data: row.row_data,
-        amount_col: row.amount_col, amount: row.amount, tag: '', baseline: 0,
-      });
-      saved++;
+async function saveToSupabase(){
+  if(!pendingRows.length){toast('Nothing to save');return;}
+  const sources=[...new Set(pendingRows.map(r=>r.sourceName))];let saved=0,dupes=0;
+  for(const src of sources){
+    const{data:report}=await sb.from('reports').insert({name:src,source:src}).select().single();
+    const rows=pendingRows.filter(r=>r.sourceName===src);
+    for(const row of rows){
+      const key=JSON.stringify(row.row_data);
+      const{data:existing}=await sb.from('report_rows').select('id').eq('row_data',key).limit(1);
+      if(existing&&existing.length){dupes++;await sb.from('log_entries').insert({message:`Duplicate row removed from "${src}"`,detail:key});continue;}
+      await sb.from('report_rows').insert({report_id:report.id,row_data:row.row_data,amount_col:row.amount_col,amount:row.amount,tag:'',baseline:0});saved++;
     }
   }
-  toast(`Saved ${saved} row${saved !== 1 ? 's' : ''}${dupes ? ` — ${dupes} duplicate${dupes !== 1 ? 's' : ''} skipped` : ''}`);
-  clearPreview();
-  await loadReportFilter();
-  await loadRows();
+  toast(`Saved ${saved} row${saved!==1?'s':''}${dupes?` — ${dupes} duplicate${dupes!==1?'s':''} skipped`:''}`);
+  clearPreview();await loadReports();await loadRows();
 }
 
 // ── Rows ──────────────────────────────────────────
-async function loadReportFilter() {
-  const { data } = await sb.from('reports').select('id,name').order('uploaded_at', {ascending:false});
-  const sel = document.getElementById('filterReport');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">All reports</option>';
-  (data||[]).forEach(r => { const o = document.createElement('option'); o.value = r.id; o.textContent = r.name; sel.appendChild(o); });
-  sel.value = cur;
-}
-
-async function loadRows() {
-  const reportId = document.getElementById('filterReport').value;
-  let query = sb.from('report_rows').select('*').order('created_at');
-  if (reportId) query = query.eq('report_id', reportId);
-  const { data } = await query;
-  allRows = data || [];
-
-  // Load row dimensions
-  if (allRows.length) {
-    const ids = allRows.map(r => r.id);
-    const { data: rds } = await sb.from('row_dimensions').select('*').in('row_id', ids);
-    rowDimensions = {};
-    (rds || []).forEach(rd => {
-      if (!rowDimensions[rd.row_id]) rowDimensions[rd.row_id] = {};
-      rowDimensions[rd.row_id][rd.dimension_id] = rd.value_id;
-    });
+async function loadRows(){
+  const reportId=document.getElementById('filterReport').value;
+  const period=document.getElementById('filterPeriod').value;
+  let query=sb.from('report_rows').select('*').order('created_at');
+  if(reportId)query=query.eq('report_id',reportId);
+  if(period){
+    const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);
+    if(pReports.length)query=query.in('report_id',pReports);else{allRows=[];renderRowsTable();return;}
   }
-
+  const{data}=await query;allRows=data||[];
+  if(allRows.length){
+    const ids=allRows.map(r=>r.id);
+    const{data:rds}=await sb.from('row_dimensions').select('*').in('row_id',ids);
+    rowDimensions={};
+    (rds||[]).forEach(rd=>{if(!rowDimensions[rd.row_id])rowDimensions[rd.row_id]={};rowDimensions[rd.row_id][rd.dimension_id]=rd.value_id;});
+  }
   renderRowsTable();
 }
 
-function renderRowsTable() {
-  const filterTag = document.getElementById('filterTag').value;
-  const filterDim = document.getElementById('filterDim').value;
+function renderRowsTable(){
+  const filterTag=document.getElementById('filterTag').value;
+  const filterDim=document.getElementById('filterDim').value;
+  let rows=allRows;
+  if(filterTag==='__untagged__')rows=rows.filter(r=>!r.tag);
+  else if(filterTag)rows=rows.filter(r=>r.tag===filterTag);
+  if(filterDim){const[dimId,valId]=filterDim.split('::');rows=rows.filter(r=>rowDimensions[r.id]?.[dimId]===valId);}
 
-  let rows = allRows;
-  if (filterTag === '__untagged__') rows = rows.filter(r => !r.tag);
-  else if (filterTag) rows = rows.filter(r => r.tag === filterTag);
-  if (filterDim) {
-    const [dimId, valId] = filterDim.split('::');
-    rows = rows.filter(r => rowDimensions[r.id]?.[dimId] === valId);
-  }
+  const container=document.getElementById('rowsTable');
+  if(!rows.length){container.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div>';document.getElementById('rowsCount').textContent='';return;}
 
-  const container = document.getElementById('rowsTable');
-  if (!rows.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div>';
-    document.getElementById('rowsCount').textContent = '';
-    return;
-  }
+  const headers=[...new Set(rows.flatMap(r=>Object.keys(r.row_data||{})))].slice(0,5);
+  let html=`<table><thead><tr><th><input type="checkbox" id="checkAll" onchange="toggleAll(this)" /></th>`;
+  headers.forEach(h=>html+=`<th>${h}</th>`);
+  html+=`<th>Tag</th><th>Baseline ($)</th><th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th>`;
+  dimensions.forEach(d=>html+=`<th>${d.name}</th>`);
+  html+=`</tr></thead><tbody>`;
 
-  const headers = [...new Set(rows.flatMap(r => Object.keys(r.row_data || {})))].slice(0, 5);
-  let html = `<table><thead><tr>`;
-  headers.forEach(h => html += `<th>${h}</th>`);
-  html += `<th>Tag</th><th>Baseline ($)</th>`;
-  dimensions.forEach(d => html += `<th>${d.name}</th>`);
-  html += `</tr></thead><tbody>`;
+  rows.forEach((row,rowIdx)=>{
+    const isSelected=selectedRows.has(row.id);
+    const curSubId=subDimId?rowDimensions[row.id]?.[subDimId]||'':'';
+    const curSiteId=siteDimId?rowDimensions[row.id]?.[siteDimId]||'':'';
+    const curSub=subsidiaries.find(s=>s.id===curSubId);
+    const curSite=sites.find(s=>s.id===curSiteId);
+    // Filter sites by selected sub
+    const filteredSites=curSubId?sites.filter(s=>s.parent_id===curSubId):sites;
 
-  rows.forEach(row => {
-    html += `<tr>`;
-    headers.forEach(h => html += `<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.row_data?.[h]??''}</td>`);
+    html+=`<tr class="${isSelected?'selected':''}">`;
+    html+=`<td><input type="checkbox" class="row-check" data-id="${row.id}" ${isSelected?'checked':''} onchange="toggleRowSelect('${row.id}',this.checked)" /></td>`;
+    headers.forEach(h=>html+=`<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)">${row.row_data?.[h]??''}</td>`);
 
-    // Tag select
-    html += `<td><select data-id="${row.id}" class="row-tag-sel">`;
-    html += `<option value="">— none —</option>`;
-    tags.forEach(t => html += `<option value="${t.name}" ${row.tag === t.name ? 'selected' : ''}>${t.name}</option>`);
-    html += `</select></td>`;
+    // Tag
+    html+=`<td><select data-id="${row.id}" data-rowidx="${rowIdx}" class="row-tag-sel" tabindex="0" onkeydown="handleTabNav(event,this,'tag',${rowIdx})">`;
+    html+=`<option value="">—</option>`;
+    tags.forEach(t=>html+=`<option value="${t.name}" ${row.tag===t.name?'selected':''}>${t.name}</option>`);
+    html+=`</select></td>`;
 
     // Baseline
-    html += `<td><input type="number" data-id="${row.id}" class="row-baseline-inp" value="${row.baseline||0}" step="0.01" /></td>`;
+    html+=`<td><input type="number" data-id="${row.id}" data-rowidx="${rowIdx}" class="row-baseline-inp" value="${row.baseline||0}" step="0.01" tabindex="0" onkeydown="handleTabNav(event,this,'baseline',${rowIdx})" /></td>`;
 
-    // Dimension selects
-    dimensions.forEach(dim => {
-      const vals = dimValues[dim.id] || [];
-      const curVal = rowDimensions[row.id]?.[dim.id] || '';
-      html += `<td><select data-rowid="${row.id}" data-dimid="${dim.id}" class="row-dim-sel" style="min-width:100px">`;
-      html += `<option value="">—</option>`;
-      vals.forEach(v => html += `<option value="${v.id}" ${curVal === v.id ? 'selected' : ''}>${v.value}${v.code ? ` (${v.code})` : ''}</option>`);
-      html += `</select></td>`;
+    // Subsidiary dropdown
+    if(subDimId){
+      html+=`<td><select data-rowid="${row.id}" data-dimid="${subDimId}" data-rowidx="${rowIdx}" data-dimidx="0" class="row-sub-sel row-dim-sel" tabindex="0" onchange="onSubChange(this)" onkeydown="handleTabNav(event,this,'dim',${rowIdx},0)" style="min-width:110px">`;
+      html+=`<option value="">—</option>`;
+      subsidiaries.forEach(v=>html+=`<option value="${v.id}" ${curSubId===v.id?'selected':''}>${v.value}</option>`);
+      html+=`</select></td>`;
+      // Sub ID (readonly)
+      html+=`<td><span class="id-chip" id="subid-${row.id}">${curSub?.code||'—'}</span></td>`;
+    }else{html+=`<td>—</td><td>—</td>`;}
+
+    // Site dropdown — filtered to selected sub
+    if(siteDimId){
+      html+=`<td><select data-rowid="${row.id}" data-dimid="${siteDimId}" data-rowidx="${rowIdx}" data-dimidx="1" class="row-site-sel row-dim-sel" tabindex="0" onchange="onSiteChange(this)" onkeydown="handleTabNav(event,this,'dim',${rowIdx},1)" style="min-width:110px">`;
+      html+=`<option value="">—</option>`;
+      filteredSites.forEach(v=>html+=`<option value="${v.id}" ${curSiteId===v.id?'selected':''}>${v.value}</option>`);
+      html+=`</select></td>`;
+      // Site ID (readonly)
+      html+=`<td><span class="id-chip" id="siteid-${row.id}">${curSite?.code||'—'}</span></td>`;
+    }else{html+=`<td>—</td><td>—</td>`;}
+
+    // Other dimensions
+    dimensions.forEach((dim,dimIdx)=>{
+      const vals=dimValues[dim.id]||[];const curVal=rowDimensions[row.id]?.[dim.id]||'';
+      html+=`<td><select data-rowid="${row.id}" data-dimid="${dim.id}" data-rowidx="${rowIdx}" data-dimidx="${dimIdx+2}" class="row-dim-sel" tabindex="0" onkeydown="handleTabNav(event,this,'dim',${rowIdx},${dimIdx+2})" style="min-width:100px">`;
+      html+=`<option value="">—</option>`;
+      vals.forEach(v=>html+=`<option value="${v.id}" ${curVal===v.id?'selected':''}>${v.value}${v.code?` (${v.code})`:''}</option>`);
+      html+=`</select></td>`;
     });
-
-    html += `</tr>`;
+    html+=`</tr>`;
   });
-  html += `</tbody></table>`;
-  container.innerHTML = html;
-  document.getElementById('rowsCount').textContent = `${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+  html+=`</tbody></table>`;
+  container.innerHTML=html;
+  document.getElementById('rowsCount').textContent=`${rows.length} row${rows.length!==1?'s':''}`;
+  updateBulkBar();
 }
 
-async function saveRowTags() {
-  const tagSels = document.querySelectorAll('.row-tag-sel');
-  const baseInps = document.querySelectorAll('.row-baseline-inp');
-  const dimSels = document.querySelectorAll('.row-dim-sel');
-
-  // Save tags + baselines
-  for (const sel of tagSels) {
-    const id = sel.dataset.id;
-    const inp = document.querySelector(`.row-baseline-inp[data-id="${id}"]`);
-    await sb.from('report_rows').update({ tag: sel.value, baseline: parseFloat(inp?.value)||0 }).eq('id', id);
+// When subsidiary changes: filter site list + clear site + update sub ID chip
+function onSubChange(sel){
+  const rowId=sel.dataset.rowid;
+  const subValId=sel.value;
+  const curSub=subsidiaries.find(s=>s.id===subValId);
+  // Update sub ID chip
+  const subChip=document.getElementById(`subid-${rowId}`);
+  if(subChip)subChip.textContent=curSub?.code||'—';
+  // Rebuild site dropdown filtered to this sub
+  const siteSel=document.querySelector(`.row-site-sel[data-rowid="${rowId}"]`);
+  if(siteSel&&siteDimId){
+    const filteredSites=subValId?sites.filter(s=>s.parent_id===subValId):sites;
+    siteSel.innerHTML='<option value="">—</option>';
+    filteredSites.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value;siteSel.appendChild(o);});
+    // Clear site ID chip
+    const siteChip=document.getElementById(`siteid-${rowId}`);
+    if(siteChip)siteChip.textContent='—';
   }
+}
 
-  // Save dimension assignments
-  for (const sel of dimSels) {
-    const rowId = sel.dataset.rowid;
-    const dimId = sel.dataset.dimid;
-    const valId = sel.value;
+// When site changes: autofill site ID chip
+function onSiteChange(sel){
+  const rowId=sel.dataset.rowid;
+  const siteValId=sel.value;
+  const curSite=sites.find(s=>s.id===siteValId);
+  const siteChip=document.getElementById(`siteid-${rowId}`);
+  if(siteChip)siteChip.textContent=curSite?.code||'—';
+}
 
-    // Upsert
-    const { data: existing } = await sb.from('row_dimensions').select('id').eq('row_id', rowId).eq('dimension_id', dimId).limit(1);
-    if (existing && existing.length) {
-      if (valId) await sb.from('row_dimensions').update({ value_id: valId }).eq('row_id', rowId).eq('dimension_id', dimId);
-      else await sb.from('row_dimensions').delete().eq('row_id', rowId).eq('dimension_id', dimId);
-    } else if (valId) {
-      await sb.from('row_dimensions').insert({ row_id: rowId, dimension_id: dimId, value_id: valId });
-    }
+// ── Tab navigation ────────────────────────────────
+function handleTabNav(e,el,type,rowIdx,dimIdx){
+  if(e.key!=='Tab')return;e.preventDefault();
+  const dir=e.shiftKey?-1:1;
+  const totalDims=dimensions.length+2; // +2 for sub+site
+  let pos=type==='tag'?0:type==='baseline'?1:2+dimIdx;
+  const maxPos=1+totalDims;
+  let nextPos=pos+dir,nextRowIdx=rowIdx;
+  if(nextPos<0){nextPos=maxPos;nextRowIdx=rowIdx-1;}
+  else if(nextPos>maxPos){nextPos=0;nextRowIdx=rowIdx+1;}
+  const rows=document.querySelectorAll('tbody tr');
+  if(nextRowIdx<0||nextRowIdx>=rows.length)return;
+  const targetRow=rows[nextRowIdx];let targetEl;
+  if(nextPos===0)targetEl=targetRow.querySelector('.row-tag-sel');
+  else if(nextPos===1)targetEl=targetRow.querySelector('.row-baseline-inp');
+  else{const dimSels=targetRow.querySelectorAll('.row-dim-sel');targetEl=dimSels[nextPos-2];}
+  if(targetEl){targetEl.focus();if(targetEl.select)targetEl.select();}
+}
+
+// ── Selection / Bulk ──────────────────────────────
+function toggleRowSelect(id,checked){
+  if(checked)selectedRows.add(id);else selectedRows.delete(id);
+  updateBulkBar();
+  document.querySelectorAll('.row-check').forEach(cb=>{const tr=cb.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);});
+}
+function toggleAll(cb){
+  document.querySelectorAll('.row-check').forEach(c=>{c.checked=cb.checked;const tr=c.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);if(cb.checked)selectedRows.add(c.dataset.id);else selectedRows.delete(c.dataset.id);});
+  updateBulkBar();
+}
+function selectAllVisible(){
+  document.querySelectorAll('.row-check').forEach(c=>{c.checked=true;const tr=c.closest('tr');if(tr)tr.classList.add('selected');selectedRows.add(c.dataset.id);});
+  const ca=document.getElementById('checkAll');if(ca)ca.checked=true;updateBulkBar();
+}
+function clearSelection(){
+  selectedRows.clear();
+  document.querySelectorAll('.row-check').forEach(c=>c.checked=false);
+  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.remove('selected'));
+  const ca=document.getElementById('checkAll');if(ca)ca.checked=false;updateBulkBar();
+}
+function updateBulkBar(){
+  const bar=document.getElementById('bulkBar');const count=selectedRows.size;
+  bar.style.display=count>0?'flex':'none';
+  document.getElementById('bulkCount').textContent=`${count} selected`;
+}
+async function applyBulkTag(){
+  const tag=document.getElementById('bulkTagSel').value;
+  if(!tag||!selectedRows.size){toast('Select rows and a tag first');return;}
+  const ids=[...selectedRows];
+  for(const id of ids)await sb.from('report_rows').update({tag}).eq('id',id);
+  toast(`Tag applied to ${ids.length} rows`);clearSelection();await loadRows();
+}
+async function applyBulkDim(){
+  const dimId=document.getElementById('bulkDimSel').value;
+  const valId=document.getElementById('bulkDimValSel').value;
+  if(!dimId||!valId||!selectedRows.size){toast('Select rows, dimension, and value first');return;}
+  const ids=[...selectedRows];
+  for(const rowId of ids){
+    const{data:existing}=await sb.from('row_dimensions').select('id').eq('row_id',rowId).eq('dimension_id',dimId).limit(1);
+    if(existing&&existing.length)await sb.from('row_dimensions').update({value_id:valId}).eq('row_id',rowId).eq('dimension_id',dimId);
+    else await sb.from('row_dimensions').insert({row_id:rowId,dimension_id:dimId,value_id:valId});
   }
-
-  await loadRows();
-  toast(`Changes saved`);
+  toast(`Dimension applied to ${ids.length} rows`);clearSelection();await loadRows();
+}
+async function saveRowTags(){
+  const tagSels=document.querySelectorAll('.row-tag-sel');
+  const baseInps=document.querySelectorAll('.row-baseline-inp');
+  const dimSels=document.querySelectorAll('.row-dim-sel');
+  for(const sel of tagSels){
+    const id=sel.dataset.id;const inp=document.querySelector(`.row-baseline-inp[data-id="${id}"]`);
+    await sb.from('report_rows').update({tag:sel.value,baseline:parseFloat(inp?.value)||0}).eq('id',id);
+  }
+  for(const sel of dimSels){
+    const rowId=sel.dataset.rowid,dimId=sel.dataset.dimid,valId=sel.value;
+    const{data:existing}=await sb.from('row_dimensions').select('id').eq('row_id',rowId).eq('dimension_id',dimId).limit(1);
+    if(existing&&existing.length){if(valId)await sb.from('row_dimensions').update({value_id:valId}).eq('row_id',rowId).eq('dimension_id',dimId);else await sb.from('row_dimensions').delete().eq('row_id',rowId).eq('dimension_id',dimId);}
+    else if(valId)await sb.from('row_dimensions').insert({row_id:rowId,dimension_id:dimId,value_id:valId});
+  }
+  await loadRows();toast('Changes saved');
 }
 
 // ── Journal Entry ─────────────────────────────────
-async function calculateJE() {
-  const { data: rows } = await sb.from('report_rows').select('*').neq('tag', '');
-  if (!rows || !rows.length) { toast('No tagged rows found'); return; }
+async function calculateJE(){
+  const period=document.getElementById('jePeriodFilter').value;
+  const groupBy=document.getElementById('jeGroupBy').value;
+  let query=sb.from('report_rows').select('*').neq('tag','');
+  if(period){const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);if(pReports.length)query=query.in('report_id',pReports);}
+  const{data:rows}=await query;
+  if(!rows||!rows.length){toast('No tagged rows found');return;}
+  const ids=rows.map(r=>r.id);
+  const{data:rds}=await sb.from('row_dimensions').select('*').in('row_id',ids);
+  const rdMap={};(rds||[]).forEach(rd=>{if(!rdMap[rd.row_id])rdMap[rd.row_id]={};rdMap[rd.row_id][rd.dimension_id]=rd.value_id;});
+  const glDim=dimensions.find(d=>d.name.toLowerCase().includes('gl'));
 
-  const groupBy = document.getElementById('jeGroupBy').value;
-
-  // Load dim assignments for tagged rows
-  const ids = rows.map(r => r.id);
-  const { data: rds } = await sb.from('row_dimensions').select('*').in('row_id', ids);
-  const rdMap = {};
-  (rds||[]).forEach(rd => {
-    if (!rdMap[rd.row_id]) rdMap[rd.row_id] = {};
-    rdMap[rd.row_id][rd.dimension_id] = rd.value_id;
-  });
-
-  // Build grouping key
-  const subDim = dimensions.find(d => d.name.toLowerCase().includes('subsidiar'));
-  const glDim = dimensions.find(d => d.name.toLowerCase().includes('gl'));
-
-  const getKey = (row) => {
-    let key = row.tag;
-    if (groupBy === 'tag+subsidiary' && subDim) {
-      const vid = rdMap[row.id]?.[subDim.id];
-      const v = vid ? (dimValues[subDim.id]||[]).find(x => x.id === vid) : null;
-      key += ' | ' + (v ? v.value : 'Unassigned');
-    } else if (groupBy === 'tag+gl' && glDim) {
-      const vid = rdMap[row.id]?.[glDim.id];
-      const v = vid ? (dimValues[glDim.id]||[]).find(x => x.id === vid) : null;
-      key += ' | ' + (v ? (v.code || v.value) : 'Unassigned');
-    } else if (groupBy === 'tag+all') {
-      dimensions.forEach(dim => {
-        const vid = rdMap[row.id]?.[dim.id];
-        const v = vid ? (dimValues[dim.id]||[]).find(x => x.id === vid) : null;
-        key += ' | ' + (v ? v.value : '—');
-      });
+  const getKey=row=>{
+    let key=row.tag;
+    const subValId=subDimId?rdMap[row.id]?.[subDimId]:null;
+    const siteValId=siteDimId?rdMap[row.id]?.[siteDimId]:null;
+    const subObj=subsidiaries.find(s=>s.id===subValId);
+    const siteObj=sites.find(s=>s.id===siteValId);
+    if(groupBy==='tag+sub'||groupBy==='tag+sub+site'||groupBy==='tag+all'){
+      key+=` | ${subObj?subObj.value:'—'}${subObj?.code?' ('+subObj.code+')':''}`;
+    }
+    if(groupBy==='tag+sub+site'||groupBy==='tag+all'){
+      key+=` | ${siteObj?siteObj.value:'—'}${siteObj?.code?' ('+siteObj.code+')':''}`;
+    }
+    if(groupBy==='tag+gl'&&glDim){const vid=rdMap[row.id]?.[glDim.id];const v=vid?(dimValues[glDim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?(v.code||v.value):'—');}
+    if(groupBy==='tag+all'){
+      dimensions.forEach(dim=>{const vid=rdMap[row.id]?.[dim.id];const v=vid?(dimValues[dim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?v.value:'—');});
     }
     return key;
   };
 
-  const byKey = {};
-  rows.forEach(r => {
-    const net = r.amount - (r.baseline || 0);
-    const key = getKey(r);
-    if (!byKey[key]) byKey[key] = { tag: r.tag, key, total: 0, count: 0 };
-    byKey[key].total += net;
-    byKey[key].count++;
+  const byKey={};
+  rows.forEach(r=>{
+    const net=r.amount-(r.baseline||0);const key=getKey(r);
+    if(!byKey[key])byKey[key]={tag:r.tag,key,total:0,count:0,subValId:subDimId?rdMap[r.id]?.[subDimId]:null,siteValId:siteDimId?rdMap[r.id]?.[siteDimId]:null};
+    byKey[key].total+=net;byKey[key].count++;
   });
 
-  let accrual = 0, reversal = 0;
-  const entries = Object.values(byKey).map(g => {
-    const isReversal = g.tag.toLowerCase().includes('reversal');
-    const type = isReversal ? 'Credit' : 'Debit';
-    if (isReversal) reversal += Math.abs(g.total); else accrual += Math.abs(g.total);
-    return { tag: g.tag, key: g.key, type, amount: g.total, count: g.count };
+  let accrual=0,reversal=0;
+  const entries=Object.values(byKey).map(g=>{
+    const isRev=g.tag.toLowerCase().includes('reversal');const type=isRev?'Credit':'Debit';
+    if(isRev)reversal+=Math.abs(g.total);else accrual+=Math.abs(g.total);
+    const subObj=subsidiaries.find(s=>s.id===g.subValId);
+    const siteObj=sites.find(s=>s.id===g.siteValId);
+    return{tag:g.tag,key:g.key,type,amount:g.total,count:g.count,
+      subName:subObj?.value||'',subCode:subObj?.code||'',
+      siteName:siteObj?.value||'',siteCode:siteObj?.code||''};
   });
 
-  currentJE = { entries, total_accrual: accrual, total_reversal: reversal, net: accrual - reversal };
+  currentJE={entries,total_accrual:accrual,total_reversal:reversal,net:accrual-reversal,period};
+  document.getElementById('jeTotalAccrual').textContent=fmt(accrual);
+  document.getElementById('jeTotalReversal').textContent=fmt(reversal);
+  const net=accrual-reversal;
+  document.getElementById('jeNet').textContent=(net<0?'-':'')+fmt(Math.abs(net));
+  document.getElementById('jeRowCount').textContent=rows.length;
 
-  document.getElementById('jeTotalAccrual').textContent = fmt(accrual);
-  document.getElementById('jeTotalReversal').textContent = fmt(reversal);
-  const net = accrual - reversal;
-  document.getElementById('jeNet').textContent = (net < 0 ? '-' : '') + fmt(Math.abs(net));
-  document.getElementById('jeRowCount').textContent = rows.length;
-
-  const html = entries.map(e => {
-    const parts = e.key.split(' | ').slice(1);
-    const dimBadges = parts.map(p => `<span class="badge badge-dim">${p}</span>`).join('');
-    return `<div class="je-line">
+  const html=entries.map(e=>{
+    const parts=e.key.split(' | ').slice(1);
+    const dimBadges=parts.map(p=>`<span class="badge badge-dim">${p}</span>`).join('');
+    return`<div class="je-line">
       <div class="je-left">
-        <span class="badge ${e.type === 'Debit' ? 'badge-debit' : 'badge-credit'}">${e.type}</span>
+        <span class="badge ${e.type==='Debit'?'badge-debit':'badge-credit'}">${e.type}</span>
         <span style="font-weight:500">${e.tag}</span>
         ${dimBadges}
-        <span style="font-size:11px;color:var(--text-faint)">${e.count} row${e.count !== 1 ? 's' : ''}</span>
+        <span style="font-size:11px;color:var(--text-faint)">${e.count} row${e.count!==1?'s':''}</span>
       </div>
-      <span class="je-amount ${e.type === 'Debit' ? 'debit' : 'credit'}">${e.amount < 0 ? '-' : ''}${fmt(Math.abs(e.amount))}</span>
+      <span class="je-amount ${e.type==='Debit'?'debit':'credit'}">${e.amount<0?'-':''}${fmt(Math.abs(e.amount))}</span>
     </div>`;
   }).join('');
-  document.getElementById('jeLines').innerHTML = html || '<div class="empty">No entries</div>';
+  document.getElementById('jeLines').innerHTML=html||'<div class="empty">No entries</div>';
 }
 
-async function saveJE() {
-  if (!currentJE) { toast('Calculate the JE first'); return; }
-  await sb.from('journal_entries').insert({
-    entries: currentJE.entries,
-    total_accrual: currentJE.total_accrual,
-    total_reversal: currentJE.total_reversal,
-    net: currentJE.net,
-  });
-  toast('Journal entry saved to history');
-  await loadHistory();
+async function saveJE(){
+  if(!currentJE){toast('Calculate the JE first');return;}
+  await sb.from('journal_entries').insert({entries:currentJE.entries,total_accrual:currentJE.total_accrual,total_reversal:currentJE.total_reversal,net:currentJE.net});
+  toast('Saved to history');await loadHistory();
 }
 
-function downloadJE() {
-  if (!currentJE) { toast('Calculate the JE first'); return; }
-  const rows = [['Key','Tag','Type','Amount','Row count']];
-  currentJE.entries.forEach(e => rows.push([e.key, e.tag, e.type, e.amount.toFixed(2), e.count]));
-  rows.push(['','','','','']);
-  rows.push(['Total Accrual (Dr)','','',currentJE.total_accrual.toFixed(2),'']);
-  rows.push(['Total Reversal (Cr)','','',currentJE.total_reversal.toFixed(2),'']);
-  rows.push(['Net','','',currentJE.net.toFixed(2),'']);
-  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = `journal_entry_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  toast('Downloaded');
+function downloadJE(){
+  if(!currentJE){toast('Calculate the JE first');return;}
+  const rows=[['Period','Tag','Type','Subsidiary','Sub ID','Site','Site ID','Amount','Row count']];
+  currentJE.entries.forEach(e=>rows.push([
+    currentJE.period?periodLabel(currentJE.period):'All',
+    e.tag,e.type,e.subName,e.subCode,e.siteName,e.siteCode,
+    e.amount.toFixed(2),e.count
+  ]));
+  rows.push([]);
+  rows.push(['Total Accrual (Dr)','','','','','','',currentJE.total_accrual.toFixed(2),'']);
+  rows.push(['Total Reversal (Cr)','','','','','','',currentJE.total_reversal.toFixed(2),'']);
+  rows.push(['Net','','','','','','',currentJE.net.toFixed(2),'']);
+  downloadCSV(rows,`journal_entry_${currentJE.period||'all'}_${new Date().toISOString().slice(0,10)}.csv`);
 }
 
-// ── History ───────────────────────────────────────
-async function loadHistory() {
-  const { data } = await sb.from('journal_entries').select('*').order('created_at', {ascending:false});
-  const el = document.getElementById('historyList');
-  if (!data || !data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div>'; return; }
-  el.innerHTML = data.map(je => {
-    const entries = Array.isArray(je.entries) ? je.entries : JSON.parse(je.entries || '[]');
-    const lines = entries.map(e =>
-      `<span class="badge ${e.type === 'Debit' ? 'badge-debit' : 'badge-credit'}" style="margin-right:4px">${e.tag} ${fmt(Math.abs(e.amount))}</span>`
-    ).join('');
-    return `<div class="history-row">
-      <div>
-        <div>${lines}</div>
-        <div class="history-meta">${new Date(je.created_at).toLocaleString()} · Net ${fmt(je.net)}</div>
-      </div>
-    </div>`;
+// ── Templates ─────────────────────────────────────
+async function loadTemplates(){
+  const{data}=await sb.from('je_templates').select('*').order('created_at');
+  templates=data||[];renderTemplatesList();
+}
+function renderTemplatesList(){
+  const el=document.getElementById('templatesList');
+  if(!templates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No templates yet</div>';return;}
+  el.innerHTML=templates.map(t=>`<div class="report-row"><span style="font-weight:500">${t.name}</span><div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="editTemplate('${t.id}')">Edit</button><button class="btn btn-sm btn-amber" onclick="applyTemplateById('${t.id}')">▶ Apply</button></div></div>`).join('');
+}
+function newTemplate(){
+  editingTemplateId=null;document.getElementById('templateName').value='';document.getElementById('rulesList').innerHTML='';
+  document.getElementById('templateEditorTitle').textContent='New template';document.getElementById('templateEditor').style.display='block';addRule();
+}
+function editTemplate(id){
+  const t=templates.find(x=>x.id===id);if(!t)return;
+  editingTemplateId=id;document.getElementById('templateName').value=t.name;
+  document.getElementById('templateEditorTitle').textContent=`Edit: ${t.name}`;
+  document.getElementById('templateEditor').style.display='block';
+  const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');
+  document.getElementById('rulesList').innerHTML='';rules.forEach(r=>addRule(r));
+}
+function addRule(existing=null){
+  const div=document.createElement('div');div.className='rule-row';
+  const fieldNames=[...new Set(allRows.flatMap(r=>Object.keys(r.row_data||{})))];
+  const fieldsOpts=fieldNames.map(f=>`<option value="${f}" ${existing?.field===f?'selected':''}>${f}</option>`).join('');
+  const tagOpts=tags.map(t=>`<option value="${t.name}" ${existing?.tag===t.name?'selected':''}>${t.name}</option>`).join('');
+  div.innerHTML=`<span style="font-size:12px;color:var(--text-muted)">If</span>
+    <select class="rule-field" style="min-width:120px"><option value="">Field…</option>${fieldsOpts}</select>
+    <span style="font-size:12px;color:var(--text-muted)">=</span>
+    <input type="text" class="rule-value" placeholder="Value" value="${existing?.value||''}" />
+    <span style="font-size:12px;color:var(--text-muted)">→ tag</span>
+    <select class="rule-tag"><option value="">Tag…</option>${tagOpts}</select>
+    <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('rulesList').appendChild(div);
+}
+async function saveTemplate(){
+  const name=document.getElementById('templateName').value.trim();if(!name){toast('Enter a name');return;}
+  const rules=[...document.querySelectorAll('#rulesList .rule-row')].map(row=>({field:row.querySelector('.rule-field').value,value:row.querySelector('.rule-value').value.trim(),tag:row.querySelector('.rule-tag').value})).filter(r=>r.field&&r.tag);
+  if(editingTemplateId)await sb.from('je_templates').update({name,rules}).eq('id',editingTemplateId);
+  else await sb.from('je_templates').insert({name,rules});
+  await loadTemplates();document.getElementById('templateEditor').style.display='none';toast('Template saved');
+}
+async function deleteTemplate(){
+  if(!editingTemplateId||!confirm('Delete this template?'))return;
+  await sb.from('je_templates').delete().eq('id',editingTemplateId);
+  editingTemplateId=null;document.getElementById('templateEditor').style.display='none';await loadTemplates();toast('Deleted');
+}
+async function applyTemplateToRows(){await applyTemplateById(editingTemplateId);}
+async function applyTemplateById(id){
+  const t=templates.find(x=>x.id===id);if(!t){toast('Template not found');return;}
+  const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');if(!rules.length){toast('No rules defined');return;}
+  let applied=0;
+  for(const row of allRows){
+    for(const rule of rules){
+      const rowVal=(row.row_data?.[rule.field]||'').toString().trim().toLowerCase();
+      if(rowVal===rule.value.toLowerCase()&&rule.tag){await sb.from('report_rows').update({tag:rule.tag}).eq('id',row.id);applied++;break;}
+    }
+  }
+  await loadRows();toast(`Applied — ${applied} rows tagged`);
+}
+function downloadTemplate(){
+  const name=document.getElementById('templateName').value.trim()||'template';
+  const rules=[...document.querySelectorAll('#rulesList .rule-row')].map(row=>({field:row.querySelector('.rule-field').value,value:row.querySelector('.rule-value').value.trim(),tag:row.querySelector('.rule-tag').value}));
+  downloadCSV([['Field','Match value','Apply tag'],...rules.map(r=>[r.field,r.value,r.tag])],`template_${name.replace(/\s+/g,'_')}.csv`);
+}
+
+// ── History & Log ─────────────────────────────────
+async function loadHistory(){
+  const{data}=await sb.from('journal_entries').select('*').order('created_at',{ascending:false});
+  const el=document.getElementById('historyList');
+  if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div>';return;}
+  el.innerHTML=data.map(je=>{
+    const entries=Array.isArray(je.entries)?je.entries:JSON.parse(je.entries||'[]');
+    const lines=entries.map(e=>`<span class="badge ${e.type==='Debit'?'badge-debit':'badge-credit'}" style="margin-right:4px">${e.tag} ${fmt(Math.abs(e.amount))}</span>`).join('');
+    return`<div class="history-row"><div><div>${lines}</div><div class="history-meta">${new Date(je.created_at).toLocaleString()} · Net ${fmt(je.net)}</div></div></div>`;
   }).join('');
 }
-
-// ── Log ───────────────────────────────────────────
-async function loadLog() {
-  const { data } = await sb.from('log_entries').select('*').order('created_at', {ascending:false}).limit(100);
-  const el = document.getElementById('logList');
-  if (!data || !data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>No log entries yet</div>'; return; }
-  el.innerHTML = data.map(l =>
-    `<div class="log-entry"><span class="log-time">${new Date(l.created_at).toLocaleString()}</span>${l.message}</div>`
-  ).join('');
+async function loadLog(){
+  const{data}=await sb.from('log_entries').select('*').order('created_at',{ascending:false}).limit(100);
+  const el=document.getElementById('logList');
+  if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">📄</div>No log entries yet</div>';return;}
+  el.innerHTML=data.map(l=>`<div class="log-entry"><span class="log-time">${new Date(l.created_at).toLocaleString()}</span>${l.message}</div>`).join('');
 }
 
-function fmt(n) {
-  return '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// ── Helpers ───────────────────────────────────────
+function fmt(n){return'$'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function downloadCSV(rows,filename){
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();toast('Downloaded');
 }
 
 init();
