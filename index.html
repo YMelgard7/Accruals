@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/cymel/Downloads/index_5.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Accruals</title>
-<script src="./Accruals6_files/supabase-js@2"></script>
-<script src="./Accruals6_files/xlsx.full.min.js.download"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f7f7f5;--surface:#fff;--border:#e4e2dc;--border-strong:#c8c5bc;--text:#1a1916;--text-muted:#6b6860;--text-faint:#a09e99;--accent:#1a5c38;--accent-light:#e8f2ec;--debit:#185FA5;--debit-bg:#E6F1FB;--credit:#1a5c38;--credit-bg:#e8f2ec;--danger:#a32d2d;--danger-bg:#fcebeb;--amber:#854F0B;--amber-bg:#FAEEDA;--purple:#3C3489;--purple-bg:#EEEDFE;--radius:8px;--radius-lg:12px}
@@ -108,30 +108,30 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 <body>
 <div class="topbar">
   <div class="topbar-brand"><span>A</span> Accruals</div>
-  <div class="topbar-status"><div class="status-dot connected" id="statusDot"></div><span id="statusText">Connected</span></div>
+  <div class="topbar-status"><div class="status-dot" id="statusDot"></div><span id="statusText">Connecting…</span></div>
 </div>
 <div class="layout">
 <nav class="sidebar">
   <div class="nav-section">
     <div class="nav-label">Uploads</div>
-    <button class="nav-item active" onclick="nav(&#39;pricing-upload&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"></path><path d="M2 4l2-2h8l2 2"></path><path d="M8 7v4M6 9h4"></path></svg>Pricing</button>
-    <button class="nav-item" onclick="nav(&#39;oncore-upload&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"></path></svg>Oncore</button>
-    <button class="nav-item" onclick="nav(&#39;ap-upload&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"></path></svg>AP Pending</button>
+    <button class="nav-item active" onclick="nav('pricing-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/><path d="M2 4l2-2h8l2 2"/><path d="M8 7v4M6 9h4"/></svg>Pricing</button>
+    <button class="nav-item" onclick="nav('oncore-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>Oncore</button>
+    <button class="nav-item" onclick="nav('ap-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>AP Pending</button>
   </div>
   <div class="nav-section">
     <div class="nav-label">Workspace</div>
-    <button class="nav-item" onclick="nav(&#39;reports&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="10" height="14" rx="1.5"></rect><path d="M5 5h6M5 8h6M5 11h3"></path><path d="M10 1v4h4"></path></svg>Reports</button>
-    <button class="nav-item" onclick="nav(&#39;rows&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"></rect><path d="M1 6h14M1 9h14M5 6v7M11 6v7"></path></svg>Data rows</button>
-    <button class="nav-item" onclick="nav(&#39;je&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"></path><circle cx="13" cy="11" r="2.5"></circle><path d="M12 11h2M13 10v2"></path></svg>Journal entry</button>
+    <button class="nav-item" onclick="nav('reports',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="10" height="14" rx="1.5"/><path d="M5 5h6M5 8h6M5 11h3"/><path d="M10 1v4h4"/></svg>Reports</button>
+    <button class="nav-item" onclick="nav('rows',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14M1 9h14M5 6v7M11 6v7"/></svg>Data rows</button>
+    <button class="nav-item" onclick="nav('je',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M12 11h2M13 10v2"/></svg>Journal entry</button>
   </div>
   <div class="nav-section">
     <div class="nav-label">Config</div>
-    <button class="nav-item" onclick="nav(&#39;pricing-master&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3l2 1.5"></path></svg>Price master</button>
-    <button class="nav-item" onclick="nav(&#39;entities&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"></rect><rect x="9" y="1" width="6" height="6" rx="1"></rect><rect x="1" y="9" width="6" height="6" rx="1"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect></svg>Entities</button>
-    <button class="nav-item" onclick="nav(&#39;templates&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="1.5"></rect><path d="M1 5h14M5 5v10"></path></svg>JE Templates</button>
-    <button class="nav-item" onclick="nav(&#39;tags&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"></path><circle cx="11" cy="5" r="1"></circle></svg>Tags</button>
-    <button class="nav-item" onclick="nav(&#39;history&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"></circle><path d="M8 5v3.5l2 1.5"></path></svg>History</button>
-    <button class="nav-item" onclick="nav(&#39;log&#39;,this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"></rect><path d="M5 5h6M5 8h6M5 11h3"></path></svg>Log</button>
+    <button class="nav-item" onclick="nav('pricing-master',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1.5"/></svg>Price master</button>
+    <button class="nav-item" onclick="nav('entities',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Entities</button>
+    <button class="nav-item" onclick="nav('templates',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="1.5"/><path d="M1 5h14M5 5v10"/></svg>JE Templates</button>
+    <button class="nav-item" onclick="nav('tags',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"/><circle cx="11" cy="5" r="1"/></svg>Tags</button>
+    <button class="nav-item" onclick="nav('history',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>History</button>
+    <button class="nav-item" onclick="nav('log',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h6M5 11h3"/></svg>Log</button>
   </div>
 </nav>
 <main class="main">
@@ -148,7 +148,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div style="font-size:12px;color:var(--text-faint);margin-top:8px">e.g. Oncore Name + CPT Code</div>
   </div>
   <div class="card">
-    <div class="drop-zone" id="pricingDropZone" onclick="document.getElementById(&#39;pricingFileInput&#39;).click()">
+    <div class="drop-zone" id="pricingDropZone" onclick="document.getElementById('pricingFileInput').click()">
       <div class="drop-icon">📋</div>
       <div class="drop-label">Drop pricing file here, or click to browse</div>
       <div class="drop-hint">Supports .csv and .xlsx</div>
@@ -168,9 +168,9 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div><div class="card-title" style="margin:0">Duplicate review</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px" id="conflictSummary"></div></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-sm" onclick="resolveAll(&#39;keep_old&#39;)">Keep all existing</button>
-        <button class="btn btn-sm btn-primary" onclick="resolveAll(&#39;use_new&#39;)">Use all new prices</button>
-        <button class="btn btn-sm btn-purple" onclick="resolveAll(&#39;keep_both&#39;)">Keep both</button>
+        <button class="btn btn-sm" onclick="resolveAll('keep_old')">Keep all existing</button>
+        <button class="btn btn-sm btn-primary" onclick="resolveAll('use_new')">Use all new prices</button>
+        <button class="btn btn-sm btn-purple" onclick="resolveAll('keep_both')">Keep both</button>
       </div>
     </div>
     <div id="conflictList"></div>
@@ -197,9 +197,9 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card">
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
       <label style="font-size:13px;color:var(--text-muted)">Period:</label>
-      <select id="oncorePeriod" style="font-size:12px"><option value="">— no period —</option><option value="2026-12">Dec 2026</option><option value="2026-11">Nov 2026</option><option value="2026-10">Oct 2026</option><option value="2026-09">Sep 2026</option><option value="2026-08">Aug 2026</option><option value="2026-07">Jul 2026</option><option value="2026-06">Jun 2026</option><option value="2026-05">May 2026</option><option value="2026-04">Apr 2026</option><option value="2026-03">Mar 2026</option><option value="2026-02">Feb 2026</option><option value="2026-01">Jan 2026</option><option value="2025-12">Dec 2025</option><option value="2025-11">Nov 2025</option><option value="2025-10">Oct 2025</option><option value="2025-09">Sep 2025</option><option value="2025-08">Aug 2025</option><option value="2025-07">Jul 2025</option><option value="2025-06">Jun 2025</option><option value="2025-05">May 2025</option><option value="2025-04">Apr 2025</option><option value="2025-03">Mar 2025</option><option value="2025-02">Feb 2025</option><option value="2025-01">Jan 2025</option><option value="2024-12">Dec 2024</option><option value="2024-11">Nov 2024</option><option value="2024-10">Oct 2024</option><option value="2024-09">Sep 2024</option><option value="2024-08">Aug 2024</option><option value="2024-07">Jul 2024</option><option value="2024-06">Jun 2024</option><option value="2024-05">May 2024</option><option value="2024-04">Apr 2024</option><option value="2024-03">Mar 2024</option><option value="2024-02">Feb 2024</option><option value="2024-01">Jan 2024</option><option value="2023-12">Dec 2023</option><option value="2023-11">Nov 2023</option><option value="2023-10">Oct 2023</option><option value="2023-09">Sep 2023</option><option value="2023-08">Aug 2023</option><option value="2023-07">Jul 2023</option><option value="2023-06">Jun 2023</option><option value="2023-05">May 2023</option><option value="2023-04">Apr 2023</option><option value="2023-03">Mar 2023</option><option value="2023-02">Feb 2023</option><option value="2023-01">Jan 2023</option></select>
+      <select id="oncorePeriod" style="font-size:12px"></select>
     </div>
-    <div class="drop-zone" id="oncoreDropZone" onclick="document.getElementById(&#39;oncoreFileInput&#39;).click()">
+    <div class="drop-zone" id="oncoreDropZone" onclick="document.getElementById('oncoreFileInput').click()">
       <div class="drop-icon">📊</div>
       <div class="drop-label">Drop Oncore file here, or click to browse</div>
       <div class="drop-hint">Supports .csv and .xlsx</div>
@@ -212,8 +212,8 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div class="table-wrap" id="oncorePreviewTable"></div>
     <div class="row-count" id="oncorePreviewCount"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveTypedFile(&#39;oncore&#39;)">💾 Save to database</button>
-      <button class="btn" onclick="clearTypedUpload(&#39;oncore&#39;)">Clear</button>
+      <button class="btn btn-primary" onclick="saveTypedFile('oncore')">💾 Save to database</button>
+      <button class="btn" onclick="clearTypedUpload('oncore')">Clear</button>
     </div>
   </div>
   <div class="card"><div class="card-title">Oncore history</div><div id="oncoreHistory"><div class="empty"><div class="empty-icon">📊</div>No Oncore files yet</div></div></div>
@@ -233,9 +233,9 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card">
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
       <label style="font-size:13px;color:var(--text-muted)">Period:</label>
-      <select id="apPeriod" style="font-size:12px"><option value="">— no period —</option><option value="2026-12">Dec 2026</option><option value="2026-11">Nov 2026</option><option value="2026-10">Oct 2026</option><option value="2026-09">Sep 2026</option><option value="2026-08">Aug 2026</option><option value="2026-07">Jul 2026</option><option value="2026-06">Jun 2026</option><option value="2026-05">May 2026</option><option value="2026-04">Apr 2026</option><option value="2026-03">Mar 2026</option><option value="2026-02">Feb 2026</option><option value="2026-01">Jan 2026</option><option value="2025-12">Dec 2025</option><option value="2025-11">Nov 2025</option><option value="2025-10">Oct 2025</option><option value="2025-09">Sep 2025</option><option value="2025-08">Aug 2025</option><option value="2025-07">Jul 2025</option><option value="2025-06">Jun 2025</option><option value="2025-05">May 2025</option><option value="2025-04">Apr 2025</option><option value="2025-03">Mar 2025</option><option value="2025-02">Feb 2025</option><option value="2025-01">Jan 2025</option><option value="2024-12">Dec 2024</option><option value="2024-11">Nov 2024</option><option value="2024-10">Oct 2024</option><option value="2024-09">Sep 2024</option><option value="2024-08">Aug 2024</option><option value="2024-07">Jul 2024</option><option value="2024-06">Jun 2024</option><option value="2024-05">May 2024</option><option value="2024-04">Apr 2024</option><option value="2024-03">Mar 2024</option><option value="2024-02">Feb 2024</option><option value="2024-01">Jan 2024</option><option value="2023-12">Dec 2023</option><option value="2023-11">Nov 2023</option><option value="2023-10">Oct 2023</option><option value="2023-09">Sep 2023</option><option value="2023-08">Aug 2023</option><option value="2023-07">Jul 2023</option><option value="2023-06">Jun 2023</option><option value="2023-05">May 2023</option><option value="2023-04">Apr 2023</option><option value="2023-03">Mar 2023</option><option value="2023-02">Feb 2023</option><option value="2023-01">Jan 2023</option></select>
+      <select id="apPeriod" style="font-size:12px"></select>
     </div>
-    <div class="drop-zone" id="apDropZone" onclick="document.getElementById(&#39;apFileInput&#39;).click()">
+    <div class="drop-zone" id="apDropZone" onclick="document.getElementById('apFileInput').click()">
       <div class="drop-icon">📄</div>
       <div class="drop-label">Drop AP Pending file here, or click to browse</div>
       <div class="drop-hint">Supports .csv and .xlsx</div>
@@ -248,8 +248,8 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div class="table-wrap" id="apPreviewTable"></div>
     <div class="row-count" id="apPreviewCount"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveTypedFile(&#39;ap_pending&#39;)">💾 Save to database</button>
-      <button class="btn" onclick="clearTypedUpload(&#39;ap&#39;)">Clear</button>
+      <button class="btn btn-primary" onclick="saveTypedFile('ap_pending')">💾 Save to database</button>
+      <button class="btn" onclick="clearTypedUpload('ap')">Clear</button>
     </div>
   </div>
   <div class="card"><div class="card-title">AP Pending history</div><div id="apHistory"><div class="empty"><div class="empty-icon">📄</div>No AP Pending files yet</div></div></div>
@@ -260,12 +260,12 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="page-header"><div class="page-title">Reports</div><div class="page-sub">All uploaded files</div></div>
   <div class="card">
     <div class="file-type-bar">
-      <button class="file-type-btn active" onclick="filterReportType(&#39;all&#39;,this)">All</button>
-      <button class="file-type-btn" onclick="filterReportType(&#39;oncore&#39;,this)">Oncore</button>
-      <button class="file-type-btn" onclick="filterReportType(&#39;ap_pending&#39;,this)">AP Pending</button>
-      <button class="file-type-btn" onclick="filterReportType(&#39;general&#39;,this)">General</button>
+      <button class="file-type-btn active" onclick="filterReportType('all',this)">All</button>
+      <button class="file-type-btn" onclick="filterReportType('oncore',this)">Oncore</button>
+      <button class="file-type-btn" onclick="filterReportType('ap_pending',this)">AP Pending</button>
+      <button class="file-type-btn" onclick="filterReportType('general',this)">General</button>
     </div>
-    <div id="reportsList"><div class="empty"><div class="empty-icon">📁</div>No reports</div></div>
+    <div id="reportsList"><div class="empty"><div class="empty-icon">📁</div>No reports yet</div></div>
   </div>
 </div>
 
@@ -278,7 +278,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
         <select id="filterPeriod" onchange="loadRows()" style="font-size:12px"><option value="">All periods</option></select>
         <select id="filterReport" onchange="loadRows()" style="font-size:12px"><option value="">All reports</option></select>
         <select id="filterFileType" onchange="loadRows()" style="font-size:12px"><option value="">All types</option><option value="oncore">Oncore</option><option value="ap_pending">AP Pending</option><option value="general">General</option></select>
-        <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px"><option value="">All tags</option><option value="__untagged__">Untagged only</option><option value="Accrual">Accrual</option><option value="Reversal">Reversal</option></select>
+        <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px"><option value="">All tags</option><option value="__untagged__">Untagged only</option></select>
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm" onclick="selectAllVisible()">☑ All</button>
@@ -287,14 +287,14 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     </div>
     <div class="bulk-bar" id="bulkBar" style="display:none">
       <span style="font-size:13px;font-weight:500" id="bulkCount">0 selected</span>
-      <select id="bulkTagSel" style="font-size:12px"><option value="">Set tag...</option><option value="Accrual">Accrual</option><option value="Reversal">Reversal</option></select>
+      <select id="bulkTagSel" style="font-size:12px"><option value="">Set tag…</option></select>
       <button class="btn btn-sm btn-primary" onclick="applyBulkTag()">Apply tag</button>
       <span style="color:var(--text-faint);font-size:12px">|</span>
-      <select id="bulkOncoreSel" style="font-size:12px"><option value="">Set Oncore item...</option></select>
+      <select id="bulkOncoreSel" style="font-size:12px"><option value="">Set Oncore item…</option></select>
       <button class="btn btn-sm btn-primary" onclick="applyBulkOncore()">Apply</button>
       <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
     </div>
-    <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows</div></div>
+    <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows yet</div></div>
     <div class="row-count" id="rowsCount"></div>
   </div>
 </div>
@@ -338,10 +338,10 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card">
     <div class="card-title">Add item manually</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Oncore name</label><input type="text" id="pName" placeholder="e.g. Study Activation" style="width:180px"></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">CPT code</label><input type="text" id="pCpt" placeholder="e.g. 99213" style="width:100px"></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Description</label><input type="text" id="pDesc" placeholder="Optional" style="width:200px"></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Default price</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" style="width:100px"></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Oncore name</label><input type="text" id="pName" placeholder="e.g. Study Activation" style="width:180px"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">CPT code</label><input type="text" id="pCpt" placeholder="e.g. 99213" style="width:100px"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Description</label><input type="text" id="pDesc" placeholder="Optional" style="width:200px"/></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:11px;color:var(--text-muted);font-weight:500">Default price</label><input type="number" id="pPrice" placeholder="0.00" step="0.01" style="width:100px"/></div>
       <button class="btn btn-primary" onclick="addPricingItem()">+ Add</button>
     </div>
   </div>
@@ -361,27 +361,27 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card" id="addSubForm" style="display:none">
     <div class="card-title" id="subFormTitle">Add subsidiary</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <input type="text" id="subName" placeholder="Subsidiary name" style="width:200px">
-      <input type="text" id="subCode" placeholder="ID / code" style="width:140px">
+      <input type="text" id="subName" placeholder="Subsidiary name" style="width:200px"/>
+      <input type="text" id="subCode" placeholder="ID / code" style="width:140px"/>
       <button class="btn btn-primary btn-sm" onclick="saveSub()">Save</button>
-      <button class="btn btn-sm" onclick="document.getElementById(&#39;addSubForm&#39;).style.display=&#39;none&#39;">Cancel</button>
+      <button class="btn btn-sm" onclick="document.getElementById('addSubForm').style.display='none'">Cancel</button>
     </div>
   </div>
   <div class="card" id="addSiteForm" style="display:none">
     <div class="card-title" id="siteFormTitle">Add site</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <input type="text" id="siteName" placeholder="Site name" style="width:200px">
-      <input type="text" id="siteCode" placeholder="ID / code" style="width:140px">
+      <input type="text" id="siteName" placeholder="Site name" style="width:200px"/>
+      <input type="text" id="siteCode" placeholder="ID / code" style="width:140px"/>
       <button class="btn btn-primary btn-sm" onclick="saveSite()">Save</button>
-      <button class="btn btn-sm" onclick="document.getElementById(&#39;addSiteForm&#39;).style.display=&#39;none&#39;">Cancel</button>
+      <button class="btn btn-sm" onclick="document.getElementById('addSiteForm').style.display='none'">Cancel</button>
     </div>
   </div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div class="card-title" style="margin:0">Other dimensions</div>
-      <div style="display:flex;gap:8px"><input type="text" id="newDimName" placeholder="Dimension name…" style="width:180px"><button class="btn btn-sm btn-primary" onclick="addDimension()">+ Add</button></div>
+      <div style="display:flex;gap:8px"><input type="text" id="newDimName" placeholder="Dimension name…" style="width:180px"/><button class="btn btn-sm btn-primary" onclick="addDimension()">+ Add</button></div>
     </div>
-    <div class="dim-grid" id="dimGrid"><div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">Cost Center</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Remove</button></div><div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div><div class="dim-add-row"><input type="text" id="dimval-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Value"><input type="text" id="dimcode-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Code" class="code-input"><button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Add</button></div></div></div><div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">GL Account Code</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Remove</button></div><div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div><div class="dim-add-row"><input type="text" id="dimval-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Value"><input type="text" id="dimcode-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Code" class="code-input"><button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Add</button></div></div></div><div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">Product Type</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Remove</button></div><div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div><div class="dim-add-row"><input type="text" id="dimval-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Value"><input type="text" id="dimcode-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Code" class="code-input"><button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Add</button></div></div></div></div>
+    <div class="dim-grid" id="dimGrid"><div style="color:var(--text-faint);font-size:13px">Loading…</div></div>
   </div>
 </div>
 
@@ -393,11 +393,11 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
       <div class="card-title" style="margin:0">Templates</div>
       <button class="btn btn-primary btn-sm" onclick="newTemplate()">+ New</button>
     </div>
-    <div id="templatesList"><div class="empty"><div class="empty-icon">📋</div>No templates</div></div>
+    <div id="templatesList"><div class="empty"><div class="empty-icon">📋</div>No templates yet</div></div>
   </div>
   <div class="card" id="templateEditor" style="display:none">
     <div class="card-title" id="templateEditorTitle">New template</div>
-    <div style="display:flex;gap:8px;margin-bottom:16px"><input type="text" id="templateName" placeholder="Template name" style="width:220px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px"><input type="text" id="templateName" placeholder="Template name" style="width:220px"/></div>
     <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">RULES</div>
     <div id="rulesList"></div>
     <button class="btn btn-sm" onclick="addRule()" style="margin-top:10px">+ Add rule</button>
@@ -415,10 +415,10 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="page-header"><div class="page-title">Tags</div></div>
   <div class="card">
     <div class="card-title">Active tags</div>
-    <div class="tag-bar" id="tagBar"><span class="tag-pill" style="background:#E6F1FB;color:#0C447C;border-color:#B5D4F4">Accrual<button onclick="removeTag(&#39;c68390dc-1c58-41df-895a-ff753dc5bf93&#39;)">x</button></span><span class="tag-pill" style="background:#EAF3DE;color:#27500A;border-color:#C0DD97">Reversal<button onclick="removeTag(&#39;d4091523-3d74-4f0d-938f-22717b40dd2f&#39;)">x</button></span></div>
+    <div class="tag-bar" id="tagBar"></div>
     <div class="section-divider"></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" id="newTagName" placeholder="Tag name" style="width:160px">
+      <input type="text" id="newTagName" placeholder="Tag name" style="width:160px"/>
       <button class="btn btn-primary" onclick="addTag()">+ Add tag</button>
     </div>
   </div>
@@ -983,6 +983,5 @@ function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(c=>'"'+String(c)
 
 init();
 </script>
-
-
-</body></html>
+</body>
+</html>
