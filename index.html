@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/cymel/Downloads/index_3.html -->
+<!-- saved from url=(0045)file:///C:/Users/cymel/Downloads/index_4.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accruals</title>
-<script src="./Accruals4_files/supabase-js@2"></script>
-<script src="./Accruals4_files/xlsx.full.min.js.download"></script>
+<script src="./Accruals5_files/supabase-js@2"></script>
+<script src="./Accruals5_files/xlsx.full.min.js.download"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -34,7 +34,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:500}
 .nav-item svg{width:15px;height:15px;flex-shrink:0}
 .main{flex:1;overflow:hidden}
-.page{display:none;padding:24px;max-width:1200px}
+.page{display:none;padding:24px;max-width:1300px}
 .page.active{display:block}
 .page-header{margin-bottom:20px}
 .page-title{font-size:20px;font-weight:600;letter-spacing:-.02em}
@@ -109,12 +109,10 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
 .report-row:last-child{border-bottom:none}
 .rule-row{display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .rule-row:last-child{border-bottom:none}
-/* Sub/Site table */
 .sub-site-table{width:100%;border-collapse:collapse;font-size:13px}
 .sub-site-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);background:var(--bg)}
 .sub-site-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 .sub-site-table tr:last-child td{border-bottom:none}
-.sub-site-table tr:hover td{background:var(--bg)}
 .sub-row td{background:var(--bg);font-weight:500}
 .site-row td{padding-left:28px;font-size:12px;color:var(--text-muted)}
 .id-chip{font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;color:var(--text-faint)}
@@ -128,6 +126,20 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
 .dim-add-row{display:flex;gap:6px;margin-top:10px}
 .dim-add-row input{flex:1}
 .dim-add-row input.code-input{width:80px;flex:0 0 80px}
+/* Pricing */
+.pricing-item{border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden}
+.pricing-item-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg);cursor:pointer;gap:12px}
+.pricing-item-header:hover{background:#eeece6}
+.pricing-item-name{font-weight:600;font-size:14px}
+.pricing-item-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
+.pricing-item-price{font-size:15px;font-weight:600;color:var(--accent);white-space:nowrap}
+.pricing-item-body{padding:16px;border-top:1px solid var(--border);display:none}
+.pricing-item-body.open{display:block}
+.override-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.override-row:last-child{border-bottom:none}
+.calc-amt{font-weight:600;color:var(--debit);font-size:12px}
+.use-toggle{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;border:1px solid var(--border-strong);cursor:pointer;background:var(--surface);white-space:nowrap}
+.use-toggle.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -157,6 +169,9 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
     </div>
     <div class="nav-section">
       <div class="nav-label">Config</div>
+      <button class="nav-item" onclick="nav(&#39;pricing&#39;,this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"></path><path d="M2 4l2-2h8l2 2"></path><path d="M8 7v4M6 9h4"></path></svg>Pricing
+      </button>
       <button class="nav-item" onclick="nav(&#39;entities&#39;,this)">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"></rect><rect x="9" y="1" width="6" height="6" rx="1"></rect><rect x="1" y="9" width="6" height="6" rx="1"></rect><rect x="9" y="9" width="6" height="6" rx="1"></rect></svg>Entities
       </button>
@@ -208,7 +223,7 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
 
     <!-- DATA ROWS -->
     <div class="page" id="page-rows">
-      <div class="page-header"><div class="page-title">Data rows</div><div class="page-sub">Tag rows, assign dimensions, and set baselines</div></div>
+      <div class="page-header"><div class="page-title">Data rows</div><div class="page-sub">Tag rows, assign dimensions, set Oncore items and qty column</div></div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -230,6 +245,9 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
           <select id="bulkDimSel" style="font-size:12px"><option value="">Set dimension…</option><option value="782e86a4-f396-456f-b70c-cf561d340110">Subsidiary</option><option value="2c7f5f53-7e8a-4750-ac89-15f00a117295">Site</option><option value="697d9adb-798a-434b-b978-6c4682b8248a">Cost Center</option><option value="166d4331-4a9b-41f1-a386-5769d49af380">GL Account Code</option><option value="0ea32407-ca4f-4748-bf97-d8e28cfb16c8">Product Type</option></select>
           <select id="bulkDimValSel" style="font-size:12px"><option value="">Value…</option></select>
           <button class="btn btn-sm btn-primary" onclick="applyBulkDim()">Apply</button>
+          <span style="color:var(--text-faint);font-size:12px">|</span>
+          <select id="bulkOncoreSel" style="font-size:12px"><option value="">Set Oncore item…</option></select>
+          <button class="btn btn-sm btn-primary" onclick="applyBulkOncore()">Apply</button>
           <button class="btn btn-sm" onclick="clearSelection()">Clear</button>
         </div>
         <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div></div>
@@ -255,6 +273,7 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
               <option value="tag">Tag only</option>
               <option value="tag+sub">Tag + Subsidiary</option>
               <option value="tag+sub+site">Tag + Subsidiary + Site</option>
+              <option value="tag+oncore">Tag + Oncore item</option>
               <option value="tag+gl">Tag + GL Account</option>
               <option value="tag+all">Tag + All dimensions</option>
             </select>
@@ -269,31 +288,53 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
       </div>
     </div>
 
+    <!-- PRICING -->
+    <div class="page" id="page-pricing">
+      <div class="page-header"><div class="page-title">Pricing</div><div class="page-sub">Define Oncore items with default prices and subsidiary-level overrides</div></div>
+      <div class="card">
+        <div class="card-title">Add new item</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:var(--text-muted);font-weight:500">Oncore name</label>
+            <input type="text" id="pName" placeholder="e.g. Study Activation Fee" style="width:200px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:var(--text-muted);font-weight:500">CPT code</label>
+            <input type="text" id="pCpt" placeholder="e.g. 99213" style="width:110px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:var(--text-muted);font-weight:500">Description</label>
+            <input type="text" id="pDesc" placeholder="Optional description" style="width:220px">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;color:var(--text-muted);font-weight:500">Default price ($)</label>
+            <input type="number" id="pPrice" placeholder="0.00" step="0.01" style="width:110px">
+          </div>
+          <button class="btn btn-primary" onclick="addPricingItem()">+ Add item</button>
+        </div>
+      </div>
+      <div id="pricingList"><div class="empty"><div class="empty-icon">💲</div>No pricing items yet — add one above</div></div>
+    </div>
+
     <!-- ENTITIES -->
     <div class="page" id="page-entities">
       <div class="page-header"><div class="page-title">Entities</div><div class="page-sub">Manage subsidiaries, sites, and other dimensions</div></div>
-
-      <!-- Sub/Site manager -->
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <div class="card-title" style="margin:0">Subsidiaries &amp; Sites</div>
-          <button class="btn btn-sm btn-primary" onclick="showAddSubModal()">+ Add subsidiary</button>
+          <button class="btn btn-sm btn-primary" onclick="showAddSubForm()">+ Add subsidiary</button>
         </div>
-        <div id="subSiteTable"><div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet — add one above</div></div>
+        <div id="subSiteTable"><div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet</div></div>
       </div>
-
-      <!-- Add subsidiary inline form -->
       <div class="card" id="addSubForm" style="display:none">
         <div class="card-title" id="subFormTitle">Add subsidiary</div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input type="text" id="subName" placeholder="Subsidiary name" style="width:200px">
           <input type="text" id="subCode" placeholder="Subsidiary ID / code" style="width:160px">
           <button class="btn btn-primary btn-sm" onclick="saveSub()">Save</button>
           <button class="btn btn-sm" onclick="document.getElementById(&#39;addSubForm&#39;).style.display=&#39;none&#39;">Cancel</button>
         </div>
       </div>
-
-      <!-- Add site inline form -->
       <div class="card" id="addSiteForm" style="display:none">
         <div class="card-title" id="siteFormTitle">Add site</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -303,8 +344,6 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
           <button class="btn btn-sm" onclick="document.getElementById(&#39;addSiteForm&#39;).style.display=&#39;none&#39;">Cancel</button>
         </div>
       </div>
-
-      <!-- Other dimensions -->
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <div class="card-title" style="margin:0">Other dimensions</div>
@@ -313,34 +352,10 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
             <button class="btn btn-sm btn-primary" onclick="addDimension()">+ Add</button>
           </div>
         </div>
-        <div class="dim-grid" id="dimGrid"><div class="dim-card">
-      <div class="dim-card-header"><span class="dim-card-title">Cost Center</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Remove</button></div>
-      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
-        <div class="dim-add-row">
-          <input type="text" id="dimval-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Value">
-          <input type="text" id="dimcode-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Code" class="code-input">
-          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Add</button>
-        </div>
-      </div>
-    </div><div class="dim-card">
-      <div class="dim-card-header"><span class="dim-card-title">GL Account Code</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Remove</button></div>
-      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
-        <div class="dim-add-row">
-          <input type="text" id="dimval-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Value">
-          <input type="text" id="dimcode-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Code" class="code-input">
-          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Add</button>
-        </div>
-      </div>
-    </div><div class="dim-card">
-      <div class="dim-card-header"><span class="dim-card-title">Product Type</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Remove</button></div>
-      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>
-        <div class="dim-add-row">
-          <input type="text" id="dimval-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Value">
-          <input type="text" id="dimcode-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Code" class="code-input">
-          <button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Add</button>
-        </div>
-      </div>
-    </div></div>
+        <div class="dim-grid" id="dimGrid"><div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">Cost Center</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Remove</button></div>
+      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div><div class="dim-add-row"><input type="text" id="dimval-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Value"><input type="text" id="dimcode-697d9adb-798a-434b-b978-6c4682b8248a" placeholder="Code" class="code-input"><button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;697d9adb-798a-434b-b978-6c4682b8248a&#39;)">Add</button></div></div></div><div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">GL Account Code</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Remove</button></div>
+      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div><div class="dim-add-row"><input type="text" id="dimval-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Value"><input type="text" id="dimcode-166d4331-4a9b-41f1-a386-5769d49af380" placeholder="Code" class="code-input"><button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;166d4331-4a9b-41f1-a386-5769d49af380&#39;)">Add</button></div></div></div><div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">Product Type</span><button class="btn btn-sm btn-danger" onclick="removeDimension(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Remove</button></div>
+      <div class="dim-card-body"><div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div><div class="dim-add-row"><input type="text" id="dimval-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Value"><input type="text" id="dimcode-0ea32407-ca4f-4748-bf97-d8e28cfb16c8" placeholder="Code" class="code-input"><button class="btn btn-sm btn-primary" onclick="addDimValue(&#39;0ea32407-ca4f-4748-bf97-d8e28cfb16c8&#39;)">Add</button></div></div></div></div>
       </div>
     </div>
 
@@ -356,7 +371,7 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
       </div>
       <div class="card" id="templateEditor" style="display:none">
         <div class="card-title" id="templateEditorTitle">New template</div>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
           <input type="text" id="templateName" placeholder="Template name" style="width:220px">
         </div>
         <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px">RULES — if field value matches, apply tag</div>
@@ -405,24 +420,16 @@ input[type="checkbox"]{width:15px;height:15px;accent-color:var(--accent);cursor:
 const SUPABASE_URL='https://pddehutovxexlngigbmg.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkZGVodXRvdnhleGxuZ2lnYm1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDQxMzYsImV4cCI6MjA5NjYyMDEzNn0.sT0SaDQGCgdr4md84vlTj66KBQF4Nrchjd9pprK0QWU';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-const TAG_COLORS=[
-  {bg:'#E6F1FB',text:'#0C447C',border:'#B5D4F4'},
-  {bg:'#EAF3DE',text:'#27500A',border:'#C0DD97'},
-  {bg:'#FAEEDA',text:'#633806',border:'#FAC775'},
-  {bg:'#EEEDFE',text:'#3C3489',border:'#CECBF6'},
-  {bg:'#FAECE7',text:'#712B13',border:'#F5C4B3'},
-  {bg:'#FBEAF0',text:'#72243E',border:'#F4C0D1'},
-];
+const TAG_COLORS=[{bg:'#E6F1FB',text:'#0C447C',border:'#B5D4F4'},{bg:'#EAF3DE',text:'#27500A',border:'#C0DD97'},{bg:'#FAEEDA',text:'#633806',border:'#FAC775'},{bg:'#EEEDFE',text:'#3C3489',border:'#CECBF6'},{bg:'#FAECE7',text:'#712B13',border:'#F5C4B3'},{bg:'#FBEAF0',text:'#72243E',border:'#F4C0D1'}];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 let tags=[],dimensions=[],dimValues={},rowDimensions={};
-let subsidiaries=[],sites=[];  // sub: {id,value,code}  site: {id,value,code,parent_id}
-let subDimId=null,siteDimId=null;
+let subsidiaries=[],sites=[],subDimId=null,siteDimId=null;
+let pricingItems=[],pricingOverrides={};
 let pendingRows=[],allRows=[],allReports=[];
 let currentJE=null,selectedRows=new Set();
 let editingTemplateId=null,templates=[];
-let editingSubId=null,editingSiteParentId=null;
+let editingSiteParentId=null;
 
 // ── Init ──────────────────────────────────────────
 async function init(){
@@ -431,41 +438,29 @@ async function init(){
     if(error)throw error;
     document.getElementById('statusDot').classList.add('connected');
     document.getElementById('statusText').textContent='Connected';
-    await Promise.all([loadTags(),loadDimensions(),loadReports()]);
+    await Promise.all([loadTags(),loadDimensions(),loadReports(),loadPricing()]);
     await loadRows();await loadHistory();await loadLog();await loadTemplates();
-  }catch(e){
-    document.getElementById('statusText').textContent='Connection error';
-    toast('Could not connect to Supabase');console.error(e);
-  }
+  }catch(e){document.getElementById('statusText').textContent='Connection error';toast('Could not connect to Supabase');console.error(e);}
 }
 
 function nav(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  el.classList.add('active');
+  document.getElementById('page-'+page).classList.add('active');el.classList.add('active');
   if(page==='history')loadHistory();
   if(page==='log')loadLog();
   if(page==='entities'){renderSubSiteTable();renderDimGrid();}
   if(page==='reports')renderReportsList();
   if(page==='templates')renderTemplatesList();
+  if(page==='pricing')renderPricingList();
 }
 
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 
 // ── Periods ───────────────────────────────────────
 function periodOptions(sel=''){
   const now=new Date();let opts='<option value="">— no period —</option>';
-  for(let y=now.getFullYear();y>=now.getFullYear()-3;y--){
-    for(let m=11;m>=0;m--){
-      const val=`${y}-${String(m+1).padStart(2,'0')}`;
-      opts+=`<option value="${val}" ${sel===val?'selected':''}>${MONTHS[m]} ${y}</option>`;
-    }
-  }
+  for(let y=now.getFullYear();y>=now.getFullYear()-3;y--)for(let m=11;m>=0;m--){const val=`${y}-${String(m+1).padStart(2,'0')}`;opts+=`<option value="${val}" ${sel===val?'selected':''}>${MONTHS[m]} ${y}</option>`;}
   return opts;
 }
 function periodLabel(val){if(!val)return'—';const[y,m]=val.split('-');return`${MONTHS[parseInt(m)-1]} ${y}`;}
@@ -477,6 +472,117 @@ function populatePeriodFilters(){
     periods.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=periodLabel(p);sel.appendChild(o);});
     sel.value=cur;
   });
+}
+
+// ── Pricing ───────────────────────────────────────
+async function loadPricing(){
+  const{data:items}=await sb.from('pricing').select('*').order('oncore_name');
+  pricingItems=items||[];
+  const{data:overrides}=await sb.from('pricing_overrides').select('*');
+  pricingOverrides={};
+  (overrides||[]).forEach(o=>{
+    if(!pricingOverrides[o.pricing_id])pricingOverrides[o.pricing_id]={};
+    pricingOverrides[o.pricing_id][o.subsidiary_id]=o;
+  });
+  renderPricingList();
+  renderBulkOncoreSel();
+}
+
+function renderPricingList(){
+  const el=document.getElementById('pricingList');
+  if(!pricingItems.length){el.innerHTML='<div class="empty"><div class="empty-icon">💲</div>No pricing items yet — add one above</div>';return;}
+  el.innerHTML=pricingItems.map(item=>{
+    const overrideMap=pricingOverrides[item.id]||{};
+    const overrideRows=subsidiaries.map(sub=>{
+      const ov=overrideMap[sub.id];
+      const price=ov?ov.price:null;
+      return`<div class="override-row">
+        <div>
+          <span style="font-weight:500">${sub.value}</span>
+          <span class="id-chip" style="margin-left:6px">${sub.code||'—'}</span>
+          ${price===null?'<span style="font-size:11px;color:var(--text-faint);margin-left:8px">using default</span>':''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="number" value="${price!==null?price:''}" placeholder="${item.default_price}" step="0.01"
+            style="width:100px;text-align:right"
+            onchange="saveOverride('${item.id}','${sub.id}',this.value)"
+            title="Leave blank to use default price" />
+          ${price!==null?`<button class="btn btn-sm btn-danger" onclick="removeOverride('${item.id}','${sub.id}')">×</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+
+    return`<div class="pricing-item">
+      <div class="pricing-item-header" onclick="togglePricingItem('pi-${item.id}')">
+        <div>
+          <div class="pricing-item-name">${item.oncore_name}</div>
+          <div class="pricing-item-meta">${item.cpt_code?`CPT: ${item.cpt_code} · `:''}${item.description||''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="pricing-item-price">Default: ${fmtPrice(item.default_price)}</span>
+          <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+            <button class="btn btn-sm btn-danger" onclick="deletePricingItem('${item.id}')">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-item-body" id="pi-${item.id}">
+        <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px">SUBSIDIARY PRICE OVERRIDES — leave blank to use default</div>
+        ${subsidiaries.length?overrideRows:'<div style="font-size:13px;color:var(--text-faint)">No subsidiaries defined yet — add them in Entities first</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function togglePricingItem(id){
+  const body=document.getElementById(id);
+  if(body)body.classList.toggle('open');
+}
+
+async function addPricingItem(){
+  const name=document.getElementById('pName').value.trim();
+  if(!name){toast('Enter an Oncore name');return;}
+  const cpt=document.getElementById('pCpt').value.trim();
+  const desc=document.getElementById('pDesc').value.trim();
+  const price=parseFloat(document.getElementById('pPrice').value)||0;
+  await sb.from('pricing').insert({oncore_name:name,cpt_code:cpt||null,description:desc||null,default_price:price});
+  document.getElementById('pName').value='';document.getElementById('pCpt').value='';
+  document.getElementById('pDesc').value='';document.getElementById('pPrice').value='';
+  await loadPricing();toast(`"${name}" added`);
+}
+
+async function deletePricingItem(id){
+  if(!confirm('Delete this pricing item?'))return;
+  await sb.from('pricing').delete().eq('id',id);
+  await loadPricing();toast('Item deleted');
+}
+
+async function saveOverride(pricingId,subId,val){
+  const price=parseFloat(val);
+  if(isNaN(price)||val===''){await removeOverride(pricingId,subId);return;}
+  const existing=pricingOverrides[pricingId]?.[subId];
+  if(existing)await sb.from('pricing_overrides').update({price}).eq('id',existing.id);
+  else await sb.from('pricing_overrides').insert({pricing_id:pricingId,subsidiary_id:subId,price});
+  await loadPricing();
+}
+
+async function removeOverride(pricingId,subId){
+  const existing=pricingOverrides[pricingId]?.[subId];
+  if(existing)await sb.from('pricing_overrides').delete().eq('id',existing.id);
+  await loadPricing();
+}
+
+function renderBulkOncoreSel(){
+  const sel=document.getElementById('bulkOncoreSel');
+  sel.innerHTML='<option value="">Set Oncore item…</option>';
+  pricingItems.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.oncore_name+(p.cpt_code?` (${p.cpt_code})`:'');sel.appendChild(o);});
+}
+
+// Resolve price for a row given its subsidiary
+function resolvePrice(oncoreId,subId){
+  const item=pricingItems.find(p=>p.id===oncoreId);
+  if(!item)return null;
+  const override=pricingOverrides[oncoreId]?.[subId];
+  return override?override.price:item.default_price;
 }
 
 // ── Tags ──────────────────────────────────────────
@@ -492,12 +598,10 @@ function renderTagBar(){
 function renderTagSelects(){
   const ft=document.getElementById('filterTag');const cur=ft.value;
   ft.innerHTML='<option value="">All tags</option><option value="__untagged__">Untagged only</option>';
-  tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;ft.appendChild(o);});
-  ft.value=cur;
+  tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;ft.appendChild(o);});ft.value=cur;
 }
 function renderBulkTagSel(){
-  const sel=document.getElementById('bulkTagSel');
-  sel.innerHTML='<option value="">Set tag…</option>';
+  const sel=document.getElementById('bulkTagSel');sel.innerHTML='<option value="">Set tag…</option>';
   tags.forEach(t=>{const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);});
 }
 async function addTag(){
@@ -514,234 +618,133 @@ async function removeTag(id){
   await loadTags();await loadRows();toast('Tag removed');
 }
 
-// ── Dimensions (non-sub/site) ─────────────────────
+// ── Dimensions ────────────────────────────────────
 async function loadDimensions(){
   const{data:dims}=await sb.from('dimensions').select('*').order('sort_order');
   const allDims=dims||[];
-
-  // Find or note sub/site dim IDs
   const subDim=allDims.find(d=>d.name.toLowerCase().includes('subsidiar'));
   const siteDim=allDims.find(d=>d.name.toLowerCase().includes('site'));
-  subDimId=subDim?.id||null;
-  siteDimId=siteDim?.id||null;
-
-  // Other dims = everything except sub and site
+  subDimId=subDim?.id||null;siteDimId=siteDim?.id||null;
   dimensions=allDims.filter(d=>d.id!==subDimId&&d.id!==siteDimId);
-
-  // Load all values
   const{data:vals}=await sb.from('dimension_values').select('*').order('value');
-  dimValues={};
-  allDims.forEach(d=>dimValues[d.id]=[]);
+  dimValues={};allDims.forEach(d=>dimValues[d.id]=[]);
   (vals||[]).forEach(v=>{if(dimValues[v.dimension_id])dimValues[v.dimension_id].push(v);});
-
-  // Split sub/site
   subsidiaries=subDimId?(dimValues[subDimId]||[]).filter(v=>!v.parent_id):[];
   sites=siteDimId?(dimValues[siteDimId]||[]):[];
-
-  renderSubSiteTable();
-  renderDimGrid();
-  renderDimFilter();
-  renderBulkDimSel();
+  renderSubSiteTable();renderDimGrid();renderDimFilter();renderBulkDimSel();
+  renderPricingList();renderBulkOncoreSel();
 }
 
-// ── Sub/Site UI ───────────────────────────────────
 function renderSubSiteTable(){
   const el=document.getElementById('subSiteTable');
-  if(!subsidiaries.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet — add one above</div>';return;}
-  let html=`<table class="sub-site-table"><thead><tr>
-    <th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th><th></th>
-  </tr></thead><tbody>`;
+  if(!subsidiaries.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏢</div>No subsidiaries yet</div>';return;}
+  let html=`<table class="sub-site-table"><thead><tr><th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th><th></th></tr></thead><tbody>`;
   subsidiaries.forEach(sub=>{
     const subSites=sites.filter(s=>s.parent_id===sub.id);
     if(!subSites.length){
-      html+=`<tr class="sub-row">
-        <td>${sub.value}</td>
-        <td><span class="id-chip">${sub.code||'—'}</span></td>
-        <td colspan="2" style="color:var(--text-faint);font-size:12px">No sites — <button class="btn btn-sm" onclick="showAddSiteForm('${sub.id}','${sub.value}')">+ Add site</button></td>
-        <td><button class="btn btn-sm btn-danger" onclick="removeSub('${sub.id}')">×</button></td>
-      </tr>`;
-    } else {
+      html+=`<tr class="sub-row"><td>${sub.value}</td><td><span class="id-chip">${sub.code||'—'}</span></td>
+        <td colspan="2" style="color:var(--text-faint);font-size:12px"><button class="btn btn-sm" onclick="showAddSiteForm('${sub.id}','${sub.value}')">+ Add site</button></td>
+        <td><button class="btn btn-sm btn-danger" onclick="removeSub('${sub.id}')">×</button></td></tr>`;
+    }else{
       subSites.forEach((site,i)=>{
         html+=`<tr class="${i===0?'sub-row':'site-row'}">`;
-        if(i===0){
-          html+=`<td rowspan="${subSites.length}">${sub.value}</td>
-                 <td rowspan="${subSites.length}"><span class="id-chip">${sub.code||'—'}</span></td>`;
-        }
-        html+=`<td>${i===0?'':'↳ '}${site.value}</td>
-               <td><span class="id-chip">${site.code||'—'}</span></td>
-               <td style="white-space:nowrap">`;
+        if(i===0)html+=`<td rowspan="${subSites.length}">${sub.value}</td><td rowspan="${subSites.length}"><span class="id-chip">${sub.code||'—'}</span></td>`;
+        html+=`<td>${i===0?'':'↳ '}${site.value}</td><td><span class="id-chip">${site.code||'—'}</span></td><td style="white-space:nowrap">`;
         if(i===0)html+=`<button class="btn btn-sm" onclick="showAddSiteForm('${sub.id}','${sub.value}')" style="margin-right:4px">+ Site</button><button class="btn btn-sm btn-danger" onclick="removeSub('${sub.id}')">× Sub</button>`;
         else html+=`<button class="btn btn-sm btn-danger" onclick="removeSite('${site.id}')">× Site</button>`;
         html+=`</td></tr>`;
       });
     }
   });
-  html+=`</tbody></table>`;
-  el.innerHTML=html;
+  html+=`</tbody></table>`;el.innerHTML=html;
 }
-
-function showAddSubModal(){
-  editingSubId=null;
-  document.getElementById('subName').value='';
-  document.getElementById('subCode').value='';
+function showAddSubForm(){
+  document.getElementById('subName').value='';document.getElementById('subCode').value='';
   document.getElementById('subFormTitle').textContent='Add subsidiary';
-  document.getElementById('addSubForm').style.display='block';
-  document.getElementById('addSiteForm').style.display='none';
+  document.getElementById('addSubForm').style.display='block';document.getElementById('addSiteForm').style.display='none';
   document.getElementById('subName').focus();
 }
-
 function showAddSiteForm(subId,subName){
   editingSiteParentId=subId;
-  document.getElementById('siteName').value='';
-  document.getElementById('siteCode').value='';
+  document.getElementById('siteName').value='';document.getElementById('siteCode').value='';
   document.getElementById('siteFormTitle').textContent=`Add site to ${subName}`;
-  document.getElementById('addSiteForm').style.display='block';
-  document.getElementById('addSubForm').style.display='none';
+  document.getElementById('addSiteForm').style.display='block';document.getElementById('addSubForm').style.display='none';
   document.getElementById('siteName').focus();
 }
-
 async function saveSub(){
-  const name=document.getElementById('subName').value.trim();
-  const code=document.getElementById('subCode').value.trim();
-  if(!name){toast('Enter a subsidiary name');return;}
-  // Ensure Subsidiary dimension exists
-  if(!subDimId){
-    const{data:dim}=await sb.from('dimensions').insert({name:'Subsidiary',sort_order:1}).select().single();
-    subDimId=dim.id;
-  }
+  const name=document.getElementById('subName').value.trim();const code=document.getElementById('subCode').value.trim();
+  if(!name){toast('Enter a name');return;}
+  if(!subDimId){const{data:dim}=await sb.from('dimensions').insert({name:'Subsidiary',sort_order:1}).select().single();subDimId=dim.id;}
   await sb.from('dimension_values').insert({dimension_id:subDimId,value:name,code:code||null});
   document.getElementById('addSubForm').style.display='none';
-  await loadDimensions();toast(`Subsidiary "${name}" added`);
+  await loadDimensions();toast(`"${name}" added`);
 }
-
 async function saveSite(){
-  const name=document.getElementById('siteName').value.trim();
-  const code=document.getElementById('siteCode').value.trim();
-  if(!name){toast('Enter a site name');return;}
-  if(!editingSiteParentId){toast('No subsidiary selected');return;}
-  // Ensure Site dimension exists
-  if(!siteDimId){
-    const{data:dim}=await sb.from('dimensions').insert({name:'Site',sort_order:2}).select().single();
-    siteDimId=dim.id;
-  }
+  const name=document.getElementById('siteName').value.trim();const code=document.getElementById('siteCode').value.trim();
+  if(!name){toast('Enter a name');return;}if(!editingSiteParentId){toast('No subsidiary selected');return;}
+  if(!siteDimId){const{data:dim}=await sb.from('dimensions').insert({name:'Site',sort_order:2}).select().single();siteDimId=dim.id;}
   await sb.from('dimension_values').insert({dimension_id:siteDimId,value:name,code:code||null,parent_id:editingSiteParentId});
   document.getElementById('addSiteForm').style.display='none';
-  await loadDimensions();toast(`Site "${name}" added`);
+  await loadDimensions();toast(`"${name}" added`);
 }
-
 async function removeSub(subId){
-  const sub=subsidiaries.find(s=>s.id===subId);
-  if(!confirm(`Remove "${sub?.value}" and all its sites?`))return;
-  // Remove sites first
+  const sub=subsidiaries.find(s=>s.id===subId);if(!confirm(`Remove "${sub?.value}" and all its sites?`))return;
   const subSites=sites.filter(s=>s.parent_id===subId);
   for(const site of subSites)await sb.from('dimension_values').delete().eq('id',site.id);
   await sb.from('dimension_values').delete().eq('id',subId);
   await loadDimensions();toast('Subsidiary removed');
 }
+async function removeSite(siteId){await sb.from('dimension_values').delete().eq('id',siteId);await loadDimensions();toast('Site removed');}
 
-async function removeSite(siteId){
-  await sb.from('dimension_values').delete().eq('id',siteId);
-  await loadDimensions();toast('Site removed');
-}
-
-// ── Other dimensions ──────────────────────────────
 function renderDimGrid(){
   const grid=document.getElementById('dimGrid');
-  if(!dimensions.length){grid.innerHTML='<div style="color:var(--text-faint);font-size:13px;padding:8px 0">No other dimensions yet — add one above</div>';return;}
+  if(!dimensions.length){grid.innerHTML='<div style="color:var(--text-faint);font-size:13px;padding:8px 0">No other dimensions yet</div>';return;}
   grid.innerHTML=dimensions.map(dim=>{
     const vals=dimValues[dim.id]||[];
-    const valRows=vals.map(v=>
-      `<div class="dim-value-row">
-        <span>${v.value}${v.code?` <span style="font-family:monospace;font-size:11px;color:var(--text-faint)">${v.code}</span>`:''}</span>
-        <button class="btn btn-sm btn-danger" onclick="removeDimValue('${v.id}')">×</button>
-      </div>`
-    ).join('')||'<div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>';
-    return`<div class="dim-card">
-      <div class="dim-card-header"><span class="dim-card-title">${dim.name}</span><button class="btn btn-sm btn-danger" onclick="removeDimension('${dim.id}')">Remove</button></div>
-      <div class="dim-card-body">${valRows}
-        <div class="dim-add-row">
-          <input type="text" id="dimval-${dim.id}" placeholder="Value" />
-          <input type="text" id="dimcode-${dim.id}" placeholder="Code" class="code-input" />
-          <button class="btn btn-sm btn-primary" onclick="addDimValue('${dim.id}')">Add</button>
-        </div>
-      </div>
-    </div>`;
+    const valRows=vals.map(v=>`<div class="dim-value-row"><span>${v.value}${v.code?` <span style="font-family:monospace;font-size:11px;color:var(--text-faint)">${v.code}</span>`:''}</span><button class="btn btn-sm btn-danger" onclick="removeDimValue('${v.id}')">×</button></div>`).join('')||'<div style="font-size:12px;color:var(--text-faint);padding:6px 0">No values yet</div>';
+    return`<div class="dim-card"><div class="dim-card-header"><span class="dim-card-title">${dim.name}</span><button class="btn btn-sm btn-danger" onclick="removeDimension('${dim.id}')">Remove</button></div>
+      <div class="dim-card-body">${valRows}<div class="dim-add-row"><input type="text" id="dimval-${dim.id}" placeholder="Value" /><input type="text" id="dimcode-${dim.id}" placeholder="Code" class="code-input" /><button class="btn btn-sm btn-primary" onclick="addDimValue('${dim.id}')">Add</button></div></div></div>`;
   }).join('');
 }
 function renderDimFilter(){
   const sel=document.getElementById('filterDim');const cur=sel.value;
   sel.innerHTML='<option value="">All dimensions</option>';
-  // Sub
-  if(subDimId&&subsidiaries.length){
-    const og=document.createElement('optgroup');og.label='Subsidiary';
-    subsidiaries.forEach(v=>{const o=document.createElement('option');o.value=`${subDimId}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});
-    sel.appendChild(og);
-  }
-  // Site
-  if(siteDimId&&sites.length){
-    const og=document.createElement('optgroup');og.label='Site';
-    sites.forEach(v=>{const o=document.createElement('option');o.value=`${siteDimId}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});
-    sel.appendChild(og);
-  }
-  // Other dims
-  dimensions.forEach(d=>{
-    const vals=dimValues[d.id]||[];
-    if(vals.length){
-      const og=document.createElement('optgroup');og.label=d.name;
-      vals.forEach(v=>{const o=document.createElement('option');o.value=`${d.id}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});
-      sel.appendChild(og);
-    }
-  });
+  if(subDimId&&subsidiaries.length){const og=document.createElement('optgroup');og.label='Subsidiary';subsidiaries.forEach(v=>{const o=document.createElement('option');o.value=`${subDimId}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});sel.appendChild(og);}
+  if(siteDimId&&sites.length){const og=document.createElement('optgroup');og.label='Site';sites.forEach(v=>{const o=document.createElement('option');o.value=`${siteDimId}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});sel.appendChild(og);}
+  dimensions.forEach(d=>{const vals=dimValues[d.id]||[];if(vals.length){const og=document.createElement('optgroup');og.label=d.name;vals.forEach(v=>{const o=document.createElement('option');o.value=`${d.id}::${v.id}`;o.textContent=v.value+(v.code?` (${v.code})`:'');og.appendChild(o);});sel.appendChild(og);}});
   sel.value=cur;
 }
 function renderBulkDimSel(){
-  const sel=document.getElementById('bulkDimSel');
-  sel.innerHTML='<option value="">Set dimension…</option>';
+  const sel=document.getElementById('bulkDimSel');sel.innerHTML='<option value="">Set dimension…</option>';
   if(subDimId){const o=document.createElement('option');o.value=subDimId;o.textContent='Subsidiary';sel.appendChild(o);}
   if(siteDimId){const o=document.createElement('option');o.value=siteDimId;o.textContent='Site';sel.appendChild(o);}
   dimensions.forEach(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.name;sel.appendChild(o);});
 }
 document.getElementById('bulkDimSel').addEventListener('change',function(){
-  const dimId=this.value;
-  const valSel=document.getElementById('bulkDimValSel');
+  const dimId=this.value;const valSel=document.getElementById('bulkDimValSel');
   valSel.innerHTML='<option value="">Value…</option>';
-  if(dimId){
-    let vals=[];
-    if(dimId===subDimId)vals=subsidiaries;
-    else if(dimId===siteDimId)vals=sites;
-    else vals=dimValues[dimId]||[];
-    vals.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value+(v.code?` (${v.code})`:'');valSel.appendChild(o);});
-  }
+  if(dimId){let vals=dimId===subDimId?subsidiaries:dimId===siteDimId?sites:(dimValues[dimId]||[]);vals.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value+(v.code?` (${v.code})`:'');valSel.appendChild(o);});}
 });
 async function addDimension(){
   const input=document.getElementById('newDimName');const name=input.value.trim();if(!name)return;
-  await sb.from('dimensions').insert({name,sort_order:100+dimensions.length});
-  input.value='';await loadDimensions();toast(`"${name}" added`);
+  await sb.from('dimensions').insert({name,sort_order:100+dimensions.length});input.value='';await loadDimensions();toast(`"${name}" added`);
 }
 async function removeDimension(id){
   const dim=dimensions.find(d=>d.id===id);if(!confirm(`Remove "${dim?.name}"?`))return;
-  await sb.from('dimensions').delete().eq('id',id);
-  await loadDimensions();await loadRows();toast('Dimension removed');
+  await sb.from('dimensions').delete().eq('id',id);await loadDimensions();await loadRows();toast('Dimension removed');
 }
 async function addDimValue(dimId){
-  const valInput=document.getElementById(`dimval-${dimId}`);
-  const codeInput=document.getElementById(`dimcode-${dimId}`);
+  const valInput=document.getElementById(`dimval-${dimId}`);const codeInput=document.getElementById(`dimcode-${dimId}`);
   const value=valInput.value.trim();if(!value)return;
-  const code=codeInput.value.trim()||null;
-  await sb.from('dimension_values').insert({dimension_id:dimId,value,code});
-  valInput.value='';codeInput.value='';
-  await loadDimensions();toast(`"${value}" added`);
+  await sb.from('dimension_values').insert({dimension_id:dimId,value,code:codeInput.value.trim()||null});
+  valInput.value='';codeInput.value='';await loadDimensions();toast(`"${value}" added`);
 }
-async function removeDimValue(valueId){
-  await sb.from('dimension_values').delete().eq('id',valueId);
-  await loadDimensions();toast('Value removed');
-}
+async function removeDimValue(valueId){await sb.from('dimension_values').delete().eq('id',valueId);await loadDimensions();toast('Value removed');}
 
 // ── Reports ───────────────────────────────────────
 async function loadReports(){
   const{data}=await sb.from('reports').select('*').order('uploaded_at',{ascending:false});
-  allReports=data||[];
-  renderReportsList();populatePeriodFilters();
+  allReports=data||[];renderReportsList();populatePeriodFilters();
   const sel=document.getElementById('filterReport');const cur=sel.value;
   sel.innerHTML='<option value="">All reports</option>';
   allReports.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name+(r.period?` (${periodLabel(r.period)})`:'');sel.appendChild(o);});
@@ -750,26 +753,17 @@ async function loadReports(){
 function renderReportsList(){
   const el=document.getElementById('reportsList');
   if(!allReports.length){el.innerHTML='<div class="empty"><div class="empty-icon">📁</div>No reports uploaded yet</div>';return;}
-  el.innerHTML=allReports.map(r=>
-    `<div class="report-row">
-      <div><div style="font-weight:500">${r.name}</div><div style="font-size:12px;color:var(--text-muted)">${new Date(r.uploaded_at).toLocaleDateString()}</div></div>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${r.period?`<span class="badge badge-period">${periodLabel(r.period)}</span>`:''}
-        <select onchange="assignPeriod('${r.id}',this.value)" style="font-size:12px">${periodOptions(r.period||'')}</select>
-        <button class="btn btn-sm btn-danger" onclick="deleteReport('${r.id}')">Delete</button>
-      </div>
-    </div>`
-  ).join('');
+  el.innerHTML=allReports.map(r=>`<div class="report-row">
+    <div><div style="font-weight:500">${r.name}</div><div style="font-size:12px;color:var(--text-muted)">${new Date(r.uploaded_at).toLocaleDateString()}</div></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      ${r.period?`<span class="badge badge-period">${periodLabel(r.period)}</span>`:''}
+      <select onchange="assignPeriod('${r.id}',this.value)" style="font-size:12px">${periodOptions(r.period||'')}</select>
+      <button class="btn btn-sm btn-danger" onclick="deleteReport('${r.id}')">Delete</button>
+    </div>
+  </div>`).join('');
 }
-async function assignPeriod(reportId,period){
-  await sb.from('reports').update({period}).eq('id',reportId);
-  await loadReports();toast(`Period assigned: ${periodLabel(period)}`);
-}
-async function deleteReport(reportId){
-  if(!confirm('Delete this report and all its rows?'))return;
-  await sb.from('reports').delete().eq('id',reportId);
-  await loadReports();await loadRows();toast('Report deleted');
-}
+async function assignPeriod(reportId,period){await sb.from('reports').update({period}).eq('id',reportId);await loadReports();toast(`Period: ${periodLabel(period)}`);}
+async function deleteReport(reportId){if(!confirm('Delete this report and all its rows?'))return;await sb.from('reports').delete().eq('id',reportId);await loadReports();await loadRows();toast('Report deleted');}
 
 // ── File upload ───────────────────────────────────
 const dz=document.getElementById('dropZone');
@@ -787,21 +781,13 @@ function handleFiles(files){
     else{reader.onload=e=>{const wb=XLSX.read(e.target.result,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];processData(file.name,XLSX.utils.sheet_to_json(ws,{defval:''}));};reader.readAsArrayBuffer(file);}
   });
 }
-function removePendingFile(name){
-  pendingRows=pendingRows.filter(r=>r.sourceName!==name);
-  document.querySelectorAll('.file-chip').forEach(c=>{if(c.dataset.name===name)c.remove();});
-  renderPreview();
-}
+function removePendingFile(name){pendingRows=pendingRows.filter(r=>r.sourceName!==name);document.querySelectorAll('.file-chip').forEach(c=>{if(c.dataset.name===name)c.remove();});renderPreview();}
 function parseCSV(text){
   const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
   const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
   return lines.slice(1).map(line=>{const vals=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());const obj={};headers.forEach((h,i)=>obj[h]=vals[i]||'');return obj;});
 }
-function detectAmountCol(headers){
-  const c=['amount','value','total','balance','net','debit','credit','sum'];
-  for(const x of c){const m=headers.find(h=>h.toLowerCase().includes(x));if(m)return m;}
-  return headers[headers.length-1];
-}
+function detectAmountCol(headers){const c=['amount','value','total','balance','net','debit','credit','sum'];for(const x of c){const m=headers.find(h=>h.toLowerCase().includes(x));if(m)return m;}return headers[headers.length-1];}
 function processData(name,data){
   if(!data.length){toast(`${name} appears empty`);return;}
   const headers=Object.keys(data[0]);const amountCol=detectAmountCol(headers);
@@ -813,19 +799,12 @@ function renderPreview(){
   card.style.display='block';
   const headers=[...new Set(pendingRows.flatMap(r=>Object.keys(r.row_data)))].slice(0,7);
   let html=`<table><thead><tr><th>Source</th>`;headers.forEach(h=>html+=`<th>${h}</th>`);html+=`<th>Amount</th></tr></thead><tbody>`;
-  pendingRows.slice(0,50).forEach(r=>{
-    html+=`<tr><td style="color:var(--text-muted);white-space:nowrap">${r.sourceName}</td>`;
-    headers.forEach(h=>html+=`<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.row_data[h]??''}</td>`);
-    html+=`<td style="text-align:right">${fmt(r.amount)}</td></tr>`;
-  });
+  pendingRows.slice(0,50).forEach(r=>{html+=`<tr><td style="color:var(--text-muted);white-space:nowrap">${r.sourceName}</td>`;headers.forEach(h=>html+=`<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.row_data[h]??''}</td>`);html+=`<td style="text-align:right">${fmt(r.amount)}</td></tr>`;});
   html+=`</tbody></table>`;
   document.getElementById('previewTable').innerHTML=html;
   document.getElementById('previewCount').textContent=`${pendingRows.length} row${pendingRows.length!==1?'s':''} ready${pendingRows.length>50?' (showing first 50)':''}`;
 }
-function clearPreview(){
-  pendingRows=[];document.getElementById('fileChips').innerHTML='';
-  document.getElementById('previewCard').style.display='none';document.getElementById('fileInput').value='';
-}
+function clearPreview(){pendingRows=[];document.getElementById('fileChips').innerHTML='';document.getElementById('previewCard').style.display='none';document.getElementById('fileInput').value='';}
 async function saveToSupabase(){
   if(!pendingRows.length){toast('Nothing to save');return;}
   const sources=[...new Set(pendingRows.map(r=>r.sourceName))];let saved=0,dupes=0;
@@ -849,19 +828,17 @@ async function loadRows(){
   const period=document.getElementById('filterPeriod').value;
   let query=sb.from('report_rows').select('*').order('created_at');
   if(reportId)query=query.eq('report_id',reportId);
-  if(period){
-    const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);
-    if(pReports.length)query=query.in('report_id',pReports);else{allRows=[];renderRowsTable();return;}
-  }
+  if(period){const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);if(pReports.length)query=query.in('report_id',pReports);else{allRows=[];renderRowsTable();return;}}
   const{data}=await query;allRows=data||[];
   if(allRows.length){
     const ids=allRows.map(r=>r.id);
     const{data:rds}=await sb.from('row_dimensions').select('*').in('row_id',ids);
-    rowDimensions={};
-    (rds||[]).forEach(rd=>{if(!rowDimensions[rd.row_id])rowDimensions[rd.row_id]={};rowDimensions[rd.row_id][rd.dimension_id]=rd.value_id;});
+    rowDimensions={};(rds||[]).forEach(rd=>{if(!rowDimensions[rd.row_id])rowDimensions[rd.row_id]={};rowDimensions[rd.row_id][rd.dimension_id]=rd.value_id;});
   }
   renderRowsTable();
 }
+
+function getRowHeaders(rows){return[...new Set(rows.flatMap(r=>Object.keys(r.row_data||{})))].slice(0,4);}
 
 function renderRowsTable(){
   const filterTag=document.getElementById('filterTag').value;
@@ -874,10 +851,12 @@ function renderRowsTable(){
   const container=document.getElementById('rowsTable');
   if(!rows.length){container.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div>';document.getElementById('rowsCount').textContent='';return;}
 
-  const headers=[...new Set(rows.flatMap(r=>Object.keys(r.row_data||{})))].slice(0,5);
-  let html=`<table><thead><tr><th><input type="checkbox" id="checkAll" onchange="toggleAll(this)" /></th>`;
+  const headers=getRowHeaders(rows);
+  let html=`<table><thead><tr>
+    <th><input type="checkbox" id="checkAll" onchange="toggleAll(this)" /></th>`;
   headers.forEach(h=>html+=`<th>${h}</th>`);
-  html+=`<th>Tag</th><th>Baseline ($)</th><th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th>`;
+  html+=`<th>Tag</th><th>Baseline</th><th>Oncore item</th><th>Qty col</th><th>Orig amt</th><th>Calc amt</th><th>Use</th>
+    <th>Subsidiary</th><th>Sub ID</th><th>Site</th><th>Site ID</th>`;
   dimensions.forEach(d=>html+=`<th>${d.name}</th>`);
   html+=`</tr></thead><tbody>`;
 
@@ -887,47 +866,64 @@ function renderRowsTable(){
     const curSiteId=siteDimId?rowDimensions[row.id]?.[siteDimId]||'':'';
     const curSub=subsidiaries.find(s=>s.id===curSubId);
     const curSite=sites.find(s=>s.id===curSiteId);
-    // Filter sites by selected sub
     const filteredSites=curSubId?sites.filter(s=>s.parent_id===curSubId):sites;
+    const rowCols=Object.keys(row.row_data||{});
+
+    // Calc amount
+    const oncoreItem=pricingItems.find(p=>p.id===row.oncore_id);
+    const price=row.oncore_id&&curSubId?resolvePrice(row.oncore_id,curSubId):oncoreItem?oncoreItem.default_price:null;
+    const calcAmt=price!==null&&row.qty?price*row.qty:null;
 
     html+=`<tr class="${isSelected?'selected':''}">`;
     html+=`<td><input type="checkbox" class="row-check" data-id="${row.id}" ${isSelected?'checked':''} onchange="toggleRowSelect('${row.id}',this.checked)" /></td>`;
-    headers.forEach(h=>html+=`<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)">${row.row_data?.[h]??''}</td>`);
+    headers.forEach(h=>html+=`<td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)">${row.row_data?.[h]??''}</td>`);
 
     // Tag
-    html+=`<td><select data-id="${row.id}" data-rowidx="${rowIdx}" class="row-tag-sel" tabindex="0" onkeydown="handleTabNav(event,this,'tag',${rowIdx})">`;
-    html+=`<option value="">—</option>`;
+    html+=`<td><select data-id="${row.id}" data-rowidx="${rowIdx}" class="row-tag-sel" tabindex="0" onkeydown="handleTabNav(event,this,'tag',${rowIdx})"><option value="">—</option>`;
     tags.forEach(t=>html+=`<option value="${t.name}" ${row.tag===t.name?'selected':''}>${t.name}</option>`);
     html+=`</select></td>`;
 
     // Baseline
-    html+=`<td><input type="number" data-id="${row.id}" data-rowidx="${rowIdx}" class="row-baseline-inp" value="${row.baseline||0}" step="0.01" tabindex="0" onkeydown="handleTabNav(event,this,'baseline',${rowIdx})" /></td>`;
+    html+=`<td><input type="number" data-id="${row.id}" data-rowidx="${rowIdx}" class="row-baseline-inp" value="${row.baseline||0}" step="0.01" tabindex="0" onkeydown="handleTabNav(event,this,'baseline',${rowIdx})" style="width:80px" /></td>`;
 
-    // Subsidiary dropdown
+    // Oncore item
+    html+=`<td><select data-id="${row.id}" class="row-oncore-sel" onchange="onOncoreChange(this)" style="min-width:120px"><option value="">—</option>`;
+    pricingItems.forEach(p=>html+=`<option value="${p.id}" ${row.oncore_id===p.id?'selected':''}>${p.oncore_name}${p.cpt_code?` (${p.cpt_code})`:''}</option>`);
+    html+=`</select></td>`;
+
+    // Qty column selector
+    html+=`<td><select data-id="${row.id}" class="row-qty-col-sel" onchange="onQtyColChange(this)" style="min-width:100px"><option value="">— qty col —</option>`;
+    rowCols.forEach(c=>html+=`<option value="${c}" ${row.qty_col===c?'selected':''}>${c}</option>`);
+    html+=`</select></td>`;
+
+    // Original amount
+    html+=`<td style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">${fmt(row.amount)}</td>`;
+
+    // Calc amount
+    html+=`<td style="text-align:right;white-space:nowrap"><span class="calc-amt" id="calcamt-${row.id}">${calcAmt!==null?fmt(calcAmt):'—'}</span></td>`;
+
+    // Use toggle
+    const useCalc=row.use_calc_amount&&calcAmt!==null;
+    html+=`<td><button class="use-toggle ${useCalc?'active':''}" id="usetoggle-${row.id}" onclick="toggleUseCalc('${row.id}',${!useCalc})" title="Toggle which amount feeds the JE">${useCalc?'Calc':'Orig'}</button></td>`;
+
+    // Subsidiary
     if(subDimId){
-      html+=`<td><select data-rowid="${row.id}" data-dimid="${subDimId}" data-rowidx="${rowIdx}" data-dimidx="0" class="row-sub-sel row-dim-sel" tabindex="0" onchange="onSubChange(this)" onkeydown="handleTabNav(event,this,'dim',${rowIdx},0)" style="min-width:110px">`;
-      html+=`<option value="">—</option>`;
+      html+=`<td><select data-rowid="${row.id}" data-dimid="${subDimId}" class="row-sub-sel row-dim-sel" onchange="onSubChange(this)" style="min-width:100px"><option value="">—</option>`;
       subsidiaries.forEach(v=>html+=`<option value="${v.id}" ${curSubId===v.id?'selected':''}>${v.value}</option>`);
-      html+=`</select></td>`;
-      // Sub ID (readonly)
-      html+=`<td><span class="id-chip" id="subid-${row.id}">${curSub?.code||'—'}</span></td>`;
-    }else{html+=`<td>—</td><td>—</td>`;}
+      html+=`</select></td><td><span class="id-chip" id="subid-${row.id}">${curSub?.code||'—'}</span></td>`;
+    }else html+=`<td>—</td><td>—</td>`;
 
-    // Site dropdown — filtered to selected sub
+    // Site
     if(siteDimId){
-      html+=`<td><select data-rowid="${row.id}" data-dimid="${siteDimId}" data-rowidx="${rowIdx}" data-dimidx="1" class="row-site-sel row-dim-sel" tabindex="0" onchange="onSiteChange(this)" onkeydown="handleTabNav(event,this,'dim',${rowIdx},1)" style="min-width:110px">`;
-      html+=`<option value="">—</option>`;
+      html+=`<td><select data-rowid="${row.id}" data-dimid="${siteDimId}" class="row-site-sel row-dim-sel" onchange="onSiteChange(this)" style="min-width:100px"><option value="">—</option>`;
       filteredSites.forEach(v=>html+=`<option value="${v.id}" ${curSiteId===v.id?'selected':''}>${v.value}</option>`);
-      html+=`</select></td>`;
-      // Site ID (readonly)
-      html+=`<td><span class="id-chip" id="siteid-${row.id}">${curSite?.code||'—'}</span></td>`;
-    }else{html+=`<td>—</td><td>—</td>`;}
+      html+=`</select></td><td><span class="id-chip" id="siteid-${row.id}">${curSite?.code||'—'}</span></td>`;
+    }else html+=`<td>—</td><td>—</td>`;
 
-    // Other dimensions
+    // Other dims
     dimensions.forEach((dim,dimIdx)=>{
       const vals=dimValues[dim.id]||[];const curVal=rowDimensions[row.id]?.[dim.id]||'';
-      html+=`<td><select data-rowid="${row.id}" data-dimid="${dim.id}" data-rowidx="${rowIdx}" data-dimidx="${dimIdx+2}" class="row-dim-sel" tabindex="0" onkeydown="handleTabNav(event,this,'dim',${rowIdx},${dimIdx+2})" style="min-width:100px">`;
-      html+=`<option value="">—</option>`;
+      html+=`<td><select data-rowid="${row.id}" data-dimid="${dim.id}" class="row-dim-sel" style="min-width:90px"><option value="">—</option>`;
       vals.forEach(v=>html+=`<option value="${v.id}" ${curVal===v.id?'selected':''}>${v.value}${v.code?` (${v.code})`:''}</option>`);
       html+=`</select></td>`;
     });
@@ -939,110 +935,137 @@ function renderRowsTable(){
   updateBulkBar();
 }
 
-// When subsidiary changes: filter site list + clear site + update sub ID chip
+// Oncore change: recalculate calc amount display
+function onOncoreChange(sel){
+  const rowId=sel.dataset.id;
+  recalcRowDisplay(rowId);
+}
+
+// Qty col change: read qty from row_data and recalc
+function onQtyColChange(sel){
+  const rowId=sel.dataset.id;
+  const row=allRows.find(r=>r.id===rowId);
+  if(row&&sel.value){
+    const rawVal=row.row_data?.[sel.value]||0;
+    row.qty=parseFloat(rawVal.toString().replace(/[^0-9.\-]/g,''))||0;
+  }
+  recalcRowDisplay(rowId);
+}
+
+function recalcRowDisplay(rowId){
+  const row=allRows.find(r=>r.id===rowId);if(!row)return;
+  const onkoreSel=document.querySelector(`.row-oncore-sel[data-id="${rowId}"]`);
+  const qtySel=document.querySelector(`.row-qty-col-sel[data-id="${rowId}"]`);
+  const oncoreId=onkoreSel?.value||row.oncore_id;
+  const qtyCol=qtySel?.value||row.qty_col;
+  const subId=subDimId?rowDimensions[rowId]?.[subDimId]||'':'';
+  const price=oncoreId?(subId?resolvePrice(oncoreId,subId):(pricingItems.find(p=>p.id===oncoreId)?.default_price||null)):null;
+  const qty=qtyCol?parseFloat((row.row_data?.[qtyCol]||'').toString().replace(/[^0-9.\-]/g,''))||0:row.qty||0;
+  const calcAmt=price!==null&&qty?price*qty:null;
+  const chip=document.getElementById(`calcamt-${rowId}`);
+  if(chip)chip.textContent=calcAmt!==null?fmt(calcAmt):'—';
+}
+
 function onSubChange(sel){
   const rowId=sel.dataset.rowid;
   const subValId=sel.value;
   const curSub=subsidiaries.find(s=>s.id===subValId);
-  // Update sub ID chip
   const subChip=document.getElementById(`subid-${rowId}`);
   if(subChip)subChip.textContent=curSub?.code||'—';
-  // Rebuild site dropdown filtered to this sub
   const siteSel=document.querySelector(`.row-site-sel[data-rowid="${rowId}"]`);
   if(siteSel&&siteDimId){
     const filteredSites=subValId?sites.filter(s=>s.parent_id===subValId):sites;
     siteSel.innerHTML='<option value="">—</option>';
     filteredSites.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.value;siteSel.appendChild(o);});
-    // Clear site ID chip
-    const siteChip=document.getElementById(`siteid-${rowId}`);
-    if(siteChip)siteChip.textContent='—';
+    const siteChip=document.getElementById(`siteid-${rowId}`);if(siteChip)siteChip.textContent='—';
   }
+  // Update rowDimensions locally for price recalc
+  if(!rowDimensions[rowId])rowDimensions[rowId]={};
+  rowDimensions[rowId][subDimId]=subValId;
+  recalcRowDisplay(rowId);
 }
 
-// When site changes: autofill site ID chip
 function onSiteChange(sel){
-  const rowId=sel.dataset.rowid;
-  const siteValId=sel.value;
+  const rowId=sel.dataset.rowid;const siteValId=sel.value;
   const curSite=sites.find(s=>s.id===siteValId);
   const siteChip=document.getElementById(`siteid-${rowId}`);
   if(siteChip)siteChip.textContent=curSite?.code||'—';
 }
 
-// ── Tab navigation ────────────────────────────────
-function handleTabNav(e,el,type,rowIdx,dimIdx){
+async function toggleUseCalc(rowId,useCalc){
+  await sb.from('report_rows').update({use_calc_amount:useCalc}).eq('id',rowId);
+  const row=allRows.find(r=>r.id===rowId);if(row)row.use_calc_amount=useCalc;
+  const btn=document.getElementById(`usetoggle-${rowId}`);
+  if(btn){btn.textContent=useCalc?'Calc':'Orig';btn.classList.toggle('active',useCalc);}
+}
+
+// Tab navigation
+function handleTabNav(e,el,type,rowIdx){
   if(e.key!=='Tab')return;e.preventDefault();
-  const dir=e.shiftKey?-1:1;
-  const totalDims=dimensions.length+2; // +2 for sub+site
-  let pos=type==='tag'?0:type==='baseline'?1:2+dimIdx;
-  const maxPos=1+totalDims;
-  let nextPos=pos+dir,nextRowIdx=rowIdx;
-  if(nextPos<0){nextPos=maxPos;nextRowIdx=rowIdx-1;}
-  else if(nextPos>maxPos){nextPos=0;nextRowIdx=rowIdx+1;}
+  const dir=e.shiftKey?-1:1;let pos=type==='tag'?0:1;let nextPos=pos+dir,nextRowIdx=rowIdx;
+  if(nextPos<0){nextPos=1;nextRowIdx=rowIdx-1;}else if(nextPos>1){nextPos=0;nextRowIdx=rowIdx+1;}
   const rows=document.querySelectorAll('tbody tr');
   if(nextRowIdx<0||nextRowIdx>=rows.length)return;
-  const targetRow=rows[nextRowIdx];let targetEl;
-  if(nextPos===0)targetEl=targetRow.querySelector('.row-tag-sel');
-  else if(nextPos===1)targetEl=targetRow.querySelector('.row-baseline-inp');
-  else{const dimSels=targetRow.querySelectorAll('.row-dim-sel');targetEl=dimSels[nextPos-2];}
+  const targetRow=rows[nextRowIdx];
+  const targetEl=nextPos===0?targetRow.querySelector('.row-tag-sel'):targetRow.querySelector('.row-baseline-inp');
   if(targetEl){targetEl.focus();if(targetEl.select)targetEl.select();}
 }
 
-// ── Selection / Bulk ──────────────────────────────
-function toggleRowSelect(id,checked){
-  if(checked)selectedRows.add(id);else selectedRows.delete(id);
-  updateBulkBar();
-  document.querySelectorAll('.row-check').forEach(cb=>{const tr=cb.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);});
-}
-function toggleAll(cb){
-  document.querySelectorAll('.row-check').forEach(c=>{c.checked=cb.checked;const tr=c.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);if(cb.checked)selectedRows.add(c.dataset.id);else selectedRows.delete(c.dataset.id);});
-  updateBulkBar();
-}
-function selectAllVisible(){
-  document.querySelectorAll('.row-check').forEach(c=>{c.checked=true;const tr=c.closest('tr');if(tr)tr.classList.add('selected');selectedRows.add(c.dataset.id);});
-  const ca=document.getElementById('checkAll');if(ca)ca.checked=true;updateBulkBar();
-}
-function clearSelection(){
-  selectedRows.clear();
-  document.querySelectorAll('.row-check').forEach(c=>c.checked=false);
-  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.remove('selected'));
-  const ca=document.getElementById('checkAll');if(ca)ca.checked=false;updateBulkBar();
-}
-function updateBulkBar(){
-  const bar=document.getElementById('bulkBar');const count=selectedRows.size;
-  bar.style.display=count>0?'flex':'none';
-  document.getElementById('bulkCount').textContent=`${count} selected`;
-}
+// Selection
+function toggleRowSelect(id,checked){if(checked)selectedRows.add(id);else selectedRows.delete(id);updateBulkBar();document.querySelectorAll('.row-check').forEach(cb=>{const tr=cb.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);});}
+function toggleAll(cb){document.querySelectorAll('.row-check').forEach(c=>{c.checked=cb.checked;const tr=c.closest('tr');if(tr)tr.classList.toggle('selected',cb.checked);if(cb.checked)selectedRows.add(c.dataset.id);else selectedRows.delete(c.dataset.id);});updateBulkBar();}
+function selectAllVisible(){document.querySelectorAll('.row-check').forEach(c=>{c.checked=true;const tr=c.closest('tr');if(tr)tr.classList.add('selected');selectedRows.add(c.dataset.id);});const ca=document.getElementById('checkAll');if(ca)ca.checked=true;updateBulkBar();}
+function clearSelection(){selectedRows.clear();document.querySelectorAll('.row-check').forEach(c=>c.checked=false);document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.remove('selected'));const ca=document.getElementById('checkAll');if(ca)ca.checked=false;updateBulkBar();}
+function updateBulkBar(){const bar=document.getElementById('bulkBar');const count=selectedRows.size;bar.style.display=count>0?'flex':'none';document.getElementById('bulkCount').textContent=`${count} selected`;}
+
 async function applyBulkTag(){
-  const tag=document.getElementById('bulkTagSel').value;
-  if(!tag||!selectedRows.size){toast('Select rows and a tag first');return;}
-  const ids=[...selectedRows];
-  for(const id of ids)await sb.from('report_rows').update({tag}).eq('id',id);
-  toast(`Tag applied to ${ids.length} rows`);clearSelection();await loadRows();
+  const tag=document.getElementById('bulkTagSel').value;if(!tag||!selectedRows.size){toast('Select rows and a tag');return;}
+  for(const id of selectedRows)await sb.from('report_rows').update({tag}).eq('id',id);
+  toast(`Tag applied to ${selectedRows.size} rows`);clearSelection();await loadRows();
 }
 async function applyBulkDim(){
-  const dimId=document.getElementById('bulkDimSel').value;
-  const valId=document.getElementById('bulkDimValSel').value;
-  if(!dimId||!valId||!selectedRows.size){toast('Select rows, dimension, and value first');return;}
-  const ids=[...selectedRows];
-  for(const rowId of ids){
-    const{data:existing}=await sb.from('row_dimensions').select('id').eq('row_id',rowId).eq('dimension_id',dimId).limit(1);
-    if(existing&&existing.length)await sb.from('row_dimensions').update({value_id:valId}).eq('row_id',rowId).eq('dimension_id',dimId);
+  const dimId=document.getElementById('bulkDimSel').value;const valId=document.getElementById('bulkDimValSel').value;
+  if(!dimId||!valId||!selectedRows.size){toast('Select rows, dimension, and value');return;}
+  for(const rowId of selectedRows){
+    const{data:ex}=await sb.from('row_dimensions').select('id').eq('row_id',rowId).eq('dimension_id',dimId).limit(1);
+    if(ex&&ex.length)await sb.from('row_dimensions').update({value_id:valId}).eq('row_id',rowId).eq('dimension_id',dimId);
     else await sb.from('row_dimensions').insert({row_id:rowId,dimension_id:dimId,value_id:valId});
   }
-  toast(`Dimension applied to ${ids.length} rows`);clearSelection();await loadRows();
+  toast(`Dimension applied to ${selectedRows.size} rows`);clearSelection();await loadRows();
 }
+async function applyBulkOncore(){
+  const oncoreId=document.getElementById('bulkOncoreSel').value;if(!oncoreId||!selectedRows.size){toast('Select rows and an Oncore item');return;}
+  for(const id of selectedRows)await sb.from('report_rows').update({oncore_id:oncoreId}).eq('id',id);
+  toast(`Oncore item applied to ${selectedRows.size} rows`);clearSelection();await loadRows();
+}
+
 async function saveRowTags(){
   const tagSels=document.querySelectorAll('.row-tag-sel');
   const baseInps=document.querySelectorAll('.row-baseline-inp');
+  const onkoreSels=document.querySelectorAll('.row-oncore-sel');
+  const qtyColSels=document.querySelectorAll('.row-qty-col-sel');
   const dimSels=document.querySelectorAll('.row-dim-sel');
+
   for(const sel of tagSels){
-    const id=sel.dataset.id;const inp=document.querySelector(`.row-baseline-inp[data-id="${id}"]`);
-    await sb.from('report_rows').update({tag:sel.value,baseline:parseFloat(inp?.value)||0}).eq('id',id);
+    const id=sel.dataset.id;
+    const inp=document.querySelector(`.row-baseline-inp[data-id="${id}"]`);
+    const onkoreSel=document.querySelector(`.row-oncore-sel[data-id="${id}"]`);
+    const qtySel=document.querySelector(`.row-qty-col-sel[data-id="${id}"]`);
+    const row=allRows.find(r=>r.id===id);
+    // Compute qty and calc_amount before saving
+    const oncoreId=onkoreSel?.value||null;
+    const qtyCol=qtySel?.value||null;
+    const subId=subDimId?rowDimensions[id]?.[subDimId]||'':'';
+    const price=oncoreId?(subId?resolvePrice(oncoreId,subId):(pricingItems.find(p=>p.id===oncoreId)?.default_price||null)):null;
+    let qty=0;
+    if(qtyCol&&row){qty=parseFloat((row.row_data?.[qtyCol]||'').toString().replace(/[^0-9.\-]/g,''))||0;}
+    const calcAmt=price!==null&&qty?price*qty:0;
+    await sb.from('report_rows').update({tag:sel.value,baseline:parseFloat(inp?.value)||0,oncore_id:oncoreId||null,qty_col:qtyCol||null,qty,calc_amount:calcAmt}).eq('id',id);
   }
   for(const sel of dimSels){
     const rowId=sel.dataset.rowid,dimId=sel.dataset.dimid,valId=sel.value;
-    const{data:existing}=await sb.from('row_dimensions').select('id').eq('row_id',rowId).eq('dimension_id',dimId).limit(1);
-    if(existing&&existing.length){if(valId)await sb.from('row_dimensions').update({value_id:valId}).eq('row_id',rowId).eq('dimension_id',dimId);else await sb.from('row_dimensions').delete().eq('row_id',rowId).eq('dimension_id',dimId);}
+    const{data:ex}=await sb.from('row_dimensions').select('id').eq('row_id',rowId).eq('dimension_id',dimId).limit(1);
+    if(ex&&ex.length){if(valId)await sb.from('row_dimensions').update({value_id:valId}).eq('row_id',rowId).eq('dimension_id',dimId);else await sb.from('row_dimensions').delete().eq('row_id',rowId).eq('dimension_id',dimId);}
     else if(valId)await sb.from('row_dimensions').insert({row_id:rowId,dimension_id:dimId,value_id:valId});
   }
   await loadRows();toast('Changes saved');
@@ -1056,10 +1079,38 @@ async function calculateJE(){
   if(period){const pReports=allReports.filter(r=>r.period===period).map(r=>r.id);if(pReports.length)query=query.in('report_id',pReports);}
   const{data:rows}=await query;
   if(!rows||!rows.length){toast('No tagged rows found');return;}
+
   const ids=rows.map(r=>r.id);
   const{data:rds}=await sb.from('row_dimensions').select('*').in('row_id',ids);
   const rdMap={};(rds||[]).forEach(rd=>{if(!rdMap[rd.row_id])rdMap[rd.row_id]={};rdMap[rd.row_id][rd.dimension_id]=rd.value_id;});
   const glDim=dimensions.find(d=>d.name.toLowerCase().includes('gl'));
+
+  // Group by Oncore + Subsidiary for quantity summing
+  const oncoreSubGroups={};
+  rows.forEach(r=>{
+    if(!r.oncore_id)return;
+    const subId=subDimId?rdMap[r.id]?.[subDimId]||'':'';
+    const key=`${r.oncore_id}::${subId}`;
+    if(!oncoreSubGroups[key])oncoreSubGroups[key]={oncoreId:r.oncore_id,subId,totalQty:0};
+    oncoreSubGroups[key].totalQty+=r.qty||0;
+  });
+
+  const getEffectiveAmount=r=>{
+    if(r.use_calc_amount&&r.calc_amount)return r.calc_amount-(r.baseline||0);
+    // If part of an oncore group, use summed qty * price
+    if(r.oncore_id){
+      const subId=subDimId?rdMap[r.id]?.[subDimId]||'':'';
+      const gkey=`${r.oncore_id}::${subId}`;
+      const grp=oncoreSubGroups[gkey];
+      const price=resolvePrice(r.oncore_id,subId);
+      if(price!==null&&grp){
+        // Distribute proportionally — but simpler: each row uses its own qty × price
+        const qty=r.qty||0;
+        return price*qty-(r.baseline||0);
+      }
+    }
+    return r.amount-(r.baseline||0);
+  };
 
   const getKey=row=>{
     let key=row.tag;
@@ -1067,22 +1118,18 @@ async function calculateJE(){
     const siteValId=siteDimId?rdMap[row.id]?.[siteDimId]:null;
     const subObj=subsidiaries.find(s=>s.id===subValId);
     const siteObj=sites.find(s=>s.id===siteValId);
-    if(groupBy==='tag+sub'||groupBy==='tag+sub+site'||groupBy==='tag+all'){
-      key+=` | ${subObj?subObj.value:'—'}${subObj?.code?' ('+subObj.code+')':''}`;
-    }
-    if(groupBy==='tag+sub+site'||groupBy==='tag+all'){
-      key+=` | ${siteObj?siteObj.value:'—'}${siteObj?.code?' ('+siteObj.code+')':''}`;
-    }
+    const oncoreObj=pricingItems.find(p=>p.id===row.oncore_id);
+    if(groupBy==='tag+sub'||groupBy==='tag+sub+site'||groupBy==='tag+all')key+=` | ${subObj?subObj.value:'—'}${subObj?.code?' ('+subObj.code+')':''}`;
+    if(groupBy==='tag+sub+site'||groupBy==='tag+all')key+=` | ${siteObj?siteObj.value:'—'}${siteObj?.code?' ('+siteObj.code+')':''}`;
+    if(groupBy==='tag+oncore')key+=` | ${oncoreObj?oncoreObj.oncore_name:'—'}`;
     if(groupBy==='tag+gl'&&glDim){const vid=rdMap[row.id]?.[glDim.id];const v=vid?(dimValues[glDim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?(v.code||v.value):'—');}
-    if(groupBy==='tag+all'){
-      dimensions.forEach(dim=>{const vid=rdMap[row.id]?.[dim.id];const v=vid?(dimValues[dim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?v.value:'—');});
-    }
+    if(groupBy==='tag+all'){dimensions.forEach(dim=>{const vid=rdMap[row.id]?.[dim.id];const v=vid?(dimValues[dim.id]||[]).find(x=>x.id===vid):null;key+=' | '+(v?v.value:'—');});}
     return key;
   };
 
   const byKey={};
   rows.forEach(r=>{
-    const net=r.amount-(r.baseline||0);const key=getKey(r);
+    const net=getEffectiveAmount(r);const key=getKey(r);
     if(!byKey[key])byKey[key]={tag:r.tag,key,total:0,count:0,subValId:subDimId?rdMap[r.id]?.[subDimId]:null,siteValId:siteDimId?rdMap[r.id]?.[siteDimId]:null};
     byKey[key].total+=net;byKey[key].count++;
   });
@@ -1091,11 +1138,8 @@ async function calculateJE(){
   const entries=Object.values(byKey).map(g=>{
     const isRev=g.tag.toLowerCase().includes('reversal');const type=isRev?'Credit':'Debit';
     if(isRev)reversal+=Math.abs(g.total);else accrual+=Math.abs(g.total);
-    const subObj=subsidiaries.find(s=>s.id===g.subValId);
-    const siteObj=sites.find(s=>s.id===g.siteValId);
-    return{tag:g.tag,key:g.key,type,amount:g.total,count:g.count,
-      subName:subObj?.value||'',subCode:subObj?.code||'',
-      siteName:siteObj?.value||'',siteCode:siteObj?.code||''};
+    const subObj=subsidiaries.find(s=>s.id===g.subValId);const siteObj=sites.find(s=>s.id===g.siteValId);
+    return{tag:g.tag,key:g.key,type,amount:g.total,count:g.count,subName:subObj?.value||'',subCode:subObj?.code||'',siteName:siteObj?.value||'',siteCode:siteObj?.code||''};
   });
 
   currentJE={entries,total_accrual:accrual,total_reversal:reversal,net:accrual-reversal,period};
@@ -1111,8 +1155,7 @@ async function calculateJE(){
     return`<div class="je-line">
       <div class="je-left">
         <span class="badge ${e.type==='Debit'?'badge-debit':'badge-credit'}">${e.type}</span>
-        <span style="font-weight:500">${e.tag}</span>
-        ${dimBadges}
+        <span style="font-weight:500">${e.tag}</span>${dimBadges}
         <span style="font-size:11px;color:var(--text-faint)">${e.count} row${e.count!==1?'s':''}</span>
       </div>
       <span class="je-amount ${e.type==='Debit'?'debit':'credit'}">${e.amount<0?'-':''}${fmt(Math.abs(e.amount))}</span>
@@ -1126,43 +1169,29 @@ async function saveJE(){
   await sb.from('journal_entries').insert({entries:currentJE.entries,total_accrual:currentJE.total_accrual,total_reversal:currentJE.total_reversal,net:currentJE.net});
   toast('Saved to history');await loadHistory();
 }
-
 function downloadJE(){
   if(!currentJE){toast('Calculate the JE first');return;}
   const rows=[['Period','Tag','Type','Subsidiary','Sub ID','Site','Site ID','Amount','Row count']];
-  currentJE.entries.forEach(e=>rows.push([
-    currentJE.period?periodLabel(currentJE.period):'All',
-    e.tag,e.type,e.subName,e.subCode,e.siteName,e.siteCode,
-    e.amount.toFixed(2),e.count
-  ]));
-  rows.push([]);
-  rows.push(['Total Accrual (Dr)','','','','','','',currentJE.total_accrual.toFixed(2),'']);
+  currentJE.entries.forEach(e=>rows.push([currentJE.period?periodLabel(currentJE.period):'All',e.tag,e.type,e.subName,e.subCode,e.siteName,e.siteCode,e.amount.toFixed(2),e.count]));
+  rows.push([]);rows.push(['Total Accrual (Dr)','','','','','','',currentJE.total_accrual.toFixed(2),'']);
   rows.push(['Total Reversal (Cr)','','','','','','',currentJE.total_reversal.toFixed(2),'']);
   rows.push(['Net','','','','','','',currentJE.net.toFixed(2),'']);
   downloadCSV(rows,`journal_entry_${currentJE.period||'all'}_${new Date().toISOString().slice(0,10)}.csv`);
 }
 
 // ── Templates ─────────────────────────────────────
-async function loadTemplates(){
-  const{data}=await sb.from('je_templates').select('*').order('created_at');
-  templates=data||[];renderTemplatesList();
-}
+async function loadTemplates(){const{data}=await sb.from('je_templates').select('*').order('created_at');templates=data||[];renderTemplatesList();}
 function renderTemplatesList(){
   const el=document.getElementById('templatesList');
   if(!templates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No templates yet</div>';return;}
   el.innerHTML=templates.map(t=>`<div class="report-row"><span style="font-weight:500">${t.name}</span><div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="editTemplate('${t.id}')">Edit</button><button class="btn btn-sm btn-amber" onclick="applyTemplateById('${t.id}')">▶ Apply</button></div></div>`).join('');
 }
-function newTemplate(){
-  editingTemplateId=null;document.getElementById('templateName').value='';document.getElementById('rulesList').innerHTML='';
-  document.getElementById('templateEditorTitle').textContent='New template';document.getElementById('templateEditor').style.display='block';addRule();
-}
+function newTemplate(){editingTemplateId=null;document.getElementById('templateName').value='';document.getElementById('rulesList').innerHTML='';document.getElementById('templateEditorTitle').textContent='New template';document.getElementById('templateEditor').style.display='block';addRule();}
 function editTemplate(id){
   const t=templates.find(x=>x.id===id);if(!t)return;
   editingTemplateId=id;document.getElementById('templateName').value=t.name;
-  document.getElementById('templateEditorTitle').textContent=`Edit: ${t.name}`;
-  document.getElementById('templateEditor').style.display='block';
-  const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');
-  document.getElementById('rulesList').innerHTML='';rules.forEach(r=>addRule(r));
+  document.getElementById('templateEditorTitle').textContent=`Edit: ${t.name}`;document.getElementById('templateEditor').style.display='block';
+  const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');document.getElementById('rulesList').innerHTML='';rules.forEach(r=>addRule(r));
 }
 function addRule(existing=null){
   const div=document.createElement('div');div.className='rule-row';
@@ -1181,26 +1210,16 @@ function addRule(existing=null){
 async function saveTemplate(){
   const name=document.getElementById('templateName').value.trim();if(!name){toast('Enter a name');return;}
   const rules=[...document.querySelectorAll('#rulesList .rule-row')].map(row=>({field:row.querySelector('.rule-field').value,value:row.querySelector('.rule-value').value.trim(),tag:row.querySelector('.rule-tag').value})).filter(r=>r.field&&r.tag);
-  if(editingTemplateId)await sb.from('je_templates').update({name,rules}).eq('id',editingTemplateId);
-  else await sb.from('je_templates').insert({name,rules});
+  if(editingTemplateId)await sb.from('je_templates').update({name,rules}).eq('id',editingTemplateId);else await sb.from('je_templates').insert({name,rules});
   await loadTemplates();document.getElementById('templateEditor').style.display='none';toast('Template saved');
 }
-async function deleteTemplate(){
-  if(!editingTemplateId||!confirm('Delete this template?'))return;
-  await sb.from('je_templates').delete().eq('id',editingTemplateId);
-  editingTemplateId=null;document.getElementById('templateEditor').style.display='none';await loadTemplates();toast('Deleted');
-}
+async function deleteTemplate(){if(!editingTemplateId||!confirm('Delete?'))return;await sb.from('je_templates').delete().eq('id',editingTemplateId);editingTemplateId=null;document.getElementById('templateEditor').style.display='none';await loadTemplates();toast('Deleted');}
 async function applyTemplateToRows(){await applyTemplateById(editingTemplateId);}
 async function applyTemplateById(id){
-  const t=templates.find(x=>x.id===id);if(!t){toast('Template not found');return;}
-  const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');if(!rules.length){toast('No rules defined');return;}
+  const t=templates.find(x=>x.id===id);if(!t){toast('Not found');return;}
+  const rules=Array.isArray(t.rules)?t.rules:JSON.parse(t.rules||'[]');if(!rules.length){toast('No rules');return;}
   let applied=0;
-  for(const row of allRows){
-    for(const rule of rules){
-      const rowVal=(row.row_data?.[rule.field]||'').toString().trim().toLowerCase();
-      if(rowVal===rule.value.toLowerCase()&&rule.tag){await sb.from('report_rows').update({tag:rule.tag}).eq('id',row.id);applied++;break;}
-    }
-  }
+  for(const row of allRows)for(const rule of rules){const rowVal=(row.row_data?.[rule.field]||'').toString().trim().toLowerCase();if(rowVal===rule.value.toLowerCase()&&rule.tag){await sb.from('report_rows').update({tag:rule.tag}).eq('id',row.id);applied++;break;}}
   await loadRows();toast(`Applied — ${applied} rows tagged`);
 }
 function downloadTemplate(){
@@ -1214,11 +1233,7 @@ async function loadHistory(){
   const{data}=await sb.from('journal_entries').select('*').order('created_at',{ascending:false});
   const el=document.getElementById('historyList');
   if(!data||!data.length){el.innerHTML='<div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div>';return;}
-  el.innerHTML=data.map(je=>{
-    const entries=Array.isArray(je.entries)?je.entries:JSON.parse(je.entries||'[]');
-    const lines=entries.map(e=>`<span class="badge ${e.type==='Debit'?'badge-debit':'badge-credit'}" style="margin-right:4px">${e.tag} ${fmt(Math.abs(e.amount))}</span>`).join('');
-    return`<div class="history-row"><div><div>${lines}</div><div class="history-meta">${new Date(je.created_at).toLocaleString()} · Net ${fmt(je.net)}</div></div></div>`;
-  }).join('');
+  el.innerHTML=data.map(je=>{const entries=Array.isArray(je.entries)?je.entries:JSON.parse(je.entries||'[]');const lines=entries.map(e=>`<span class="badge ${e.type==='Debit'?'badge-debit':'badge-credit'}" style="margin-right:4px">${e.tag} ${fmt(Math.abs(e.amount))}</span>`).join('');return`<div class="history-row"><div><div>${lines}</div><div class="history-meta">${new Date(je.created_at).toLocaleString()} · Net ${fmt(je.net)}</div></div></div>`;}).join('');
 }
 async function loadLog(){
   const{data}=await sb.from('log_entries').select('*').order('created_at',{ascending:false}).limit(100);
@@ -1229,10 +1244,8 @@ async function loadLog(){
 
 // ── Helpers ───────────────────────────────────────
 function fmt(n){return'$'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
-function downloadCSV(rows,filename){
-  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();toast('Downloaded');
-}
+function fmtPrice(n){return'$'+Number(n).toFixed(2);}
+function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();toast('Downloaded');}
 
 init();
 </script>
