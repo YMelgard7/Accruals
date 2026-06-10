@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Accruals</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --border: #e4e2dc;
+    --border-strong: #c8c5bc;
+    --text: #1a1916;
+    --text-muted: #6b6860;
+    --text-faint: #a09e99;
+    --accent: #1a5c38;
+    --accent-light: #e8f2ec;
+    --debit: #185FA5;
+    --debit-bg: #E6F1FB;
+    --credit: #1a5c38;
+    --credit-bg: #e8f2ec;
+    --danger: #a32d2d;
+    --danger-bg: #fcebeb;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Layout */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-brand {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .topbar-brand span {
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .topbar-status {
+    font-size: 12px;
+    color: var(--text-faint);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #ccc;
+  }
+  .status-dot.connected { background: #3B6D11; }
+
+  .layout { display: flex; min-height: calc(100vh - 52px); }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .nav-section {
+    padding: 0 12px;
+    margin-bottom: 4px;
+  }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    padding: 8px 8px 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: background 0.1s, color 0.1s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .main { flex: 1; overflow: hidden; }
+  .page { display: none; padding: 24px; max-width: 1100px; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 20px; }
+  .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  /* Stat row */
+  .stat-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .stat { flex: 1; background: var(--bg); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+  .stat-val { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .stat-val.debit { color: var(--debit); }
+  .stat-val.credit { color: var(--credit); }
+
+  /* Upload zone */
+  .drop-zone {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    background: var(--accent-light);
+    border-color: var(--accent);
+  }
+  .drop-icon { font-size: 28px; margin-bottom: 8px; }
+  .drop-label { font-size: 14px; color: var(--text-muted); }
+  .drop-hint { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+
+  .file-list { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 4px 10px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .file-chip button {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-faint); font-size: 14px; line-height: 1; padding: 0;
+  }
+  .file-chip button:hover { color: var(--danger); }
+
+  /* Tags */
+  .tag-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tag-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px 3px 10px;
+    border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1px solid transparent; cursor: default;
+  }
+  .tag-pill button {
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 0; opacity: 0.6;
+  }
+  .tag-pill button:hover { opacity: 1; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 7px 14px;
+    font-size: 13px; cursor: pointer;
+    background: var(--surface); color: var(--text);
+    transition: background 0.1s;
+    font-family: inherit;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn-primary {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #154f30; border-color: #154f30; }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-muted); white-space: nowrap;
+  }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg); }
+
+  select, input[type="number"], input[type="text"] {
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius); padding: 4px 8px;
+    font-size: 12px; background: var(--surface);
+    color: var(--text); font-family: inherit;
+  }
+  select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  input[type="number"] { width: 90px; text-align: right; }
+
+  /* JE output */
+  .je-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .je-line:last-child { border-bottom: none; }
+  .je-left { display: flex; align-items: center; gap: 8px; }
+  .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .badge-debit { background: var(--debit-bg); color: var(--debit); }
+  .badge-credit { background: var(--credit-bg); color: var(--credit); }
+  .je-amount { font-weight: 600; font-size: 14px; }
+  .je-amount.debit { color: var(--debit); }
+  .je-amount.credit { color: var(--credit); }
+
+  /* History */
+  .history-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-meta { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--text); color: var(--surface);
+    padding: 10px 16px; border-radius: var(--radius);
+    font-size: 13px; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s; z-index: 999;
+  }
+  #toast.show { opacity: 1; }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 40px 20px;
+    color: var(--text-faint); font-size: 13px;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 10px; }
+
+  /* Log */
+  .log-entry {
+    font-size: 12px; font-family: monospace;
+    padding: 4px 0; border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: var(--text-faint); margin-right: 8px; }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 8px 16px; font-size: 13px; cursor: pointer;
+    border: none; background: none; color: var(--text-muted);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    font-family: inherit;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+  .section-divider {
+    height: 1px; background: var(--border); margin: 20px 0;
+  }
+  .row-count {
+    font-size: 12px; color: var(--text-faint);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <span>A</span> Accruals
+  </div>
+  <div class="topbar-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting…</span>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Workspace</div>
+      <button class="nav-item active" onclick="nav('upload',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>
+        Upload
+      </button>
+      <button class="nav-item" onclick="nav('rows',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 6h14M1 9h14M5 6v7M11 6v7"/></svg>
+        Data rows
+      </button>
+      <button class="nav-item" onclick="nav('je',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h7M3 12h5"/><circle cx="13" cy="11" r="2.5"/><path d="M12 11h2M13 10v2"/></svg>
+        Journal entry
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Config</div>
+      <button class="nav-item" onclick="nav('tags',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8.5L7.5 3H13v5.5L7.5 14z"/><circle cx="11" cy="5" r="1"/></svg>
+        Tags
+      </button>
+      <button class="nav-item" onclick="nav('history',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>
+        History
+      </button>
+      <button class="nav-item" onclick="nav('log',this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h6M5 11h3"/></svg>
+        Log
+      </button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- UPLOAD -->
+    <div class="page active" id="page-upload">
+      <div class="page-header">
+        <div class="page-title">Upload reports</div>
+        <div class="page-sub">Add CSV or Excel files to the accrual database</div>
+      </div>
+      <div class="card">
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-icon">📂</div>
+          <div class="drop-label">Drop CSV or Excel files here, or click to browse</div>
+          <div class="drop-hint">Supports .csv and .xlsx — multiple files allowed</div>
+        </div>
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" multiple style="display:none">
+        <div class="file-list" id="fileChips"></div>
+      </div>
+      <div class="card" id="previewCard" style="display:none">
+        <div class="card-title">Preview</div>
+        <div class="table-wrap" id="previewTable"></div>
+        <div class="row-count" id="previewCount"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveToSupabase()">💾 Save to database</button>
+          <button class="btn" onclick="clearPreview()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA ROWS -->
+    <div class="page" id="page-rows">
+      <div class="page-header">
+        <div class="page-title">Data rows</div>
+        <div class="page-sub">Tag rows and set baselines for the journal entry calculation</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="filterReport" onchange="loadRows()" style="font-size:12px">
+              <option value="">All reports</option>
+            </select>
+            <select id="filterTag" onchange="renderRowsTable()" style="font-size:12px">
+              <option value="">All tags</option>
+              <option value="__untagged__">Untagged only</option>
+            </select>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="saveRowTags()">Save tags</button>
+        </div>
+        <div class="table-wrap" id="rowsTable"><div class="empty"><div class="empty-icon">📋</div>No rows yet — upload a report first</div></div>
+        <div class="row-count" id="rowsCount"></div>
+      </div>
+    </div>
+
+    <!-- JOURNAL ENTRY -->
+    <div class="page" id="page-je">
+      <div class="page-header">
+        <div class="page-title">Journal entry</div>
+        <div class="page-sub">Calculate and export the accrual journal entry</div>
+      </div>
+      <div class="stat-row" id="jeStats">
+        <div class="stat"><div class="stat-label">Total accrual (Dr)</div><div class="stat-val debit" id="jeTotalAccrual">—</div></div>
+        <div class="stat"><div class="stat-label">Total reversal (Cr)</div><div class="stat-val credit" id="jeTotalReversal">—</div></div>
+        <div class="stat"><div class="stat-label">Net</div><div class="stat-val" id="jeNet">—</div></div>
+        <div class="stat"><div class="stat-label">Tagged rows</div><div class="stat-val" id="jeRowCount">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Journal lines</div>
+        <div id="jeLines"><div class="empty"><div class="empty-icon">🧾</div>Click Calculate to build the journal entry</div></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="calculateJE()">Calculate JE</button>
+          <button class="btn" onclick="saveJE()">Save to history</button>
+          <button class="btn" onclick="downloadJE()">⬇ Download CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAGS -->
+    <div class="page" id="page-tags">
+      <div class="page-header">
+        <div class="page-title">Tags</div>
+        <div class="page-sub">Define the tags used to classify rows</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Active tags</div>
+        <div class="tag-bar" id="tagBar"></div>
+        <div class="section-divider"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="newTagName" placeholder="Tag name" style="width:160px" />
+          <button class="btn btn-primary" onclick="addTag()">+ Add tag</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="page" id="page-history">
+      <div class="page-header">
+        <div class="page-title">History</div>
+        <div class="page-sub">Previously saved journal entries</div>
+      </div>
+      <div class="card">
+        <div id="historyList"><div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div></div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="page" id="page-log">
+      <div class="page-header">
+        <div class="page-title">Log</div>
+        <div class="page-sub">Duplicate row removals and system events</div>
+      </div>
+      <div class="card">
+        <div id="logList"><div class="empty"><div class="empty-icon">📄</div>No log entries yet</div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://pddehutovxexlngigbmg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkZGVodXRvdnhleGxuZ2lnYm1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDQxMzYsImV4cCI6MjA5NjYyMDEzNn0.sT0SaDQGCgdr4md84vlTj66KBQF4Nrchjd9pprK0QWU';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const TAG_COLORS = [
+  {bg:'#E6F1FB',text:'#0C447C',border:'#B5D4F4'},
+  {bg:'#EAF3DE',text:'#27500A',border:'#C0DD97'},
+  {bg:'#FAEEDA',text:'#633806',border:'#FAC775'},
+  {bg:'#EEEDFE',text:'#3C3489',border:'#CECBF6'},
+  {bg:'#FAECE7',text:'#712B13',border:'#F5C4B3'},
+  {bg:'#FBEAF0',text:'#72243E',border:'#F4C0D1'},
+];
+
+let tags = [];
+let pendingRows = [];
+let allRows = [];
+let currentJE = null;
+
+// ── Init ──────────────────────────────────────────
+async function init() {
+  try {
+    const { error } = await sb.from('tags').select('id').limit(1);
+    if (error) throw error;
+    document.getElementById('statusDot').classList.add('connected');
+    document.getElementById('statusText').textContent = 'Connected';
+    await loadTags();
+    await loadReportFilter();
+    await loadRows();
+    await loadHistory();
+    await loadLog();
+  } catch(e) {
+    document.getElementById('statusText').textContent = 'Connection error';
+    toast('Could not connect to Supabase — check your keys');
+  }
+}
+
+// ── Navigation ────────────────────────────────────
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+  if (page === 'history') loadHistory();
+  if (page === 'log') loadLog();
+}
+
+// ── Toast ─────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Tags ──────────────────────────────────────────
+async function loadTags() {
+  const { data } = await sb.from('tags').select('*').order('created_at');
+  if (data) {
+    tags = data.map(t => ({...t, color: typeof t.color === 'string' ? JSON.parse(t.color) : t.color}));
+    renderTagBar();
+    renderTagSelects();
+  }
+}
+
+function renderTagBar() {
+  const bar = document.getElementById('tagBar');
+  if (!tags.length) { bar.innerHTML = '<span style="color:var(--text-faint);font-size:13px">No tags yet</span>'; return; }
+  bar.innerHTML = tags.map((t,i) =>
+    `<span class="tag-pill" style="background:${t.color.bg};color:${t.color.text};border-color:${t.color.border}">
+      ${t.name}
+      <button onclick="removeTag('${t.id}')" aria-label="Remove ${t.name}">×</button>
+    </span>`
+  ).join('');
+}
+
+function renderTagSelects() {
+  const filterTag = document.getElementById('filterTag');
+  const current = filterTag.value;
+  filterTag.innerHTML = '<option value="">All tags</option><option value="__untagged__">Untagged only</option>';
+  tags.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.name; o.textContent = t.name;
+    filterTag.appendChild(o);
+  });
+  filterTag.value = current;
+}
+
+async function addTag() {
+  const input = document.getElementById('newTagName');
+  const name = input.value.trim();
+  if (!name) return;
+  if (tags.find(t => t.name.toLowerCase() === name.toLowerCase())) { toast('Tag already exists'); return; }
+  const color = TAG_COLORS[tags.length % TAG_COLORS.length];
+  const { error } = await sb.from('tags').insert({ name, color: JSON.stringify(color) });
+  if (error) { toast('Error saving tag'); return; }
+  input.value = '';
+  await loadTags();
+  toast(`Tag "${name}" added`);
+}
+
+async function removeTag(id) {
+  const tag = tags.find(t => t.id === id);
+  if (!confirm(`Remove tag "${tag?.name}"? Rows using it will become untagged.`)) return;
+  await sb.from('report_rows').update({ tag: '' }).eq('tag', tag.name);
+  await sb.from('tags').delete().eq('id', id);
+  await loadTags();
+  await loadRows();
+  toast(`Tag removed`);
+}
+
+// ── File upload & preview ─────────────────────────
+const dz = document.getElementById('dropZone');
+dz.ondragover = e => { e.preventDefault(); dz.classList.add('drag-over'); };
+dz.ondragleave = () => dz.classList.remove('drag-over');
+dz.ondrop = e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFiles(Array.from(e.dataTransfer.files)); };
+document.getElementById('fileInput').onchange = e => handleFiles(Array.from(e.target.files));
+
+function handleFiles(files) {
+  files.forEach(file => {
+    const chip = document.createElement('span');
+    chip.className = 'file-chip';
+    chip.innerHTML = `📄 ${file.name} <button onclick="this.parentElement.remove();removePending('${file.name}')" aria-label="Remove">×</button>`;
+    document.getElementById('fileChips').appendChild(chip);
+    const reader = new FileReader();
+    if (file.name.endsWith('.csv')) {
+      reader.onload = e => processData(file.name, parseCSV(e.target.result));
+      reader.readAsText(file);
+    } else {
+      reader.onload = e => {
+        const wb = XLSX.read(e.target.result, {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        processData(file.name, XLSX.utils.sheet_to_json(ws, {defval:''}));
+      };
+      reader.readAsArrayBuffer(file);
+    }
+  });
+}
+
+function removePending(name) {
+  pendingRows = pendingRows.filter(r => r.sourceName !== name);
+  renderPreview();
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return [];
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.replace(/^"|"$/g,'').trim());
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = vals[i] || '');
+    return obj;
+  });
+}
+
+function detectAmountCol(headers) {
+  const candidates = ['amount','value','total','balance','net','debit','credit','sum'];
+  for (const c of candidates) {
+    const match = headers.find(h => h.toLowerCase().includes(c));
+    if (match) return match;
+  }
+  return headers[headers.length - 1];
+}
+
+function processData(name, data) {
+  if (!data.length) { toast(`${name} appears empty`); return; }
+  const headers = Object.keys(data[0]);
+  const amountCol = detectAmountCol(headers);
+  const rows = data.map((r, i) => ({
+    sourceName: name,
+    row_data: r,
+    amount_col: amountCol,
+    amount: parseFloat((r[amountCol]||'').toString().replace(/[^0-9.\-]/g,'')) || 0,
+    tag: '',
+    baseline: 0,
+  }));
+  pendingRows = [...pendingRows, ...rows];
+  renderPreview();
+}
+
+function renderPreview() {
+  const card = document.getElementById('previewCard');
+  if (!pendingRows.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  const headers = [...new Set(pendingRows.flatMap(r => Object.keys(r.row_data)))].slice(0, 7);
+  let html = `<div class="table-wrap"><table><thead><tr>`;
+  html += `<th>Source</th>`;
+  headers.forEach(h => html += `<th>${h}</th>`);
+  html += `<th>Amount col</th><th>Amount</th></tr></thead><tbody>`;
+  pendingRows.slice(0, 50).forEach(r => {
+    html += `<tr><td style="color:var(--text-muted);white-space:nowrap">${r.sourceName}</td>`;
+    headers.forEach(h => html += `<td style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.row_data[h]??''}</td>`);
+    html += `<td style="color:var(--text-muted)">${r.amount_col}</td>`;
+    html += `<td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(r.amount)}</td></tr>`;
+  });
+  html += `</tbody></table></div>`;
+  document.getElementById('previewTable').innerHTML = html;
+  document.getElementById('previewCount').textContent = `${pendingRows.length} row${pendingRows.length !== 1 ? 's' : ''} ready to save${pendingRows.length > 50 ? ' (showing first 50)' : ''}`;
+}
+
+function clearPreview() {
+  pendingRows = [];
+  document.getElementById('fileChips').innerHTML = '';
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+
+async function saveToSupabase() {
+  if (!pendingRows.length) { toast('Nothing to save'); return; }
+  const sources = [...new Set(pendingRows.map(r => r.sourceName))];
+  let saved = 0, dupes = 0;
+
+  for (const src of sources) {
+    const { data: report } = await sb.from('reports').insert({ name: src, source: src }).select().single();
+    const rows = pendingRows.filter(r => r.sourceName === src);
+
+    for (const row of rows) {
+      const key = JSON.stringify(row.row_data);
+      const { data: existing } = await sb.from('report_rows').select('id').eq('row_data', key).limit(1);
+      if (existing && existing.length) {
+        dupes++;
+        await sb.from('log_entries').insert({ message: `Duplicate row silently removed from "${src}"`, detail: key });
+        continue;
+      }
+      await sb.from('report_rows').insert({
+        report_id: report.id,
+        row_data: row.row_data,
+        amount_col: row.amount_col,
+        amount: row.amount,
+        tag: '',
+        baseline: 0,
+      });
+      saved++;
+    }
+  }
+
+  toast(`Saved ${saved} row${saved !== 1 ? 's' : ''}${dupes ? ` — ${dupes} duplicate${dupes !== 1 ? 's' : ''} skipped` : ''}`);
+  clearPreview();
+  await loadReportFilter();
+  await loadRows();
+}
+
+// ── Rows ──────────────────────────────────────────
+async function loadReportFilter() {
+  const { data } = await sb.from('reports').select('id,name').order('uploaded_at', {ascending: false});
+  const sel = document.getElementById('filterReport');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All reports</option>';
+  if (data) data.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.id; o.textContent = r.name;
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+async function loadRows() {
+  const reportId = document.getElementById('filterReport').value;
+  let query = sb.from('report_rows').select('*').order('created_at');
+  if (reportId) query = query.eq('report_id', reportId);
+  const { data } = await query;
+  allRows = data || [];
+  renderRowsTable();
+}
+
+function renderRowsTable() {
+  const filterTag = document.getElementById('filterTag').value;
+  let rows = allRows;
+  if (filterTag === '__untagged__') rows = rows.filter(r => !r.tag);
+  else if (filterTag) rows = rows.filter(r => r.tag === filterTag);
+
+  const container = document.getElementById('rowsTable');
+  if (!rows.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No rows match this filter</div>';
+    document.getElementById('rowsCount').textContent = '';
+    return;
+  }
+  const headers = [...new Set(rows.flatMap(r => Object.keys(r.row_data || {})))].slice(0, 6);
+  let html = `<table><thead><tr>`;
+  headers.forEach(h => html += `<th>${h}</th>`);
+  html += `<th>Tag</th><th>Baseline ($)</th></tr></thead><tbody>`;
+  rows.forEach(row => {
+    html += `<tr>`;
+    headers.forEach(h => html += `<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${row.row_data?.[h]??''}</td>`);
+    html += `<td><select data-id="${row.id}" class="row-tag-sel" style="font-size:12px">`;
+    html += `<option value="">— none —</option>`;
+    tags.forEach(t => html += `<option value="${t.name}" ${row.tag === t.name ? 'selected' : ''}>${t.name}</option>`);
+    html += `</select></td>`;
+    html += `<td><input type="number" data-id="${row.id}" class="row-baseline-inp" value="${row.baseline||0}" step="0.01" /></td>`;
+    html += `</tr>`;
+  });
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+  document.getElementById('rowsCount').textContent = `${rows.length} row${rows.length !== 1 ? 's' : ''}`;
+}
+
+async function saveRowTags() {
+  const selects = document.querySelectorAll('.row-tag-sel');
+  const inputs = document.querySelectorAll('.row-baseline-inp');
+  const updates = [];
+  selects.forEach(sel => {
+    const id = sel.dataset.id;
+    const inp = document.querySelector(`.row-baseline-inp[data-id="${id}"]`);
+    updates.push({ id, tag: sel.value, baseline: parseFloat(inp?.value) || 0 });
+  });
+  for (const u of updates) {
+    await sb.from('report_rows').update({ tag: u.tag, baseline: u.baseline }).eq('id', u.id);
+  }
+  await loadRows();
+  toast(`${updates.length} row${updates.length !== 1 ? 's' : ''} saved`);
+}
+
+// ── Journal Entry ─────────────────────────────────
+async function calculateJE() {
+  const { data: rows } = await sb.from('report_rows').select('*').neq('tag', '');
+  if (!rows || !rows.length) { toast('No tagged rows found'); return; }
+
+  const byTag = {};
+  rows.forEach(r => {
+    const net = r.amount - (r.baseline || 0);
+    if (!byTag[r.tag]) byTag[r.tag] = { tag: r.tag, total: 0, count: 0 };
+    byTag[r.tag].total += net;
+    byTag[r.tag].count++;
+  });
+
+  let accrual = 0, reversal = 0;
+  const entries = Object.values(byTag).map(g => {
+    const isReversal = g.tag.toLowerCase().includes('reversal');
+    const type = isReversal ? 'Credit' : 'Debit';
+    if (isReversal) reversal += Math.abs(g.total);
+    else accrual += Math.abs(g.total);
+    return { tag: g.tag, type, amount: g.total, count: g.count };
+  });
+
+  currentJE = { entries, total_accrual: accrual, total_reversal: reversal, net: accrual - reversal };
+
+  document.getElementById('jeTotalAccrual').textContent = fmt(accrual);
+  document.getElementById('jeTotalReversal').textContent = fmt(reversal);
+  const net = accrual - reversal;
+  document.getElementById('jeNet').textContent = (net < 0 ? '-' : '') + fmt(Math.abs(net));
+  document.getElementById('jeRowCount').textContent = rows.length;
+
+  let html = entries.map(e =>
+    `<div class="je-line">
+      <div class="je-left">
+        <span class="badge ${e.type === 'Debit' ? 'badge-debit' : 'badge-credit'}">${e.type}</span>
+        <span>${e.tag}</span>
+        <span style="font-size:11px;color:var(--text-faint)">${e.count} row${e.count !== 1 ? 's' : ''}</span>
+      </div>
+      <span class="je-amount ${e.type === 'Debit' ? 'debit' : 'credit'}">${e.amount < 0 ? '-' : ''}${fmt(Math.abs(e.amount))}</span>
+    </div>`
+  ).join('');
+  document.getElementById('jeLines').innerHTML = html || '<div class="empty">No entries</div>';
+}
+
+async function saveJE() {
+  if (!currentJE) { toast('Calculate the JE first'); return; }
+  await sb.from('journal_entries').insert({
+    entries: currentJE.entries,
+    total_accrual: currentJE.total_accrual,
+    total_reversal: currentJE.total_reversal,
+    net: currentJE.net,
+  });
+  toast('Journal entry saved to history');
+  await loadHistory();
+}
+
+function downloadJE() {
+  if (!currentJE) { toast('Calculate the JE first'); return; }
+  const rows = [['Tag','Type','Amount','Row count']];
+  currentJE.entries.forEach(e => rows.push([e.tag, e.type, e.amount.toFixed(2), e.count]));
+  rows.push(['','','','']);
+  rows.push(['Total Accrual (Dr)', '', currentJE.total_accrual.toFixed(2), '']);
+  rows.push(['Total Reversal (Cr)', '', currentJE.total_reversal.toFixed(2), '']);
+  rows.push(['Net', '', currentJE.net.toFixed(2), '']);
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `journal_entry_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('Downloaded');
+}
+
+// ── History ───────────────────────────────────────
+async function loadHistory() {
+  const { data } = await sb.from('journal_entries').select('*').order('created_at', {ascending: false});
+  const el = document.getElementById('historyList');
+  if (!data || !data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🕐</div>No saved journal entries yet</div>'; return; }
+  el.innerHTML = data.map(je => {
+    const entries = Array.isArray(je.entries) ? je.entries : JSON.parse(je.entries || '[]');
+    const lines = entries.map(e =>
+      `<span class="badge ${e.type === 'Debit' ? 'badge-debit' : 'badge-credit'}" style="margin-right:4px">${e.tag} ${fmt(Math.abs(e.amount))}</span>`
+    ).join('');
+    return `<div class="history-row">
+      <div>
+        <div>${lines}</div>
+        <div class="history-meta">${new Date(je.created_at).toLocaleString()} · Net ${fmt(je.net)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Log ───────────────────────────────────────────
+async function loadLog() {
+  const { data } = await sb.from('log_entries').select('*').order('created_at', {ascending: false}).limit(100);
+  const el = document.getElementById('logList');
+  if (!data || !data.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>No log entries yet</div>'; return; }
+  el.innerHTML = data.map(l =>
+    `<div class="log-entry"><span class="log-time">${new Date(l.created_at).toLocaleString()}</span>${l.message}</div>`
+  ).join('');
+}
+
+// ── Helpers ───────────────────────────────────────
+function fmt(n) {
+  return '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+init();
+</script>
+</body>
+</html>
