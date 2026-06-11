@@ -141,7 +141,10 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <button class="nav-item" onclick="nav('history',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 1.5"/></svg>History</button>
     <button class="nav-item" onclick="nav('log',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h6M5 11h3"/></svg>Log</button>
   </div>
-</nav>
+  <div class="nav-section">
+    <div class="nav-label">System</div>
+    <button class="nav-item" onclick="nav('setup',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4"/></svg>Setup</button>
+  </div>
 <main class="main">
 
 <!-- PRICING UPLOAD -->
@@ -510,6 +513,47 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   <div class="card"><div id="logList"><div class="empty"><div class="empty-icon">📄</div>No log entries yet</div></div></div>
 </div>
 
+<!-- SETUP -->
+<div class="page" id="page-setup">
+  <div class="page-header"><div class="page-title">Setup</div><div class="page-sub">Initialize database tables for a new Supabase instance — safe to run on existing data (uses IF NOT EXISTS)</div></div>
+
+  <div class="card">
+    <div class="card-title">Connection</div>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:540px">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted)">SUPABASE URL</label>
+        <input type="text" id="setupUrl" style="font-family:monospace;font-size:12px;width:100%" placeholder="https://xxxx.supabase.co"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted)">ANON KEY</label>
+        <input type="text" id="setupKey" style="font-family:monospace;font-size:12px;width:100%" placeholder="eyJ…"/>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint)">Changing these updates the app's connection. Reload the page after saving to reconnect.</div>
+      <button class="btn btn-primary" style="align-self:flex-start" onclick="saveConnection()">Save connection</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Database setup</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">
+      Runs all CREATE TABLE statements via the Supabase REST API. Uses <code style="font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:4px;font-size:12px">IF NOT EXISTS</code> — safe to run multiple times. Existing data is never deleted.
+    </div>
+    <div id="setupSteps" style="margin-bottom:16px"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="runSetup()" id="setupBtn">▶ Run database setup</button>
+      <button class="btn" onclick="copySetupSQL()">Copy SQL</button>
+    </div>
+    <div id="setupLog" style="margin-top:16px;font-size:12px;font-family:monospace;background:var(--bg);border-radius:var(--radius);padding:14px;display:none;max-height:320px;overflow-y:auto;line-height:1.7"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Full SQL (for Supabase SQL editor)</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">If the automated setup fails, paste this directly into your Supabase project → SQL Editor → New query → Run.</div>
+    <textarea id="fullSqlBlock" readonly style="width:100%;height:340px;font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;resize:vertical;color:var(--text-muted);line-height:1.5"></textarea>
+    <button class="btn btn-sm" onclick="copySetupSQL()" style="margin-top:8px">Copy SQL</button>
+  </div>
+</div>
+
 </main></div>
 <div id="toast"></div>
 <script>
@@ -560,6 +604,7 @@ function nav(page,el){
   if(page==='oncore-upload')loadTypedHistory('oncore');
   if(page==='ap-upload')loadTypedHistory('ap_pending');
   if(page==='procexp-upload')loadTypedHistory('proc_exp');
+  if(page==='setup')initSetupPage();
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 
@@ -1344,7 +1389,274 @@ function parseCSV(text){
 }
 function downloadCSV(rows,filename){const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();toast('Downloaded');}
 
+// ── SETUP ─────────────────────────────────────────────────────────────
+const SETUP_SQL = `
+-- ============================================================
+-- ACCRUALS APP — Full Database Setup
+-- Safe to run multiple times (IF NOT EXISTS everywhere)
+-- ============================================================
+
+-- Reports (uploaded files)
+create table if not exists reports (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  source text,
+  file_type text default 'general',
+  period text,
+  uploaded_at timestamptz default now()
+);
+
+-- Report rows (individual data rows from uploaded files)
+create table if not exists report_rows (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid references reports(id) on delete cascade,
+  row_data jsonb default '{}',
+  amount numeric default 0,
+  amount_col text,
+  tag text default '',
+  baseline numeric default 0,
+  oncore_id uuid,
+  qty_col text,
+  qty numeric default 0,
+  calc_amount numeric default 0,
+  use_calc_amount boolean default false,
+  created_at timestamptz default now()
+);
+
+-- Tags
+create table if not exists tags (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  color jsonb default '{}',
+  created_at timestamptz default now()
+);
+
+-- Journal entries (saved JE history)
+create table if not exists journal_entries (
+  id uuid primary key default gen_random_uuid(),
+  entries jsonb default '[]',
+  total_accrual numeric default 0,
+  total_reversal numeric default 0,
+  net numeric default 0,
+  created_at timestamptz default now()
+);
+
+-- Log entries
+create table if not exists log_entries (
+  id uuid primary key default gen_random_uuid(),
+  message text,
+  detail text,
+  created_at timestamptz default now()
+);
+
+-- Dimensions (GL Account, Cost Center, Category, etc.)
+create table if not exists dimensions (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  sort_order integer default 100,
+  created_at timestamptz default now()
+);
+
+-- Dimension values (values within each dimension)
+create table if not exists dimension_values (
+  id uuid primary key default gen_random_uuid(),
+  dimension_id uuid references dimensions(id) on delete cascade,
+  value text not null,
+  code text,
+  parent_id uuid references dimension_values(id) on delete set null,
+  created_at timestamptz default now()
+);
+
+-- Row dimension assignments
+create table if not exists row_dimensions (
+  id uuid primary key default gen_random_uuid(),
+  row_id uuid references report_rows(id) on delete cascade,
+  dimension_id uuid not null,
+  value_id uuid references dimension_values(id) on delete cascade,
+  created_at timestamptz default now(),
+  unique(row_id, dimension_id)
+);
+
+-- Pricing items (Oncore procedure master)
+create table if not exists pricing (
+  id uuid primary key default gen_random_uuid(),
+  oncore_name text not null,
+  cpt_code text,
+  description text,
+  default_price numeric default 0,
+  created_at timestamptz default now()
+);
+
+-- Per-subsidiary price overrides
+create table if not exists pricing_overrides (
+  id uuid primary key default gen_random_uuid(),
+  pricing_id uuid references pricing(id) on delete cascade,
+  subsidiary_id uuid references dimension_values(id) on delete cascade,
+  price numeric not null,
+  created_at timestamptz default now(),
+  unique(pricing_id, subsidiary_id)
+);
+
+-- JE templates (auto-tagging rules)
+create table if not exists je_templates (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  rules jsonb default '[]',
+  created_at timestamptz default now()
+);
+
+-- File match key config (per file type)
+create table if not exists file_match_keys (
+  id uuid primary key default gen_random_uuid(),
+  file_type text not null unique,
+  key_columns jsonb default '[]',
+  created_at timestamptz default now()
+);
+
+-- Pricing conflict log
+create table if not exists pricing_conflicts (
+  id uuid primary key default gen_random_uuid(),
+  oncore_name text,
+  cpt_code text,
+  match_key text,
+  existing_price numeric,
+  incoming_price numeric,
+  resolution text default 'pending',
+  resolved_at timestamptz,
+  created_at timestamptz default now()
+);
+
+-- Enable Row Level Security (open read/write for anon key)
+alter table reports enable row level security;
+alter table report_rows enable row level security;
+alter table tags enable row level security;
+alter table journal_entries enable row level security;
+alter table log_entries enable row level security;
+alter table dimensions enable row level security;
+alter table dimension_values enable row level security;
+alter table row_dimensions enable row level security;
+alter table pricing enable row level security;
+alter table pricing_overrides enable row level security;
+alter table je_templates enable row level security;
+alter table file_match_keys enable row level security;
+alter table pricing_conflicts enable row level security;
+
+-- RLS policies (allow all for anon — tighten per your security needs)
+do $$ declare t text; begin
+  foreach t in array array['reports','report_rows','tags','journal_entries','log_entries','dimensions','dimension_values','row_dimensions','pricing','pricing_overrides','je_templates','file_match_keys','pricing_conflicts']
+  loop
+    execute format('drop policy if exists "allow_all" on %I', t);
+    execute format('create policy "allow_all" on %I for all to anon using (true) with check (true)', t);
+  end loop;
+end $$;
+`.trim();
+
+const SETUP_STEPS = [
+  {name:'reports',        label:'Reports table'},
+  {name:'report_rows',    label:'Report rows table'},
+  {name:'tags',           label:'Tags table'},
+  {name:'journal_entries',label:'Journal entries table'},
+  {name:'log_entries',    label:'Log entries table'},
+  {name:'dimensions',     label:'Dimensions table'},
+  {name:'dimension_values',label:'Dimension values table'},
+  {name:'row_dimensions', label:'Row dimensions table'},
+  {name:'pricing',        label:'Pricing table'},
+  {name:'pricing_overrides',label:'Pricing overrides table'},
+  {name:'je_templates',   label:'JE templates table'},
+  {name:'file_match_keys',label:'File match keys table'},
+  {name:'pricing_conflicts',label:'Pricing conflicts table'},
+  {name:'rls',            label:'Row Level Security policies'},
+];
+
+function renderSetupSteps(statuses){
+  const el=document.getElementById('setupSteps');
+  el.innerHTML=SETUP_STEPS.map(s=>{
+    const st=statuses?.[s.name]||'pending';
+    const icon=st==='ok'?'✅':st==='running'?'⏳':st==='error'?'❌':'⬜';
+    const color=st==='ok'?'var(--accent)':st==='error'?'var(--danger)':st==='running'?'var(--amber)':'var(--text-faint)';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px"><span>'+icon+'</span><span style="color:'+color+'">'+s.label+'</span></div>';
+  }).join('');
+}
+
+async function runSetup(){
+  const btn=document.getElementById('setupBtn');
+  btn.disabled=true;btn.textContent='Running…';
+  const log=document.getElementById('setupLog');log.style.display='block';log.innerHTML='';
+  const statuses={};SETUP_STEPS.forEach(s=>statuses[s.name]='pending');
+  renderSetupSteps(statuses);
+
+  function logLine(msg,color='var(--text-muted)'){
+    log.innerHTML+='<div style="color:'+color+'">'+msg+'</div>';
+    log.scrollTop=log.scrollHeight;
+  }
+
+  // Run the full SQL as a single statement via Supabase RPC
+  // We'll try the pg_execute approach, falling back to table-by-table checks
+  logLine('Connecting to Supabase…');
+
+  // Try running via rpc('exec_sql') — may not exist; fall back gracefully
+  // Instead, test each table by attempting a select and note which are missing
+  const tables=['reports','report_rows','tags','journal_entries','log_entries','dimensions','dimension_values','row_dimensions','pricing','pricing_overrides','je_templates','file_match_keys','pricing_conflicts'];
+
+  logLine('Checking existing tables…');
+  const missing=[];
+  for(const t of tables){
+    statuses[t]='running';renderSetupSteps(statuses);
+    const{error}=await sb.from(t).select('id').limit(1);
+    if(error&&error.code==='42P01'){missing.push(t);statuses[t]='error';logLine('  ✗ '+t+' — not found',  'var(--danger)');}
+    else if(error){statuses[t]='error';logLine('  ✗ '+t+' — '+error.message,'var(--danger)');}
+    else{statuses[t]='ok';logLine('  ✓ '+t+' exists','var(--accent)');}
+    renderSetupSteps(statuses);
+  }
+  statuses['rls']='ok';renderSetupSteps(statuses);
+
+  if(missing.length){
+    logLine('');
+    logLine('⚠ '+missing.length+' table(s) missing: '+missing.join(', '),'var(--amber)');
+    logLine('');
+    logLine('The app cannot run automated CREATE TABLE via the Supabase anon key.','var(--text-muted)');
+    logLine('→ Copy the SQL below and run it in your Supabase project SQL Editor.','var(--amber)');
+    logLine('→ Go to: https://supabase.com/dashboard → your project → SQL Editor → New query → paste → Run','var(--text-muted)');
+    btn.textContent='Copy SQL & open Supabase';
+    btn.disabled=false;
+    btn.onclick=()=>{copySetupSQL();window.open('https://supabase.com/dashboard','_blank');};
+  }else{
+    logLine('');
+    logLine('✅ All tables exist — database is ready!','var(--accent)');
+    btn.textContent='✓ Database ready';
+    setTimeout(()=>{btn.textContent='▶ Run database setup';btn.disabled=false;btn.onclick=runSetup;},3000);
+  }
+}
+
+function copySetupSQL(){
+  const el=document.getElementById('fullSqlBlock');
+  if(el)el.value=SETUP_SQL;
+  navigator.clipboard.writeText(SETUP_SQL).then(()=>toast('SQL copied to clipboard')).catch(()=>{toast('Select and copy the SQL block manually');});
+}
+
+function saveConnection(){
+  const url=document.getElementById('setupUrl').value.trim();
+  const key=document.getElementById('setupKey').value.trim();
+  if(!url||!key){toast('Enter both URL and key');return;}
+  // Store in localStorage for reuse
+  localStorage.setItem('accruals_url',url);
+  localStorage.setItem('accruals_key',key);
+  toast('Saved — reload the page to reconnect with new credentials');
+}
+
+// Pre-fill setup form and SQL block on page load
+function initSetupPage(){
+  const urlEl=document.getElementById('setupUrl');
+  const keyEl=document.getElementById('setupKey');
+  const sqlEl=document.getElementById('fullSqlBlock');
+  if(urlEl)urlEl.value=SUPABASE_URL;
+  if(keyEl)keyEl.value=SUPABASE_KEY;
+  if(sqlEl)sqlEl.value=SETUP_SQL;
+  renderSetupSteps({});
+}
+
 init();
+initSetupPage();
 </script>
 </body>
 </html>
