@@ -6,8 +6,9 @@
 <title>Accruals</title>
 <!--
   ACCRUALS APP | Single-file HTML + Supabase
-  Deploy: create Supabase project, run SQL from Setup page,
-  update SUPABASE_URL + SUPABASE_KEY below, push to GitHub Pages.
+  Deploy: Create Supabase project, run SQL from Setup page,
+  update SUPABASE_URL + SUPABASE_KEY in the script block below,
+  push to GitHub repo, enable GitHub Pages.
 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -760,6 +761,30 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 <div id="toast"></div>
 
 <script>
+// =============================================================================
+// ACCRUALS APP — Main JavaScript
+// =============================================================================
+// PURPOSE: Manages clinical trial accrual accounting. Ingests Oncore procedure
+// reports, AP Pending invoices, and Procedure Exp data. Maps rows to Price
+// Master items, computes accrual amounts per subsidiary, and exports a
+// NetSuite-ready journal entry CSV.
+//
+// ARCHITECTURE: Single-page app (no build tools). All state in memory.
+// Supabase (PostgreSQL) for persistence. XLSX.js for file parsing.
+//
+// DATA FLOW:
+//   Upload files → report_rows → Tag rows → Assign dimensions (Sub/Site/GL)
+//   → Calculate JE (group by tag + dimensions) → Download NetSuite CSV
+//
+// KEY BUSINESS RULES:
+//   Calc amount   = Price Master price × qty (overridden per subsidiary)
+//   Baseline      = amount already invoiced; JE amount = total - baseline
+//   Debit/Credit  = determined by tag name; "reversal" in tag name → Credit
+//   Subsidiary ID = NS Internal ID stored in dimension_values.code
+//   Site/Sub link = dimension_values.parent_id → subsidiary value
+//   GL Account    = dimension_values: value=name, code=acct#, meta.internal_id=NS ID
+// =============================================================================
+
 const SUPABASE_URL='https://pddehutovxexlngigbmg.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkZGVodXRvdnhleGxuZ2lnYm1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDQxMzYsImV4cCI6MjA5NjYyMDEzNn0.sT0SaDQGCgdr4md84vlTj66KBQF4Nrchjd9pprK0QWU';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -940,10 +965,7 @@ async function removeCategory(name){
 }
 async function seedCategoriesFromPricing(){
   const existing=new Set(categories);
-  const toAdd=[...new Set(pricingItems.map(p=>p.description).filter(d=>d&&!existing.has(d)))];
-  // description field used for event_type/category
-  const eventTypes=[...new Set(pricingItems.filter(p=>p.description).map(p=>p.description))];
-  const newOnes=eventTypes.filter(e=>!existing.has(e));
+  const newOnes=[...new Set(pricingItems.filter(p=>p.description).map(p=>p.description))].filter(e=>!existing.has(e));
   if(!newOnes.length){toast('No new categories found');return;}
   const dimId=await getCatDimId();
   for(const v of newOnes)await sb.from('dimension_values').insert({dimension_id:dimId,value:v});
@@ -995,14 +1017,9 @@ function applyHeaderRow(rawRows,headerRowIdx){
 }
 
 // Parse XLSX file to raw rows (using numeric keys 0,1,2...)
-function xlsxToRawRows(arrayBuffer,sheetName){
-  const wb=XLSX.read(arrayBuffer,{type:'array',cellDates:true});
-  const ws=sheetName?wb.Sheets[sheetName]:wb.Sheets[wb.SheetNames[0]];
-  return{rows:XLSX.utils.sheet_to_json(ws,{defval:'',header:1}).map(r=>{const o={};r.forEach((v,i)=>o[i]=v);return o;}),wb,ws};
-}
 
 // ── PRICING UPLOAD FLOW ───────────────────────────────────────────────
-// pricing DZ setup moved to initDropZones()
+
 
 function handlePricingFile(file){
   const chip=document.createElement('span');chip.className='file-chip';chip.innerHTML='\uD83D\uDCCB '+file.name;
@@ -1191,7 +1208,7 @@ function setupTypedDZ(type,dzId,inputId){
   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleTypedFile(type,e.dataTransfer.files[0]);};
   document.getElementById(inputId).onchange=e=>{if(e.target.files[0])handleTypedFile(type,e.target.files[0]);};
 }
-// setupTypedDZ calls moved to initDropZones()
+
 
 function handleTypedFile(type,file){
   const cfg=TYPED_CONFIG[type];
@@ -1329,7 +1346,7 @@ function renderPricingList(){
       return '<div class="override-row"><div><span style="font-weight:500">'+sub.value+'</span><span class="id-chip" style="margin-left:6px">'+(sub.code||'—')+'</span>'+(price===null?'<span style="font-size:11px;color:var(--text-faint);margin-left:8px">using default</span>':'')+'</div><div style="display:flex;align-items:center;gap:8px"><input type="number" value="'+(price!==null?price:'')+'" placeholder="'+item.default_price+'" step="0.01" style="width:100px;text-align:right" onchange="saveOverride(\''+item.id+'\',\''+sub.id+'\',this.value)" />'+(price!==null?'<button class="btn btn-sm btn-danger" onclick="removeOverride(\''+item.id+'\',\''+sub.id+'\')">×</button>':'')+'</div></div>';
     }).join('');
     const catBadge=item.description?'<span class="auto-badge" style="margin-left:6px">'+item.description+'</span>':'';
-    return '<div class="pricing-item"><div class="pricing-item-header" onclick="togglePI(\'pi-'+item.id+'\')"><div><div class="pricing-item-name">'+item.oncore_name+catBadge+'</div><div class="pricing-item-meta">'+(item.cpt_code?'CPT: '+item.cpt_code:'No CPT')+'</div></div><div style="display:flex;align-items:center;gap:12px"><span class="pricing-item-price">'+fmtPrice(item.default_price)+'</span><div onclick="event.stopPropagation()"><button class="btn btn-sm btn-danger" onclick="deletePricingItem(\''+item.id+'\')">Delete</button></div></div></div><div class="pricing-item-body" id="pi-'+item.id+'"><div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px">SUBSIDIARY OVERRIDES — leave blank to use default</div>'+(subsidiaries.length?overrideRows:'<div style="font-size:13px;color:var(--text-faint)">Add subsidiaries in Entities first</div>')+'</div></div>';
+    return '<div class="pricing-item"><div class="pricing-item-header" onclick="togglePI(\'pi-'+item.id+'\')"><div><div class="pricing-item-name">'+item.oncore_name+catBadge+'</div><div class="pricing-item-meta">'+(item.cpt_code?'CPT: '+item.cpt_code:'No CPT')+'</div></div><div style="display:flex;align-items:center;gap:12px"><span class="pricing-item-price">'+fmt(item.default_price)+'</span><div onclick="event.stopPropagation()"><button class="btn btn-sm btn-danger" onclick="deletePricingItem(\''+item.id+'\')">Delete</button></div></div></div><div class="pricing-item-body" id="pi-'+item.id+'"><div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px">SUBSIDIARY OVERRIDES — leave blank to use default</div>'+(subsidiaries.length?overrideRows:'<div style="font-size:13px;color:var(--text-faint)">Add subsidiaries in Entities first</div>')+'</div></div>';
   }).join('');
 }
 function togglePI(id){const b=document.getElementById(id);if(b)b.classList.toggle('open');}
@@ -1576,7 +1593,7 @@ async function calculateJE(){
   const rdMap={};(rds||[]).forEach(rd=>{if(!rdMap[rd.row_id])rdMap[rd.row_id]={};rdMap[rd.row_id][rd.dimension_id]=rd.value_id;});
   const glDim=dimensions.find(d=>d.name.toLowerCase().includes('gl'));
   const getAmt=r=>{
-    if(r.use_calc_amount&&r.calc_amount)return r.calc_amount-(r.baseline||0);
+    if(r.use_calc_amount&&r.calc_amount!=null)return r.calc_amount-(r.baseline||0);
     if(r.oncore_id){const subId=subDimId?rdMap[r.id]?.[subDimId]||'':'';const price=resolvePrice(r.oncore_id,subId);if(price!==null)return price*(r.qty||0)-(r.baseline||0);}
     return r.amount-(r.baseline||0);
   };
@@ -1645,7 +1662,7 @@ async function loadLog(){const{data}=await sb.from('log_entries').select('*').or
 
 // ── HELPERS ───────────────────────────────────────────────────────────
 function fmt(n){return'$'+Number(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
-function fmtPrice(n){return'$'+Number(n||0).toFixed(2);}
+
 function detectAmountCol(headers){const c=['amount','value','total','balance','net','debit','credit','sum'];for(const x of c){const m=headers.find(h=>h.toLowerCase().includes(x));if(m)return m;}return headers[headers.length-1]||'';}
 function parseCSV(text){
   const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
@@ -1942,7 +1959,7 @@ function initSetupPage(){
 
 
 // ── JE DATE AUTO-LOGIC ────────────────────────────────────────────────
-// jeDate setup moved to initDropZones()
+
 function updateReversalDate(){
   const jeDateEl=document.getElementById('jeDate');
   const revEl=document.getElementById('jeReversalDate');
@@ -1958,7 +1975,7 @@ function updateReversalDate(){
     extEl.value='ACCR-'+d.getFullYear()+'-'+mm+'-001';
   }
 }
-// external ID manual flag set in initDropZones
+
 
 // ── SUB/SITE BULK UPLOAD ──────────────────────────────────────────────
 let pendingSubSiteData=[];
@@ -2365,7 +2382,7 @@ async function generateTestData(){
       pricingIds[p.oncore_name]=pid;
       // Sub overrides
       for(const[subCode,price]of Object.entries(p.overrides)){
-        const subValId=Object.entries(subIds).find(([,]=>true))?subIds[subCode==='1001'?'San Antonio':'Mountain Med']:null;
+        const subValId=subIds[subCode];
         if(subValId){
           const{data:exOv}=await sb.from('pricing_overrides').select('id').eq('pricing_id',pid).eq('subsidiary_id',subValId).limit(1);
           if(!exOv||!exOv.length)await sb.from('pricing_overrides').insert({pricing_id:pid,subsidiary_id:subValId,price});
