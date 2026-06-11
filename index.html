@@ -1,4 +1,29 @@
 <!DOCTYPE html>
+<!--
+=======================================================================
+  ACCRUALS APP  |  Single-file HTML + Supabase
+=======================================================================
+
+  TO DEPLOY A NEW INSTANCE:
+  1. Create a Supabase project at https://supabase.com (free tier is fine)
+  2. In Supabase → SQL Editor → New query → paste the SQL from the
+     Setup page in this app (or from the SETUP_SQL constant in the
+     <script> block below) → Run
+  3. Replace SUPABASE_URL and SUPABASE_KEY below with your project's
+     values (Supabase → Settings → API)
+  4. Push this file to a GitHub repo → Settings → Pages → Deploy
+
+  TO FIND YOUR CREDENTIALS:
+  - URL:  Supabase dashboard → Settings → API → Project URL
+  - KEY:  Supabase dashboard → Settings → API → anon / public key
+
+  DATABASE:  13 tables (see Setup page in the app for full reference)
+  TABLES:    reports, report_rows, tags, journal_entries, log_entries,
+             dimensions, dimension_values, row_dimensions, pricing,
+             pricing_overrides, je_templates, file_match_keys,
+             pricing_conflicts
+=======================================================================
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -515,42 +540,98 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 
 <!-- SETUP -->
 <div class="page" id="page-setup">
-  <div class="page-header"><div class="page-title">Setup</div><div class="page-sub">Initialize database tables for a new Supabase instance — safe to run on existing data (uses IF NOT EXISTS)</div></div>
+  <div class="page-header"><div class="page-title">Setup</div><div class="page-sub">Initialize a new Supabase instance or verify your current database</div></div>
 
+  <!-- New instance checklist -->
   <div class="card">
-    <div class="card-title">Connection</div>
-    <div style="display:flex;flex-direction:column;gap:10px;max-width:540px">
+    <div class="card-title">New instance checklist</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</span>
+        <div><div style="font-weight:600">Create a Supabase project</div><div style="color:var(--text-muted);margin-top:2px">Go to <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a> → New project. Free tier is enough.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</span>
+        <div><div style="font-weight:600">Run the SQL</div><div style="color:var(--text-muted);margin-top:2px">In your Supabase project → <strong>SQL Editor</strong> → New query → paste the SQL below → <strong>Run</strong>. Creates all 13 tables in one shot.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</span>
+        <div><div style="font-weight:600">Update the connection in this file</div><div style="color:var(--text-muted);margin-top:2px">In your Supabase project → Settings → API → copy <strong>Project URL</strong> and <strong>anon public key</strong>. Paste into the Connection section below and save. Or edit the two constants at the top of the <code style="font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:4px">&lt;script&gt;</code> block directly in GitHub.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span style="background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</span>
+        <div><div style="font-weight:600">Deploy to GitHub Pages</div><div style="color:var(--text-muted);margin-top:2px">Push <code style="font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:4px">index.html</code> to a GitHub repo → Settings → Pages → Deploy from branch → main. Done.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL Block -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="card-title" style="margin:0">Full database SQL</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px">13 tables · RLS enabled · safe to re-run (IF NOT EXISTS)</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-primary" onclick="copySetupSQL()">📋 Copy SQL</button>
+        <button class="btn" onclick="window.open('https://supabase.com/dashboard','_blank')">Open Supabase ↗</button>
+      </div>
+    </div>
+    <textarea id="fullSqlBlock" readonly style="width:100%;height:480px;font-family:monospace;font-size:11px;background:#1a1916;color:#c8c5bc;border:1px solid var(--border);border-radius:var(--radius);padding:16px;resize:vertical;line-height:1.6;tab-size:2"></textarea>
+    <div style="font-size:12px;color:var(--text-faint);margin-top:8px">Paste into: Supabase → SQL Editor → New query → Run</div>
+  </div>
+
+  <!-- Database checker -->
+  <div class="card">
+    <div class="card-title">Database check</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Verifies that all required tables exist in your connected Supabase project.</div>
+    <div id="setupSteps" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;margin-bottom:14px"></div>
+    <button class="btn btn-primary" onclick="runSetup()" id="setupBtn">▶ Check tables</button>
+    <div id="setupLog" style="margin-top:14px;font-size:12px;font-family:monospace;background:var(--bg);border-radius:var(--radius);padding:14px;display:none;max-height:240px;overflow-y:auto;line-height:1.7"></div>
+  </div>
+
+  <!-- Connection -->
+  <div class="card">
+    <div class="card-title">Connection settings</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Update to point this app at a different Supabase project. After saving, reload the page to reconnect. You can also edit <code style="font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:4px">SUPABASE_URL</code> and <code style="font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:4px">SUPABASE_KEY</code> directly in the HTML file.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:600px">
       <div style="display:flex;flex-direction:column;gap:4px">
-        <label style="font-size:11px;font-weight:600;color:var(--text-muted)">SUPABASE URL</label>
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Project URL</label>
         <input type="text" id="setupUrl" style="font-family:monospace;font-size:12px;width:100%" placeholder="https://xxxx.supabase.co"/>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
-        <label style="font-size:11px;font-weight:600;color:var(--text-muted)">ANON KEY</label>
+        <label style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Anon public key</label>
         <input type="text" id="setupKey" style="font-family:monospace;font-size:12px;width:100%" placeholder="eyJ…"/>
       </div>
-      <div style="font-size:12px;color:var(--text-faint)">Changing these updates the app's connection. Reload the page after saving to reconnect.</div>
-      <button class="btn btn-primary" style="align-self:flex-start" onclick="saveConnection()">Save connection</button>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" onclick="saveConnection()">Save &amp; reload</button>
+        <button class="btn" onclick="copyConnectionSnippet()">Copy as code snippet</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint)">To permanently bake this into the file: open index.html in GitHub → edit → replace the SUPABASE_URL and SUPABASE_KEY values at the top of the script block → commit.</div>
     </div>
   </div>
 
+  <!-- Tables reference -->
   <div class="card">
-    <div class="card-title">Database setup</div>
-    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">
-      Runs all CREATE TABLE statements via the Supabase REST API. Uses <code style="font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:4px;font-size:12px">IF NOT EXISTS</code> — safe to run multiple times. Existing data is never deleted.
-    </div>
-    <div id="setupSteps" style="margin-bottom:16px"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="runSetup()" id="setupBtn">▶ Run database setup</button>
-      <button class="btn" onclick="copySetupSQL()">Copy SQL</button>
-    </div>
-    <div id="setupLog" style="margin-top:16px;font-size:12px;font-family:monospace;background:var(--bg);border-radius:var(--radius);padding:14px;display:none;max-height:320px;overflow-y:auto;line-height:1.7"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Full SQL (for Supabase SQL editor)</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">If the automated setup fails, paste this directly into your Supabase project → SQL Editor → New query → Run.</div>
-    <textarea id="fullSqlBlock" readonly style="width:100%;height:340px;font-family:monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;resize:vertical;color:var(--text-muted);line-height:1.5"></textarea>
-    <button class="btn btn-sm" onclick="copySetupSQL()" style="margin-top:8px">Copy SQL</button>
+    <div class="card-title">Table reference</div>
+    <table>
+      <thead><tr><th>Table</th><th>Purpose</th><th>Key columns</th></tr></thead>
+      <tbody>
+        <tr><td><code style="font-family:monospace;font-size:11px">reports</code></td><td>Uploaded files (Oncore, AP Pending, etc.)</td><td>name, file_type, period</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">report_rows</code></td><td>Individual data rows from each file</td><td>row_data (jsonb), tag, amount, oncore_id, qty</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">tags</code></td><td>JE classification tags (Accrual, Reversal…)</td><td>name, color</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">journal_entries</code></td><td>Saved journal entry history</td><td>entries (jsonb), total_accrual, net</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">log_entries</code></td><td>Audit trail (conflicts, duplicates, events)</td><td>message, created_at</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">dimensions</code></td><td>Dimension types (Subsidiary, Site, GL, Category…)</td><td>name, sort_order</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">dimension_values</code></td><td>Values within each dimension</td><td>value, code, parent_id (Sub→Site link)</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">row_dimensions</code></td><td>Which dimension values are assigned to each row</td><td>row_id, dimension_id, value_id</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">pricing</code></td><td>Oncore procedure price master</td><td>oncore_name, cpt_code, description (category), default_price</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">pricing_overrides</code></td><td>Per-subsidiary price overrides</td><td>pricing_id, subsidiary_id, price</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">je_templates</code></td><td>Auto-tagging rule sets</td><td>name, rules (jsonb)</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">file_match_keys</code></td><td>Dedup key column config per file type</td><td>file_type, key_columns (jsonb)</td></tr>
+        <tr><td><code style="font-family:monospace;font-size:11px">pricing_conflicts</code></td><td>Conflict log from pricing uploads</td><td>oncore_name, existing_price, incoming_price, resolution</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -1569,18 +1650,18 @@ const SETUP_STEPS = [
 ];
 
 function renderSetupSteps(statuses){
-  const el=document.getElementById('setupSteps');
+  const el=document.getElementById('setupSteps');if(!el)return;
   el.innerHTML=SETUP_STEPS.map(s=>{
     const st=statuses?.[s.name]||'pending';
     const icon=st==='ok'?'✅':st==='running'?'⏳':st==='error'?'❌':'⬜';
     const color=st==='ok'?'var(--accent)':st==='error'?'var(--danger)':st==='running'?'var(--amber)':'var(--text-faint)';
-    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px"><span>'+icon+'</span><span style="color:'+color+'">'+s.label+'</span></div>';
+    return '<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:var(--bg);border-radius:var(--radius);font-size:12px"><span>'+icon+'</span><span style="color:'+color+'">'+s.label+'</span></div>';
   }).join('');
 }
 
 async function runSetup(){
   const btn=document.getElementById('setupBtn');
-  btn.disabled=true;btn.textContent='Running…';
+  btn.disabled=true;btn.textContent='Checking…';
   const log=document.getElementById('setupLog');log.style.display='block';log.innerHTML='';
   const statuses={};SETUP_STEPS.forEach(s=>statuses[s.name]='pending');
   renderSetupSteps(statuses);
@@ -1590,67 +1671,78 @@ async function runSetup(){
     log.scrollTop=log.scrollHeight;
   }
 
-  // Run the full SQL as a single statement via Supabase RPC
-  // We'll try the pg_execute approach, falling back to table-by-table checks
-  logLine('Connecting to Supabase…');
-
-  // Try running via rpc('exec_sql') — may not exist; fall back gracefully
-  // Instead, test each table by attempting a select and note which are missing
+  logLine('Checking tables in connected Supabase project…');
   const tables=['reports','report_rows','tags','journal_entries','log_entries','dimensions','dimension_values','row_dimensions','pricing','pricing_overrides','je_templates','file_match_keys','pricing_conflicts'];
-
-  logLine('Checking existing tables…');
   const missing=[];
+
   for(const t of tables){
     statuses[t]='running';renderSetupSteps(statuses);
     const{error}=await sb.from(t).select('id').limit(1);
-    if(error&&error.code==='42P01'){missing.push(t);statuses[t]='error';logLine('  ✗ '+t+' — not found',  'var(--danger)');}
-    else if(error){statuses[t]='error';logLine('  ✗ '+t+' — '+error.message,'var(--danger)');}
-    else{statuses[t]='ok';logLine('  ✓ '+t+' exists','var(--accent)');}
+    if(error&&(error.code==='42P01'||error.message?.includes('does not exist'))){
+      missing.push(t);statuses[t]='error';
+      logLine('  ✗ '+t+' — missing','var(--danger)');
+    }else if(error&&error.code!=='PGRST116'){
+      statuses[t]='error';
+      logLine('  ✗ '+t+' — '+error.message,'var(--danger)');
+    }else{
+      statuses[t]='ok';
+      logLine('  ✓ '+t,'var(--accent)');
+    }
     renderSetupSteps(statuses);
   }
   statuses['rls']='ok';renderSetupSteps(statuses);
 
+  logLine('');
   if(missing.length){
-    logLine('');
     logLine('⚠ '+missing.length+' table(s) missing: '+missing.join(', '),'var(--amber)');
-    logLine('');
-    logLine('The app cannot run automated CREATE TABLE via the Supabase anon key.','var(--text-muted)');
-    logLine('→ Copy the SQL below and run it in your Supabase project SQL Editor.','var(--amber)');
-    logLine('→ Go to: https://supabase.com/dashboard → your project → SQL Editor → New query → paste → Run','var(--text-muted)');
+    logLine('→ Copy the SQL above and run it in your Supabase SQL Editor.','var(--text-muted)');
     btn.textContent='Copy SQL & open Supabase';
     btn.disabled=false;
     btn.onclick=()=>{copySetupSQL();window.open('https://supabase.com/dashboard','_blank');};
   }else{
-    logLine('');
-    logLine('✅ All tables exist — database is ready!','var(--accent)');
-    btn.textContent='✓ Database ready';
-    setTimeout(()=>{btn.textContent='▶ Run database setup';btn.disabled=false;btn.onclick=runSetup;},3000);
+    logLine('✅ All 13 tables found — database is ready!','var(--accent)');
+    btn.textContent='✓ All good';
+    setTimeout(()=>{btn.textContent='▶ Check tables';btn.disabled=false;btn.onclick=runSetup;},3000);
   }
 }
 
 function copySetupSQL(){
-  const el=document.getElementById('fullSqlBlock');
-  if(el)el.value=SETUP_SQL;
-  navigator.clipboard.writeText(SETUP_SQL).then(()=>toast('SQL copied to clipboard')).catch(()=>{toast('Select and copy the SQL block manually');});
+  navigator.clipboard.writeText(SETUP_SQL)
+    .then(()=>toast('SQL copied to clipboard — paste into Supabase SQL Editor'))
+    .catch(()=>{
+      const el=document.getElementById('fullSqlBlock');
+      if(el){el.select();document.execCommand('copy');}
+      toast('SQL selected — press Ctrl+C to copy');
+    });
+}
+
+function copyConnectionSnippet(){
+  const url=document.getElementById('setupUrl').value.trim()||SUPABASE_URL;
+  const key=document.getElementById('setupKey').value.trim()||SUPABASE_KEY;
+  const snippet="const SUPABASE_URL='"+url+"';\nconst SUPABASE_KEY='"+key+"';";
+  navigator.clipboard.writeText(snippet)
+    .then(()=>toast('Snippet copied — paste over the first two lines of the <script> block'))
+    .catch(()=>toast('Copy failed — edit the file directly'));
 }
 
 function saveConnection(){
   const url=document.getElementById('setupUrl').value.trim();
   const key=document.getElementById('setupKey').value.trim();
-  if(!url||!key){toast('Enter both URL and key');return;}
-  // Store in localStorage for reuse
+  if(!url||!key){toast('Enter both URL and anon key');return;}
   localStorage.setItem('accruals_url',url);
   localStorage.setItem('accruals_key',key);
-  toast('Saved — reload the page to reconnect with new credentials');
+  toast('Saved — reloading…');
+  setTimeout(()=>location.reload(),1200);
 }
 
-// Pre-fill setup form and SQL block on page load
 function initSetupPage(){
+  const stored_url=localStorage.getItem('accruals_url');
+  const stored_key=localStorage.getItem('accruals_key');
   const urlEl=document.getElementById('setupUrl');
   const keyEl=document.getElementById('setupKey');
   const sqlEl=document.getElementById('fullSqlBlock');
-  if(urlEl)urlEl.value=SUPABASE_URL;
-  if(keyEl)keyEl.value=SUPABASE_KEY;
+  if(urlEl)urlEl.value=stored_url||SUPABASE_URL;
+  if(keyEl)keyEl.value=stored_key||SUPABASE_KEY;
   if(sqlEl)sqlEl.value=SETUP_SQL;
   renderSetupSteps({});
 }
