@@ -1,25 +1,14 @@
 <!DOCTYPE html>
-<!--
-=======================================================================
-  ACCRUALS APP  |  Single-file HTML + Supabase
-=======================================================================
-  TO DEPLOY A NEW INSTANCE:
-  1. Create a Supabase project at https://supabase.com (free tier)
-  2. Run the SQL from Setup page → SQL Editor → New query → Run
-  3. Replace SUPABASE_URL and SUPABASE_KEY in the script block below
-  4. Push to GitHub repo → Settings → Pages → Deploy
-
-  TABLES: reports, report_rows, tags, journal_entries, log_entries,
-          dimensions, dimension_values, row_dimensions, pricing,
-          pricing_overrides, je_templates, file_match_keys,
-          pricing_conflicts
-=======================================================================
--->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Accruals</title>
+<!--
+  ACCRUALS APP | Single-file HTML + Supabase
+  Deploy: create Supabase project, run SQL from Setup page,
+  update SUPABASE_URL + SUPABASE_KEY below, push to GitHub Pages.
+-->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -133,12 +122,15 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
 
 <div class="topbar">
   <div class="topbar-brand"><span>A</span> Accruals</div>
-  <div class="topbar-status"><div class="status-dot" id="statusDot"></div><span id="statusText">Connecting…</span></div>
+  <div class="topbar-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Connecting…</span>
+  </div>
 </div>
 
 <div class="layout">
   <nav class="sidebar">
-    <div class="nav-section">
+<div class="nav-section">
     <div class="nav-label">Uploads</div>
     <button class="nav-item active" onclick="nav('pricing-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z"/><path d="M2 4l2-2h8l2 2"/><path d="M8 7v4M6 9h4"/></svg>Pricing</button>
     <button class="nav-item" onclick="nav('oncore-upload',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 2v8M5 5l3-3 3 3"/></svg>Oncore</button>
@@ -167,7 +159,7 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
   </div>
   </nav>
   <main class="main">
-    <!-- PRICING UPLOAD -->
+<!-- PRICING UPLOAD -->
 <div class="page active" id="page-pricing-upload">
   <div class="page-header"><div class="page-title">Upload pricing file</div><div class="page-sub">Upload your Oncore Mapping file — items, CPT codes, Event Types and per-subsidiary prices imported automatically</div></div>
   <div class="card">
@@ -789,7 +781,39 @@ let pendingConflicts=[],pendingNewItems=[];
 let pendingTypedData={};
 
 // ── INIT ─────────────────────────────────────────────────────────────
+
+function initDropZones(){
+  // JE date setup
+  const jeDateEl=document.getElementById('jeDate');
+  if(jeDateEl){
+    // Default to today
+    jeDateEl.value=new Date().toISOString().slice(0,10);
+    jeDateEl.addEventListener('change',updateReversalDate);
+    updateReversalDate();
+  }
+
+  // Typed upload drop zones
+  setupTypedDZ('oncore','oncoreDropZone','oncoreFileInput');
+  setupTypedDZ('ap_pending','apDropZone','apFileInput');
+  setupTypedDZ('proc_exp','procexpDropZone','procexpFileInput');
+
+  // Entity drop zones
+  setupSubSiteDZ();
+  setupGLDZ();
+
+  // Pricing drop zone
+  const pdz=document.getElementById('pricingDropZone');
+  if(pdz){
+    pdz.ondragover=e=>{e.preventDefault();pdz.classList.add('drag-over');};
+    pdz.ondragleave=()=>pdz.classList.remove('drag-over');
+    pdz.ondrop=e=>{e.preventDefault();pdz.classList.remove('drag-over');handlePricingFile(e.dataTransfer.files[0]);};
+  }
+  const pfi=document.getElementById('pricingFileInput');
+  if(pfi)pfi.onchange=e=>{if(e.target.files[0])handlePricingFile(e.target.files[0]);};
+}
+
 async function init(){
+  initDropZones();
   try{
     const{error}=await sb.from('tags').select('id').limit(1);
     if(error)throw error;
@@ -978,11 +1002,7 @@ function xlsxToRawRows(arrayBuffer,sheetName){
 }
 
 // ── PRICING UPLOAD FLOW ───────────────────────────────────────────────
-const pdz=document.getElementById('pricingDropZone');
-pdz.ondragover=e=>{e.preventDefault();pdz.classList.add('drag-over');};
-pdz.ondragleave=()=>pdz.classList.remove('drag-over');
-pdz.ondrop=e=>{e.preventDefault();pdz.classList.remove('drag-over');handlePricingFile(e.dataTransfer.files[0]);};
-document.getElementById('pricingFileInput').onchange=e=>{if(e.target.files[0])handlePricingFile(e.target.files[0]);};
+// pricing DZ setup moved to initDropZones()
 
 function handlePricingFile(file){
   const chip=document.createElement('span');chip.className='file-chip';chip.innerHTML='\uD83D\uDCCB '+file.name;
@@ -1171,9 +1191,7 @@ function setupTypedDZ(type,dzId,inputId){
   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleTypedFile(type,e.dataTransfer.files[0]);};
   document.getElementById(inputId).onchange=e=>{if(e.target.files[0])handleTypedFile(type,e.target.files[0]);};
 }
-setupTypedDZ('oncore','oncoreDropZone','oncoreFileInput');
-setupTypedDZ('ap_pending','apDropZone','apFileInput');
-setupTypedDZ('proc_exp','procexpDropZone','procexpFileInput');
+// setupTypedDZ calls moved to initDropZones()
 
 function handleTypedFile(type,file){
   const cfg=TYPED_CONFIG[type];
@@ -1924,15 +1942,7 @@ function initSetupPage(){
 
 
 // ── JE DATE AUTO-LOGIC ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  const jeDateEl=document.getElementById('jeDate');
-  if(jeDateEl){
-    // Default to today
-    jeDateEl.value=new Date().toISOString().slice(0,10);
-    jeDateEl.addEventListener('change',updateReversalDate);
-    updateReversalDate();
-  }
-});
+// jeDate setup moved to initDropZones()
 function updateReversalDate(){
   const jeDateEl=document.getElementById('jeDate');
   const revEl=document.getElementById('jeReversalDate');
@@ -1948,23 +1958,19 @@ function updateReversalDate(){
     extEl.value='ACCR-'+d.getFullYear()+'-'+mm+'-001';
   }
 }
-// Mark external ID as manually edited so auto-gen stops overwriting
-setTimeout(()=>{
-  const extEl=document.getElementById('jeExternalId');
-  if(extEl)extEl.addEventListener('input',()=>extEl.dataset.manual='1');
-},500);
+// external ID manual flag set in initDropZones
 
 // ── SUB/SITE BULK UPLOAD ──────────────────────────────────────────────
 let pendingSubSiteData=[];
 
-(function setupSubSiteDZ(){
+function setupSubSiteDZ(){
   const dz=document.getElementById('subSiteDZ');
   if(!dz)return;
   dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag-over');};
   dz.ondragleave=()=>dz.classList.remove('drag-over');
   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleSubSiteFile(e.dataTransfer.files[0]);};
   document.getElementById('subSiteFileInput').onchange=e=>{if(e.target.files[0])handleSubSiteFile(e.target.files[0]);};
-})();
+}
 
 function handleSubSiteFile(file){
   const r=new FileReader();
@@ -2069,14 +2075,14 @@ function clearSubSiteUpload(){
 // ── GL ACCOUNTS BULK UPLOAD ───────────────────────────────────────────
 let pendingGLData=[];
 
-(function setupGLDZ(){
+function setupGLDZ(){
   const dz=document.getElementById('glDZ');
   if(!dz)return;
   dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag-over');};
   dz.ondragleave=()=>dz.classList.remove('drag-over');
   dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag-over');handleGLFile(e.dataTransfer.files[0]);};
   document.getElementById('glFileInput').onchange=e=>{if(e.target.files[0])handleGLFile(e.target.files[0]);};
-})();
+}
 
 function handleGLFile(file){
   const r=new FileReader();
