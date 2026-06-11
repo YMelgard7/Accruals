@@ -1611,7 +1611,6 @@ async function calculateJE(){
   document.getElementById('jeLines').innerHTML=html||'<div class="empty">No entries</div>';
 }
 async function saveJE(){if(!currentJE){toast('Calculate first');return;}await sb.from('journal_entries').insert({entries:currentJE.entries,total_accrual:currentJE.total_accrual,total_reversal:currentJE.total_reversal,net:currentJE.net});toast('Saved');await loadHistory();}
-function downloadJE(){if(!currentJE){toast('Calculate first');return;}const rows=[['Period','Tag','Type','Subsidiary','Sub ID','Site','Site ID','Amount','Row count']];currentJE.entries.forEach(e=>rows.push([currentJE.period?periodLabel(currentJE.period):'All',e.tag,e.type,e.subName,e.subCode,e.siteName,e.siteCode,e.amount.toFixed(2),e.count]));rows.push([],['Total Accrual (Dr)','','','','','','',currentJE.total_accrual.toFixed(2),''],['Total Reversal (Cr)','','','','','','',currentJE.total_reversal.toFixed(2),''],['Net','','','','','','',currentJE.net.toFixed(2),'']);downloadCSV(rows,'journal_entry_'+(currentJE.period||'all')+'_'+new Date().toISOString().slice(0,10)+'.csv');}
 
 // ── TEMPLATES ─────────────────────────────────────────────────────────
 async function loadTemplates(){const{data}=await sb.from('je_templates').select('*').order('created_at');templates=data||[];renderTemplatesList();}
