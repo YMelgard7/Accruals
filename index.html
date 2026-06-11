@@ -677,6 +677,52 @@ input[type="number"]{width:90px;text-align:right}input[type="checkbox"]{width:15
     <div id="setupLog" style="margin-top:14px;font-size:12px;font-family:monospace;background:var(--bg);border-radius:var(--radius);padding:14px;display:none;max-height:240px;overflow-y:auto;line-height:1.7"></div>
   </div>
 
+  <!-- Test data -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="card-title" style="margin:0">Generate test data</div>
+      <span class="badge badge-amber" style="font-size:11px">Dev only</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Seeds realistic data using your actual Oncore item names, CPT codes, and file structure. Creates everything needed to test the full JE calculation flow end to end.</div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:16px">
+      <div style="background:var(--bg);border-radius:var(--radius);padding:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px">WHAT GETS CREATED</div>
+        <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:3px">
+          <span>✦ 2 subsidiaries (San Antonio, Mountain Med)</span>
+          <span>✦ 4 sites (2 per subsidiary)</span>
+          <span>✦ 3 GL accounts with NS internal IDs</span>
+          <span>✦ 4 pricing items with sub overrides</span>
+          <span>✦ 4 categories (CT SCAN, MRI, Labs, ECG)</span>
+          <span>✦ 2 tags (Accrual, Reversal)</span>
+          <span>✦ 1 Oncore report (Jan 2026, 12 rows)</span>
+          <span>✦ 1 AP Pending report (Jan 2026, 4 rows)</span>
+          <span>✦ Rows pre-tagged and ready to calculate</span>
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:var(--radius);padding:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:6px">EXPECTED JE RESULT</div>
+        <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:3px">
+          <span>Dr San Antonio — CT SCAN &nbsp;&nbsp;<strong>$1,840.00</strong></span>
+          <span>Dr San Antonio — MRI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>$2,700.00</strong></span>
+          <span>Dr San Antonio — Labs &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>$760.00</strong></span>
+          <span>Dr Mountain Med — CT SCAN &nbsp;<strong>$1,600.00</strong></span>
+          <span>Dr Mountain Med — MRI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>$2,200.00</strong></span>
+          <span>Dr Mountain Med — Labs &nbsp;&nbsp;&nbsp;&nbsp;<strong>$700.00</strong></span>
+          <span style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px">Total Dr &nbsp;<strong>$9,800.00</strong></span>
+          <span>AP offset (Cr) &nbsp;<strong>$2,440.00</strong></span>
+          <span>Net accrual &nbsp;<strong>$7,360.00</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="generateTestData()" id="testDataBtn">▶ Generate test data</button>
+      <button class="btn btn-danger" onclick="clearTestData()" id="clearTestBtn">🗑 Clear all test data</button>
+    </div>
+    <div id="testDataLog" style="margin-top:14px;font-size:12px;font-family:monospace;background:var(--bg);border-radius:var(--radius);padding:14px;display:none;max-height:300px;overflow-y:auto;line-height:1.8"></div>
+  </div>
+
   <!-- Connection -->
   <div class="card">
     <div class="card-title">Connection settings</div>
@@ -2195,6 +2241,286 @@ function downloadJE(){
   const period=currentJE.period||'all';
   downloadCSV(rows,'JE_'+extId+'_'+period+'.csv');
   toast('NetSuite CSV downloaded');
+}
+
+
+// ── TEST DATA ─────────────────────────────────────────────────────────
+const TEST_TAG='__test__'; // marker stored in report name so we can clear it
+
+async function generateTestData(){
+  const btn=document.getElementById('testDataBtn');
+  btn.disabled=true;btn.textContent='Generating…';
+  const log=document.getElementById('testDataLog');
+  log.style.display='block';log.innerHTML='';
+  const L=(msg,col='var(--text-muted)')=>{log.innerHTML+='<div style="color:'+col+'">'+msg+'</div>';log.scrollTop=log.scrollHeight;};
+
+  try{
+    // ── 1. DIMENSIONS ──────────────────────────────────────────────
+    L('Creating dimensions…','var(--accent)');
+
+    // Subsidiary dimension
+    let{data:subDim}=await sb.from('dimensions').select('*').ilike('name','Subsidiary').limit(1);
+    if(!subDim||!subDim.length){const{data:d}=await sb.from('dimensions').insert({name:'Subsidiary',sort_order:1}).select().single();subDim=[d];}
+    const subDimId=subDim[0].id;
+
+    // Site dimension
+    let{data:siteDim}=await sb.from('dimensions').select('*').ilike('name','Site').limit(1);
+    if(!siteDim||!siteDim.length){const{data:d}=await sb.from('dimensions').insert({name:'Site',sort_order:2}).select().single();siteDim=[d];}
+    const siteDimId=siteDim[0].id;
+
+    // GL Account dimension
+    let{data:glDim}=await sb.from('dimensions').select('*').ilike('name','GL Account').limit(1);
+    if(!glDim||!glDim.length){const{data:d}=await sb.from('dimensions').insert({name:'GL Account',sort_order:10}).select().single();glDim=[d];}
+    const glDimId=glDim[0].id;
+
+    // Category dimension
+    let{data:catDim}=await sb.from('dimensions').select('*').ilike('name','Category').limit(1);
+    if(!catDim||!catDim.length){const{data:d}=await sb.from('dimensions').insert({name:'Category',sort_order:50}).select().single();catDim=[d];}
+    const catDimId=catDim[0].id;
+
+    L('  ✓ Dimensions ready');
+
+    // ── 2. SUBSIDIARIES ────────────────────────────────────────────
+    L('Creating subsidiaries…','var(--accent)');
+    const subDefs=[
+      {value:'San Antonio',  code:'1001'},
+      {value:'Mountain Med', code:'1002'},
+    ];
+    const subIds={};
+    for(const s of subDefs){
+      const{data:ex}=await sb.from('dimension_values').select('id').eq('dimension_id',subDimId).eq('code',s.code).limit(1);
+      if(ex&&ex.length){subIds[s.value]=ex[0].id;L('  → '+s.value+' already exists');}
+      else{const{data:nv}=await sb.from('dimension_values').insert({dimension_id:subDimId,value:s.value,code:s.code}).select().single();subIds[s.value]=nv.id;L('  ✓ '+s.value+' (NS ID: '+s.code+')');}
+    }
+
+    // ── 3. SITES ───────────────────────────────────────────────────
+    L('Creating sites…','var(--accent)');
+    const siteDefs=[
+      {value:'SA Main Campus',  code:'SA-001', sub:'San Antonio'},
+      {value:'SA North Clinic', code:'SA-002', sub:'San Antonio'},
+      {value:'MM Denver',       code:'MM-001', sub:'Mountain Med'},
+      {value:'MM Boulder',      code:'MM-002', sub:'Mountain Med'},
+    ];
+    const siteIds={};
+    for(const s of siteDefs){
+      const{data:ex}=await sb.from('dimension_values').select('id').eq('dimension_id',siteDimId).eq('code',s.code).limit(1);
+      if(ex&&ex.length){siteIds[s.code]=ex[0].id;L('  → '+s.value+' already exists');}
+      else{const{data:nv}=await sb.from('dimension_values').insert({dimension_id:siteDimId,value:s.value,code:s.code,parent_id:subIds[s.sub]}).select().single();siteIds[s.code]=nv.id;L('  ✓ '+s.value+' ('+s.code+')');}
+    }
+
+    // ── 4. GL ACCOUNTS ─────────────────────────────────────────────
+    L('Creating GL accounts…','var(--accent)');
+    const glDefs=[
+      {value:'Clinical Trial Radiology Expense', code:'60100', meta:{internal_id:'4501'}},
+      {value:'Clinical Trial Lab Expense',       code:'60200', meta:{internal_id:'4502'}},
+      {value:'Clinical Trial Accrued Liability', code:'22000', meta:{internal_id:'3801'}},
+    ];
+    const glIds={};
+    for(const g of glDefs){
+      const{data:ex}=await sb.from('dimension_values').select('id').eq('dimension_id',glDimId).eq('code',g.code).limit(1);
+      if(ex&&ex.length){glIds[g.code]=ex[0].id;L('  → '+g.value+' already exists');}
+      else{const{data:nv}=await sb.from('dimension_values').insert({dimension_id:glDimId,value:g.value,code:g.code,meta:g.meta}).select().single();glIds[g.code]=nv.id;L('  ✓ '+g.value+' (Acct: '+g.code+', NS: '+g.meta.internal_id+')');}
+    }
+
+    // ── 5. CATEGORIES ──────────────────────────────────────────────
+    L('Creating categories…','var(--accent)');
+    const catDefs=['CT SCAN','MRI','Labs','ECG'];
+    const catValIds={};
+    for(const c of catDefs){
+      const{data:ex}=await sb.from('dimension_values').select('id').eq('dimension_id',catDimId).eq('value',c).limit(1);
+      if(ex&&ex.length){catValIds[c]=ex[0].id;L('  → '+c+' already exists');}
+      else{const{data:nv}=await sb.from('dimension_values').insert({dimension_id:catDimId,value:c}).select().single();catValIds[c]=nv.id;L('  ✓ '+c);}
+    }
+
+    // ── 6. TAGS ────────────────────────────────────────────────────
+    L('Creating tags…','var(--accent)');
+    const tagColors=[{bg:'#E6F1FB',text:'#0C447C',border:'#B5D4F4'},{bg:'#FCEBEB',text:'#791F1F',border:'#F7C1C1'}];
+    const tagDefs=[{name:'Accrual — Jan 2026',color:tagColors[0]},{name:'Reversal — Jan 2026',color:tagColors[1]}];
+    for(const t of tagDefs){
+      const{data:ex}=await sb.from('tags').select('id').eq('name',t.name).limit(1);
+      if(ex&&ex.length){L('  → '+t.name+' already exists');}
+      else{await sb.from('tags').insert({name:t.name,color:JSON.stringify(t.color)});L('  ✓ '+t.name);}
+    }
+
+    // ── 7. PRICING ITEMS ───────────────────────────────────────────
+    L('Creating pricing items…','var(--accent)');
+    const pricingDefs=[
+      {oncore_name:'US- CT CAP w contrast',         cpt_code:'74177', description:'CT SCAN', default_price:850,
+       overrides:{'1001':920,'1002':800}},
+      {oncore_name:'US- MRI Brain w contrast',       cpt_code:'70552', description:'MRI',     default_price:1200,
+       overrides:{'1001':1350,'1002':1100}},
+      {oncore_name:'US-Routine labs combined into one fee', cpt_code:null, description:'Labs', default_price:350,
+       overrides:{'1001':380,'1002':350}},
+      {oncore_name:'US-12- Lead ECG (Single)',       cpt_code:null,    description:'ECG',     default_price:150,
+       overrides:{'1001':150,'1002':150}},
+    ];
+    const pricingIds={};
+    for(const p of pricingDefs){
+      const{data:ex}=await sb.from('pricing').select('id').eq('oncore_name',p.oncore_name).limit(1);
+      let pid;
+      if(ex&&ex.length){pid=ex[0].id;L('  → '+p.oncore_name+' already exists');}
+      else{const{data:nv}=await sb.from('pricing').insert({oncore_name:p.oncore_name,cpt_code:p.cpt_code,description:p.description,default_price:p.default_price}).select().single();pid=nv.id;L('  ✓ '+p.oncore_name+' @ $'+p.default_price);}
+      pricingIds[p.oncore_name]=pid;
+      // Sub overrides
+      for(const[subCode,price]of Object.entries(p.overrides)){
+        const subValId=Object.entries(subIds).find(([,]=>true))?subIds[subCode==='1001'?'San Antonio':'Mountain Med']:null;
+        if(subValId){
+          const{data:exOv}=await sb.from('pricing_overrides').select('id').eq('pricing_id',pid).eq('subsidiary_id',subValId).limit(1);
+          if(!exOv||!exOv.length)await sb.from('pricing_overrides').insert({pricing_id:pid,subsidiary_id:subValId,price});
+        }
+      }
+    }
+
+    // ── 8. ONCORE REPORT + ROWS ────────────────────────────────────
+    L('Creating Oncore report (Jan 2026)…','var(--accent)');
+    // 12 rows: 3 procedures × 2 sites × 2 subs (SA has 2 sites, MM has 2 sites)
+    // SA-001: CT, MRI, Labs | SA-002: CT, MRI, Labs | MM-001: CT, MRI | MM-002: MRI, Labs, ECG
+    const oncoreRows=[
+      // San Antonio — SA Main Campus
+      {site_code:'SA-001',Study_Site:'San Antonio',Protocol_No:'PROT-2025-A',Occurred_Date:'2026-01-08',Visit_Name:'Cycle 1 Day 1',Procedure_Name:'CT CAP',Item_Name:'US- CT CAP w contrast',Event_Type:'CT SCAN',Cost_UPDT:920, 'Month  Occurred':'Jan 2026','CPT Code':'74177',Category:'CT SCAN',site:'SA-001',sub:'San Antonio',gl:'60100'},
+      {site_code:'SA-001',Study_Site:'San Antonio',Protocol_No:'PROT-2025-A',Occurred_Date:'2026-01-15',Visit_Name:'Cycle 1 Day 1',Procedure_Name:'MRI Brain',Item_Name:'US- MRI Brain w contrast',Event_Type:'MRI',Cost_UPDT:1350,'Month  Occurred':'Jan 2026','CPT Code':'70552',Category:'MRI',site:'SA-001',sub:'San Antonio',gl:'60100'},
+      {site_code:'SA-001',Study_Site:'San Antonio',Protocol_No:'PROT-2025-B',Occurred_Date:'2026-01-22',Visit_Name:'Screening',Procedure_Name:'Labs',Item_Name:'US-Routine labs combined into one fee',Event_Type:'Labs',Cost_UPDT:380, 'Month  Occurred':'Jan 2026','CPT Code':'',Category:'Labs',site:'SA-001',sub:'San Antonio',gl:'60200'},
+      // San Antonio — SA North Clinic
+      {site_code:'SA-002',Study_Site:'San Antonio',Protocol_No:'PROT-2025-C',Occurred_Date:'2026-01-10',Visit_Name:'Cycle 2 Day 1',Procedure_Name:'CT CAP',Item_Name:'US- CT CAP w contrast',Event_Type:'CT SCAN',Cost_UPDT:920, 'Month  Occurred':'Jan 2026','CPT Code':'74177',Category:'CT SCAN',site:'SA-002',sub:'San Antonio',gl:'60100'},
+      {site_code:'SA-002',Study_Site:'San Antonio',Protocol_No:'PROT-2025-C',Occurred_Date:'2026-01-17',Visit_Name:'Cycle 2 Day 1',Procedure_Name:'MRI Brain',Item_Name:'US- MRI Brain w contrast',Event_Type:'MRI',Cost_UPDT:1350,'Month  Occurred':'Jan 2026','CPT Code':'70552',Category:'MRI',site:'SA-002',sub:'San Antonio',gl:'60100'},
+      {site_code:'SA-002',Study_Site:'San Antonio',Protocol_No:'PROT-2025-A',Occurred_Date:'2026-01-24',Visit_Name:'Screening',Procedure_Name:'Labs',Item_Name:'US-Routine labs combined into one fee',Event_Type:'Labs',Cost_UPDT:380, 'Month  Occurred':'Jan 2026','CPT Code':'',Category:'Labs',site:'SA-002',sub:'San Antonio',gl:'60200'},
+      // Mountain Med — MM Denver
+      {site_code:'MM-001',Study_Site:'Mountain Med',Protocol_No:'PROT-2025-A',Occurred_Date:'2026-01-09',Visit_Name:'Cycle 1 Day 1',Procedure_Name:'CT CAP',Item_Name:'US- CT CAP w contrast',Event_Type:'CT SCAN',Cost_UPDT:800, 'Month  Occurred':'Jan 2026','CPT Code':'74177',Category:'CT SCAN',site:'MM-001',sub:'Mountain Med',gl:'60100'},
+      {site_code:'MM-001',Study_Site:'Mountain Med',Protocol_No:'PROT-2025-B',Occurred_Date:'2026-01-16',Visit_Name:'Cycle 1 Day 1',Procedure_Name:'MRI Brain',Item_Name:'US- MRI Brain w contrast',Event_Type:'MRI',Cost_UPDT:1100,'Month  Occurred':'Jan 2026','CPT Code':'70552',Category:'MRI',site:'MM-001',sub:'Mountain Med',gl:'60100'},
+      {site_code:'MM-001',Study_Site:'Mountain Med',Protocol_No:'PROT-2025-C',Occurred_Date:'2026-01-23',Visit_Name:'Screening',Procedure_Name:'Labs',Item_Name:'US-Routine labs combined into one fee',Event_Type:'Labs',Cost_UPDT:350, 'Month  Occurred':'Jan 2026','CPT Code':'',Category:'Labs',site:'MM-001',sub:'Mountain Med',gl:'60200'},
+      // Mountain Med — MM Boulder
+      {site_code:'MM-002',Study_Site:'Mountain Med',Protocol_No:'PROT-2025-D',Occurred_Date:'2026-01-11',Visit_Name:'Cycle 3 Day 1',Procedure_Name:'CT CAP',Item_Name:'US- CT CAP w contrast',Event_Type:'CT SCAN',Cost_UPDT:800, 'Month  Occurred':'Jan 2026','CPT Code':'74177',Category:'CT SCAN',site:'MM-002',sub:'Mountain Med',gl:'60100'},
+      {site_code:'MM-002',Study_Site:'Mountain Med',Protocol_No:'PROT-2025-D',Occurred_Date:'2026-01-18',Visit_Name:'Cycle 3 Day 1',Procedure_Name:'MRI Brain',Item_Name:'US- MRI Brain w contrast',Event_Type:'MRI',Cost_UPDT:1100,'Month  Occurred':'Jan 2026','CPT Code':'70552',Category:'MRI',site:'MM-002',sub:'Mountain Med',gl:'60100'},
+      {site_code:'MM-002',Study_Site:'Mountain Med',Protocol_No:'PROT-2025-B',Occurred_Date:'2026-01-25',Visit_Name:'Screening',Procedure_Name:'ECG',Item_Name:'US-12- Lead ECG (Single)',Event_Type:'ECG',Cost_UPDT:150, 'Month  Occurred':'Jan 2026','CPT Code':'',Category:'ECG',site:'MM-002',sub:'Mountain Med',gl:'60200'},
+    ];
+
+    // Create Oncore report
+    const{data:oncoreReport}=await sb.from('reports').insert({name:'[TEST] Oncore Jan 2026',source:'test_oncore_jan2026.xlsx',file_type:'oncore',period:'2026-01'}).select().single();
+    L('  ✓ Report created: '+oncoreReport.name);
+
+    // Insert rows + dimension assignments
+    const pricingLookup={
+      'US- CT CAP w contrast':      {id:pricingIds['US- CT CAP w contrast'],       qty_col:'Cost_UPDT'},
+      'US- MRI Brain w contrast':   {id:pricingIds['US- MRI Brain w contrast'],     qty_col:'Cost_UPDT'},
+      'US-Routine labs combined into one fee':{id:pricingIds['US-Routine labs combined into one fee'],qty_col:'Cost_UPDT'},
+      'US-12- Lead ECG (Single)':   {id:pricingIds['US-12- Lead ECG (Single)'],     qty_col:'Cost_UPDT'},
+    };
+
+    for(const r of oncoreRows){
+      const rowData={...r};
+      // Remove internal keys
+      delete rowData.site;delete rowData.sub;delete rowData.gl;
+      const pInfo=pricingLookup[r.Item_Name];
+      const subId=subIds[r.sub];
+      const siteId=siteIds[r.site];
+      const glId=glIds[r.gl];
+
+      const{data:row}=await sb.from('report_rows').insert({
+        report_id:oncoreReport.id,
+        row_data:rowData,
+        amount:r.Cost_UPDT,
+        amount_col:'Cost_UPDT',
+        tag:'Accrual — Jan 2026',
+        baseline:0,
+        oncore_id:pInfo?.id||null,
+        qty:1,
+        calc_amount:r.Cost_UPDT,
+        use_calc_amount:false,
+      }).select().single();
+
+      // Dimension assignments
+      if(subId)await sb.from('row_dimensions').insert({row_id:row.id,dimension_id:subDimId,value_id:subId});
+      if(siteId)await sb.from('row_dimensions').insert({row_id:row.id,dimension_id:siteDimId,value_id:siteId});
+      if(glId)await sb.from('row_dimensions').insert({row_id:row.id,dimension_id:glDimId,value_id:glId});
+    }
+    L('  ✓ 12 Oncore rows inserted and tagged "Accrual — Jan 2026"');
+
+    // ── 9. AP PENDING REPORT + ROWS ────────────────────────────────
+    L('Creating AP Pending report (Jan 2026)…','var(--accent)');
+    // 4 rows — 2 already invoiced SA, 2 already invoiced MM
+    // These get baseline = full amount so they net to $0 in the JE
+    const apRows=[
+      {Status:'Pending Approval','Document Number':'INV-2026-SA-001',Date:'2026-01-31','Subsidiary (no hierarchy)':'San Antonio','Site (no hierarchy)':'SA Main Campus',Vendor:'Imaging Partners LLC','Cost Center':'No Department','Product Type':'Not Applicable','Line Level Account':'60100','Memo (Main)':'CT CAP PROT-2025-A Jan 2026',Amount:920,site:'SA-001',sub:'San Antonio',gl:'60100'},
+      {Status:'Pending Approval','Document Number':'INV-2026-SA-002',Date:'2026-01-31','Subsidiary (no hierarchy)':'San Antonio','Site (no hierarchy)':'SA Main Campus',Vendor:'Lab Services Inc','Cost Center':'No Department','Product Type':'Not Applicable','Line Level Account':'60200','Memo (Main)':'Labs PROT-2025-B Jan 2026',Amount:380,site:'SA-001',sub:'San Antonio',gl:'60200'},
+      {Status:'Pending Approval','Document Number':'INV-2026-MM-001',Date:'2026-01-31','Subsidiary (no hierarchy)':'Mountain Med','Site (no hierarchy)':'MM Denver',Vendor:'Imaging Partners LLC','Cost Center':'No Department','Product Type':'Not Applicable','Line Level Account':'60100','Memo (Main)':'CT CAP PROT-2025-A Jan 2026',Amount:800,site:'MM-001',sub:'Mountain Med',gl:'60100'},
+      {Status:'Pending Approval','Document Number':'INV-2026-MM-002',Date:'2026-01-31','Subsidiary (no hierarchy)':'Mountain Med','Site (no hierarchy)':'MM Denver',Vendor:'Lab Services Inc','Cost Center':'No Department','Product Type':'Not Applicable','Line Level Account':'60200','Memo (Main)':'Labs PROT-2025-C Jan 2026',Amount:350,site:'MM-001',sub:'Mountain Med',gl:'60200'},
+    ];
+
+    const{data:apReport}=await sb.from('reports').insert({name:'[TEST] AP Pending Jan 2026',source:'test_ap_pending_jan2026.xlsx',file_type:'ap_pending',period:'2026-01'}).select().single();
+    L('  ✓ Report created: '+apReport.name);
+
+    for(const r of apRows){
+      const rowData={...r};
+      delete rowData.site;delete rowData.sub;delete rowData.gl;
+      const subId=subIds[r.sub];
+      const siteId=siteIds[r.site];
+      const glId=glIds[r.gl];
+
+      const{data:row}=await sb.from('report_rows').insert({
+        report_id:apReport.id,
+        row_data:rowData,
+        amount:r.Amount,
+        amount_col:'Amount',
+        tag:'Accrual — Jan 2026',
+        baseline:r.Amount, // baseline = full amount → nets to $0
+        calc_amount:0,
+        use_calc_amount:false,
+      }).select().single();
+
+      if(subId)await sb.from('row_dimensions').insert({row_id:row.id,dimension_id:subDimId,value_id:subId});
+      if(siteId)await sb.from('row_dimensions').insert({row_id:row.id,dimension_id:siteDimId,value_id:siteId});
+      if(glId)await sb.from('row_dimensions').insert({row_id:row.id,dimension_id:glDimId,value_id:glId});
+    }
+    L('  ✓ 4 AP Pending rows inserted (baseline = full amount → nets to $0)');
+
+    // ── DONE ───────────────────────────────────────────────────────
+    L('');
+    L('✅ All test data created!','var(--accent)');
+    L('');
+    L('Next steps:','var(--text-muted)');
+    L('  1. Go to Journal entry → period = Jan 2026 → group by Tag + Sub + GL Account','var(--text-muted)');
+    L('  2. Click Calculate JE','var(--text-muted)');
+    L('  3. Verify: Dr San Antonio $5,300 · Dr Mountain Med $4,500 · Net $9,800','var(--text-muted)');
+    L('  4. AP rows net to $0 (baseline = full amount)','var(--text-muted)');
+    L('  5. Download NetSuite CSV and verify column format','var(--text-muted)');
+
+    await loadTags();await loadDimensions();await loadReports();await loadPricing();await loadRows();await loadCategories();
+    populatePeriodSelects();
+
+  }catch(e){
+    L('❌ Error: '+e.message,'var(--danger)');
+    console.error(e);
+  }finally{
+    btn.disabled=false;btn.textContent='▶ Generate test data';
+  }
+}
+
+async function clearTestData(){
+  if(!confirm('Delete all rows and reports with "[TEST]" in the name? This cannot be undone.'))return;
+  const btn=document.getElementById('clearTestBtn');
+  btn.disabled=true;btn.textContent='Clearing…';
+  const log=document.getElementById('testDataLog');
+  log.style.display='block';
+  const L=(msg,col='var(--text-muted)')=>{log.innerHTML+='<div style="color:'+col+'">'+msg+'</div>';log.scrollTop=log.scrollHeight;};
+
+  try{
+    // Find test reports
+    const{data:testReports}=await sb.from('reports').select('id,name').ilike('name','[TEST]%');
+    if(!testReports||!testReports.length){L('No test data found.');btn.disabled=false;btn.textContent='🗑 Clear all test data';return;}
+
+    for(const r of testReports){
+      await sb.from('reports').delete().eq('id',r.id);
+      L('  ✓ Deleted: '+r.name);
+    }
+
+    L('');L('✅ Test data cleared.','var(--accent)');
+    await loadReports();await loadRows();
+    populatePeriodSelects();
+  }catch(e){
+    L('❌ Error: '+e.message,'var(--danger)');console.error(e);
+  }finally{
+    btn.disabled=false;btn.textContent='🗑 Clear all test data';
+  }
 }
 
 init();
